@@ -1,0 +1,102 @@
+product: MOBILE_5G
+name: 5G Postpaid Mobile Plan
+version: 1
+description: 5G voice and data postpaid mobile activation with SIM allocation and billing.
+tasks:
+  - id: validate_order
+    system: oms
+    action: validate
+    compensation: null
+    read_only: true
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 10
+
+  - id: reserve_sim
+    system: inventory
+    action: reserve
+    depends_on: [validate_order]
+    compensation: release
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: provision_5g_core
+    system: network
+    action: provision
+    depends_on: [reserve_sim]
+    compensation: deprovision
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 20
+
+  - id: create_billing_account
+    system: billing
+    action: create_account
+    depends_on: [reserve_sim]
+    compensation: void_account
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: verify_sim_registration
+    system: network
+    action: verify
+    depends_on: [provision_5g_core, create_billing_account]
+    compensation: null
+    read_only: true
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: start_billing
+    system: billing
+    action: start_charging
+    depends_on: [verify_sim_registration]
+    compensation: reverse_charges
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: notify_customer
+    system: notification
+    action: send_activation
+    depends_on: [start_billing]
+    compensation: null
+    best_effort: true
+    retry:
+      max_attempts: 2
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 4.0
+    timeout_sec: 10
+
+  - id: complete_order
+    system: oms
+    action: complete
+    depends_on: [start_billing]
+    compensation: reopen_order
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 10

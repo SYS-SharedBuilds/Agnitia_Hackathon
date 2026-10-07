@@ -1,0 +1,90 @@
+product: ESIM_ADDON
+name: Digital eSIM Add-on Service
+version: 1
+description: Instant digital profile generation, HLR profile activation and notification.
+tasks:
+  - id: validate_order
+    system: oms
+    action: validate
+    compensation: null
+    read_only: true
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 10
+
+  - id: reserve_esim_profile
+    system: inventory
+    action: reserve
+    depends_on: [validate_order]
+    compensation: release
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: activate_network_profile
+    system: network
+    action: provision
+    depends_on: [reserve_esim_profile]
+    compensation: deprovision
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: verify_activation
+    system: network
+    action: verify
+    depends_on: [activate_network_profile]
+    compensation: null
+    read_only: true
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 10
+
+  - id: start_billing
+    system: billing
+    action: start_charging
+    depends_on: [verify_activation]
+    compensation: reverse_charges
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
+  - id: notify_customer
+    system: notification
+    action: send_activation
+    depends_on: [start_billing]
+    compensation: null
+    best_effort: true
+    retry:
+      max_attempts: 2
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 4.0
+    timeout_sec: 10
+
+  - id: complete_order
+    system: oms
+    action: complete
+    depends_on: [start_billing]
+    compensation: reopen_order
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 10
