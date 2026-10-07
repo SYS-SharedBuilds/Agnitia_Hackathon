@@ -1,0 +1,215 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: switchon-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: switchon
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: switchon-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  temporal:
+    image: temporalio/auto-setup:1.24.0
+    container_name: switchon-temporal
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=postgres
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  temporal-ui:
+    image: temporalio/ui:2.26.0
+    container_name: switchon-temporal-ui
+    ports:
+      - "8233:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - temporal
+
+  mock-oms:
+    build:
+      context: .
+      dockerfile: services/mocks/Dockerfile
+    container_name: switchon-mock-oms
+    environment:
+      - SYSTEM=oms
+      - PORT=8101
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8101:8101"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mock-inventory:
+    build:
+      context: .
+      dockerfile: services/mocks/Dockerfile
+    container_name: switchon-mock-inventory
+    environment:
+      - SYSTEM=inventory
+      - PORT=8102
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+    ports:
+      - "8102:8102"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mock-network:
+    build:
+      context: .
+      dockerfile: services/mocks/Dockerfile
+    container_name: switchon-mock-network
+    environment:
+      - SYSTEM=network
+      - PORT=8103
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+    ports:
+      - "8103:8103"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mock-billing:
+    build:
+      context: .
+      dockerfile: services/mocks/Dockerfile
+    container_name: switchon-mock-billing
+    environment:
+      - SYSTEM=billing
+      - PORT=8104
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+    ports:
+      - "8104:8104"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mock-notification:
+    build:
+      context: .
+      dockerfile: services/mocks/Dockerfile
+    container_name: switchon-mock-notification
+    environment:
+      - SYSTEM=notification
+      - PORT=8105
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8105:8105"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  order-api:
+    build:
+      context: .
+      dockerfile: services/order_api/Dockerfile
+    container_name: switchon-order-api
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+      - TEMPORAL_HOST=temporal:7233
+      - DEMO_MODE=true
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+
+  worker:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    container_name: switchon-worker
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+      - TEMPORAL_HOST=temporal:7233
+      - OMS_MOCK_URL=http://mock-oms:8101
+      - INVENTORY_MOCK_URL=http://mock-inventory:8102
+      - NETWORK_MOCK_URL=http://mock-network:8103
+      - BILLING_MOCK_URL=http://mock-billing:8104
+      - NOTIFICATION_MOCK_URL=http://mock-notification:8105
+      - DEMO_MODE=true
+    depends_on:
+      temporal:
+        condition: service_started
+      mock-oms:
+        condition: service_started
+      mock-inventory:
+        condition: service_started
+      mock-network:
+        condition: service_started
+      mock-billing:
+        condition: service_started
+      mock-notification:
+        condition: service_started
+
+  projector:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    container_name: switchon-projector
+    command: ["python", "-m", "services.orchestrator.projector"]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: switchon-web
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_TEMPORAL_UI_URL=http://localhost:8233
+    ports:
+      - "3000:3000"
+    depends_on:
+      - order-api
+
+volumes:
+  pgdata:
