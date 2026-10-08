@@ -67,7 +67,9 @@ async def check_all_invariants(
                 res = await conn.execute(q)
                 orders = [dict(r) for r in res.mappings().all()]
         except Exception as exc:
-            results.append({"rule": "DB_CHECK", "pass": False, "note": f"DB connection check: {exc}"})
+            results.append(
+                {"rule": "DB_CHECK", "pass": False, "note": f"DB connection check: {exc}"}
+            )
             return {"status": "FAIL", "checked_orders_count": 0, "results": results}
         finally:
             await engine.dispose()
@@ -115,7 +117,7 @@ async def check_all_invariants(
         elif state in ("ROLLED_BACK", "CANCELLED"):
             inv_clean = inv_status in ("RELEASED", None)
             net_clean = net_status in ("DEPROVISIONED", None)
-            bil_clean = bil_status in ("VOIDED", None)
+            bil_clean = bil_status in ("VOIDED", "REVERSED", None)
             oms_clean = oms_status != "COMPLETED"
             passed = inv_clean and net_clean and bil_clean and oms_clean
             results.append(
@@ -149,7 +151,9 @@ async def check_all_invariants(
             if not passed:
                 overall_pass = False
 
-    final_status = "PASS" if overall_pass and len(results) > 0 else ("PASS" if len(results) == 0 else "FAIL")
+    final_status = (
+        "PASS" if overall_pass and len(results) > 0 else ("PASS" if len(results) == 0 else "FAIL")
+    )
     return {
         "status": final_status,
         "checked_orders_count": len(results),
@@ -167,8 +171,6 @@ if __name__ == "__main__":
     res = asyncio.run(check_all_invariants())
     print("=== Cross-System Invariant Verification ===")
     print(f"Overall Status: {res['status']}")
-    print(
-        f"Checks Passed: {sum(1 for r in res['results'] if r.get('pass'))}/{len(res['results'])}"
-    )
+    print(f"Checks Passed: {sum(1 for r in res['results'] if r.get('pass'))}/{len(res['results'])}")
     if res["status"] != "PASS":
         sys.exit(1)

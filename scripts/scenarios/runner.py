@@ -161,8 +161,15 @@ async def run_scenario(name: str) -> dict[str, Any]:
             # Verify inventory was compensated
             inv_r = await client.get("http://localhost:8102/admin/audit/resources")
             inv_entities = inv_r.json() if inv_r.is_success else []
-            active_res = [e for e in inv_entities if e.get("order_id") == order_id and e.get("state") == "RESERVED"]
-            result["details"] = {"order_id": order_id, "active_reservations_remaining": len(active_res)}
+            active_res = [
+                e
+                for e in inv_entities
+                if e.get("order_id") == order_id and e.get("state") == "RESERVED"
+            ]
+            result["details"] = {
+                "order_id": order_id,
+                "active_reservations_remaining": len(active_res),
+            }
             if st == "ROLLED_BACK" and len(active_res) == 0:
                 result["status"] = "PASS"
 
@@ -189,7 +196,11 @@ async def run_scenario(name: str) -> dict[str, Any]:
             # Verify network was deprovisioned
             net_r = await client.get("http://localhost:8103/admin/audit/resources")
             net_entities = net_r.json() if net_r.is_success else []
-            net_active = [e for e in net_entities if e.get("order_id") == order_id and e.get("state") in ("PROVISIONED", "VERIFIED")]
+            net_active = [
+                e
+                for e in net_entities
+                if e.get("order_id") == order_id and e.get("state") in ("PROVISIONED", "VERIFIED")
+            ]
             result["details"] = {"order_id": order_id, "active_network_remaining": len(net_active)}
             if st == "ROLLED_BACK" and len(net_active) == 0:
                 result["status"] = "PASS"
@@ -252,9 +263,19 @@ async def run_scenario(name: str) -> dict[str, Any]:
             restarted = False
             if shutil.which("docker"):
                 try:
-                    subprocess.run(["docker", "compose", "stop", "worker"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(
+                        ["docker", "compose", "stop", "worker"],
+                        check=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
                     await asyncio.sleep(1.0)
-                    subprocess.run(["docker", "compose", "start", "worker"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(
+                        ["docker", "compose", "start", "worker"],
+                        check=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
                     restarted = True
                 except Exception:
                     pass
@@ -332,7 +353,17 @@ async def run_scenario(name: str) -> dict[str, Any]:
             from scripts.load_generator import run_load_test
 
             load_res = await run_load_test(count=6, failure_rate=0.2)
-            await asyncio.sleep(4.0)
+            # Wait for in-flight orders to finish executing
+            deadline = time.time() + 15.0
+            while time.time() < deadline:
+                try:
+                    m_res = await client.get(f"{base_api}/metrics/summary")
+                    if m_res.is_success and m_res.json().get("in_flight_orders", 0) == 0:
+                        break
+                except Exception:
+                    pass
+                await asyncio.sleep(0.5)
+
             inv_res = await check_all_invariants()
             inv_status = inv_res.get("status")
             result["observed"] = f"Invariants {inv_status}"
@@ -365,7 +396,11 @@ async def run_scenario(name: str) -> dict[str, Any]:
             code = r3.status_code
             err = r3.json().get("error") if r3.is_success or r3.status_code == 409 else ""
             result["observed"] = f"{code} {err}"
-            result["details"] = {"reserve_code": r1.status_code, "release_code": r2.status_code, "late_code": code}
+            result["details"] = {
+                "reserve_code": r1.status_code,
+                "release_code": r2.status_code,
+                "late_code": code,
+            }
             if code == 409 and err == "TOMBSTONED":
                 result["status"] = "PASS"
 
@@ -383,7 +418,10 @@ async def run_scenario(name: str) -> dict[str, Any]:
             base_rate = base.get("consistency_rate_pct", 0)
 
             result["observed"] = f"SwitchOn: {sw_rate}%, Base: {base_rate}%"
-            result["details"] = {"switchon_orphans": sw_orphans, "baseline_orphans": base.get("leaks", {}).get("orphaned_resources", 0)}
+            result["details"] = {
+                "switchon_orphans": sw_orphans,
+                "baseline_orphans": base.get("leaks", {}).get("orphaned_resources", 0),
+            }
             if sw_orphans == 0 and sw_rate == 100.0:
                 result["status"] = "PASS"
 

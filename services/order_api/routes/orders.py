@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from temporalio.client import Client
 from temporalio.common import WorkflowIDReusePolicy
@@ -83,22 +84,40 @@ async def submit_order(
         )
         """
     )
-    await session.execute(
-        insert_order,
-        {
-            "order_id": order_id,
-            "client_order_ref": payload.client_order_ref,
-            "customer_id": payload.customer_id,
-            "product": payload.product,
-            "catalog_version": plan.version,
-            "plan_json": json.dumps(plan.model_dump()),
-            "engine": payload.engine,
-            "state": "RECEIVED",
-            "workflow_id": workflow_id,
-            "chaos_key": payload.chaos_key,
-        },
-    )
-    await session.commit()
+    try:
+        await session.execute(
+            insert_order,
+            {
+                "order_id": order_id,
+                "client_order_ref": payload.client_order_ref,
+                "customer_id": payload.customer_id,
+                "product": payload.product,
+                "catalog_version": plan.version,
+                "plan_json": json.dumps(plan.model_dump()),
+                "engine": payload.engine,
+                "state": "RECEIVED",
+                "workflow_id": workflow_id,
+                "chaos_key": payload.chaos_key,
+            },
+        )
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        stmt = text(
+            """SELECT order_id, workflow_id, state, product, customer_id, created_at, engine
+               FROM ops.orders WHERE client_order_ref = :ref"""
+        )
+        res = await session.execute(stmt, {"ref": payload.client_order_ref})
+        existing = res.mappings().first()
+        if existing:
+            return {
+                "order_id": existing["order_id"],
+                "workflow_id": existing["workflow_id"],
+                "state": existing["state"],
+                "engine": existing["engine"],
+                "idempotent_replay": True,
+            }
+        raise
 
     # 4. Emit order.received event
     await event_publisher.publish(
@@ -154,10 +173,10 @@ async def submit_order(
 
 @router.get("")
 async def list_orders(
-    state: str | None = None,
-    product: str | None = None,
-    limit: int = Query(default=50, le=200),
-    offset: int = 0,
+    state: str | None = Query(None, max_length=32),
+    product: str | None = Query(None, max_length=64),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict[str, Any]]:
     query = "SELECT * FROM ops.orders WHERE 1=1"
@@ -203,7 +222,7 @@ async def get_order_detail(
 @router.get("/{order_id}/events")
 async def get_order_events(
     order_id: str,
-    upto_seq: int | None = Query(None, description="Time travel up to specific seq"),
+    upto_seq: int | None = Query(None, ge=1, description="Time travel up to specific seq"),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict[str, Any]]:
     sql = "SELECT * FROM ops.events WHERE order_id = :id"
@@ -225,10 +244,14 @@ async def get_order_certificate(
     """Generates or retrieves Ed25519-signed Consistency Certificate (X2)."""
     # Check if certificate is already sealed in ops.certificates
     cert_row = (
-        await session.execute(
-            text("SELECT * FROM ops.certificates WHERE order_id = :id"), {"id": order_id}
+        (
+            await session.execute(
+                text("SELECT * FROM ops.certificates WHERE order_id = :id"), {"id": order_id}
+            )
         )
-    ).mappings().first()
+        .mappings()
+        .first()
+    )
 
     if cert_row:
         return {
@@ -244,19 +267,27 @@ async def get_order_certificate(
 
     # Fetch order and events
     o_row = (
-        await session.execute(
-            text("SELECT * FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+        (
+            await session.execute(
+                text("SELECT * FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+            )
         )
-    ).mappings().first()
+        .mappings()
+        .first()
+    )
     if not o_row:
         raise HTTPException(status_code=404, detail="Order not found")
 
     ev_rows = (
-        await session.execute(
-            text("SELECT * FROM ops.events WHERE order_id = :id ORDER BY seq ASC, ts ASC"),
-            {"id": order_id},
+        (
+            await session.execute(
+                text("SELECT * FROM ops.events WHERE order_id = :id ORDER BY seq ASC, ts ASC"),
+                {"id": order_id},
+            )
         )
-    ).mappings().all()
+        .mappings()
+        .all()
+    )
 
     def _format_ts(t: Any) -> str:
         s = t.isoformat() if hasattr(t, "isoformat") else str(t)
@@ -330,28 +361,42 @@ async def get_order_certificate(
 @router.post("/{order_id}/cancel")
 async def cancel_order(
     order_id: str,
-    reason: str = "Operator signal",
+    reason: str = Query(default="Operator signal", max_length=256),
+    session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:
+    res = await session.execute(
+        text("SELECT state FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+    )
+    if not res.mappings().first():
+        raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
     try:
         temporal_client = await get_temporal_client()
         handle = temporal_client.get_workflow_handle(f"order-{order_id}")
         await handle.signal("cancel_order", reason)
         return {"status": "cancel_signaled", "order_id": order_id}
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to cancel workflow: {exc}") from exc
+        logger.error("cancel_workflow_failed", order_id=order_id, error=str(exc))
+        raise HTTPException(
+            status_code=500, detail="Failed to signal workflow cancellation"
+        ) from exc
 
 
 @router.post("/{order_id}/resolve")
 async def resolve_order(
     order_id: str,
-    note: str = "Manually cleared by operator",
+    note: str = Query(default="Manually cleared by operator", max_length=256),
+    session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:
+    res = await session.execute(
+        text("SELECT state FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+    )
+    if not res.mappings().first():
+        raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
     try:
         temporal_client = await get_temporal_client()
         handle = temporal_client.get_workflow_handle(f"order-{order_id}")
         await handle.signal("resolve_manually", note)
         return {"status": "resolve_signaled", "order_id": order_id}
     except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to signal manual resolution: {exc}"
-        ) from exc
+        logger.error("resolve_workflow_failed", order_id=order_id, error=str(exc))
+        raise HTTPException(status_code=500, detail="Failed to signal workflow resolution") from exc

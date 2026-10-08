@@ -1,5 +1,7 @@
 import json
 import sqlite3
+from collections.abc import Generator
+from contextlib import contextmanager
 from typing import Any
 
 
@@ -13,16 +15,21 @@ class MockStateStore:
         self.db_path = db_path or f"/tmp/switchon_mock_{system_name}.sqlite"
         self._mem_conn: sqlite3.Connection | None = None
         if self.db_path == ":memory:":
-            self._mem_conn = sqlite3.connect(":memory:")
+            self._mem_conn = sqlite3.connect(":memory:", check_same_thread=False)
             self._mem_conn.row_factory = sqlite3.Row
         self._init_db()
 
-    def _get_conn(self) -> sqlite3.Connection:
+    @contextmanager
+    def _get_conn(self) -> Generator[sqlite3.Connection, None, None]:
         if self._mem_conn is not None:
-            return self._mem_conn
-        conn = sqlite3.connect(self.db_path)
+            yield self._mem_conn
+            return
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            yield conn
+        finally:
+            conn.close()
 
     def _init_db(self) -> None:
         with self._get_conn() as conn:
