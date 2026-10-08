@@ -281,8 +281,11 @@ def main() -> NoReturn:
             if p.poll() is None:
                 log(name, color, "Stopping...")
                 try:
-                    os.killpg(os.getpgid(p.pid), signal.SIGTERM)
-                except ProcessLookupError:
+                    if hasattr(os, "killpg") and hasattr(os, "getpgid"):
+                        os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+                    else:
+                        p.terminate()
+                except (ProcessLookupError, OSError):
                     pass
 
         # Wait briefly for graceful shutdown, then kill if needed
@@ -290,10 +293,14 @@ def main() -> NoReturn:
         for _name, _color, p in procs:
             if p.poll() is None:
                 try:
-                    os.killpg(os.getpgid(p.pid), signal.SIGKILL)
-                except ProcessLookupError:
+                    if hasattr(os, "killpg") and hasattr(os, "getpgid"):
+                        os.killpg(os.getpgid(p.pid), signal.SIGKILL)
+                    else:
+                        p.kill()
+                except (ProcessLookupError, OSError):
                     pass
         sys.exit(0)
+
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
@@ -305,7 +312,8 @@ def main() -> NoReturn:
             svc.cmd,
             env=svc.env,
             cwd=REPO_ROOT,
-            preexec_fn=os.setsid,
+            preexec_fn=os.setsid if hasattr(os, "setsid") else None,
+            shell=sys.platform == "win32" and svc.name == "web",
         )
         procs.append((svc.name, svc.color, p))
 

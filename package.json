@@ -4,7 +4,7 @@
   "private": true,
   "description": "SwitchOn Telecom Service Activation Orchestrator",
   "scripts": {
-    "dev": "python3 scripts/dev.py",
+    "dev": "node scripts/run-dev.js",
     "web:dev": "npm run dev --prefix web",
     "web:build": "npm run build --prefix web",
     "web:lint": "npm run lint --prefix web"
