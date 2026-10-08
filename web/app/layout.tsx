@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import { Activity, Radio, Cpu, BarChart3, Layers } from "lucide-react";
+import { Activity, Radio, Cpu, BarChart3, Layers, Shield } from "lucide-react";
 
 export const metadata = {
   title: "SwitchOn — Telecom Service Activation Orchestrator",
@@ -42,6 +42,10 @@ export default function RootLayout({
               <Link href="/metrics" className="flex items-center space-x-2 text-slate-300 hover:text-emerald-400 transition-colors">
                 <BarChart3 className="h-4 w-4" />
                 <span>Metrics</span>
+              </Link>
+              <Link href="/proof" className="flex items-center space-x-2 text-slate-300 hover:text-emerald-400 transition-colors">
+                <Shield className="h-4 w-4" />
+                <span>Proof (A/B & Certs)</span>
               </Link>
               <Link href="/catalog" className="flex items-center space-x-2 text-slate-300 hover:text-emerald-400 transition-colors">
                 <Layers className="h-4 w-4" />
