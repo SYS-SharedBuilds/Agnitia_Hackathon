@@ -2,6 +2,7 @@ from typing import Any
 
 import pytest
 from temporalio import activity
+from temporalio.exceptions import ApplicationError
 from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 
@@ -19,6 +20,9 @@ async def fake_execute_task(
     payload: dict[str, Any],
     seq: int,
 ) -> dict[str, Any]:
+    if task_id == "start_billing":
+        # Simulate failure in billing to force rollback of preceding provisioned services
+        raise ApplicationError("Simulated Billing 500 Failure", non_retryable=False)
     return {"status": "ok", "task_id": task_id}
 
 
@@ -45,31 +49,29 @@ async def fake_publish_event(
 
 
 @pytest.mark.asyncio
-async def test_workflow_happy_path() -> None:
+async def test_workflow_saga_rollback_on_failure() -> None:
+    """Verifies that failure in start_billing triggers reverse-order compensation and ends in ROLLED_BACK."""
     async with await WorkflowEnvironment.start_time_skipping() as env:
         plan = catalog_loader.resolve_plan("FIBER_500")
         order_dict = {
-            "order_id": "ord_test_happy",
-            "client_order_ref": "ref_happy",
-            "customer_id": "cust_happy",
+            "order_id": "ord_test_rollback",
+            "client_order_ref": "ref_rollback",
+            "customer_id": "cust_rollback",
             "product": "FIBER_500",
         }
 
         async with Worker(
             env.client,
-            task_queue="test-queue",
+            task_queue="test-queue-rollback",
             workflows=[ServiceActivationWorkflow],
             activities=[fake_execute_task, fake_compensate_task, fake_publish_event],
         ):
             result = await env.client.execute_workflow(
                 ServiceActivationWorkflow.run,
                 args=[order_dict, plan.model_dump()],
-                id="test-wf-happy",
-                task_queue="test-queue",
+                id="test-wf-rollback",
+                task_queue="test-queue-rollback",
             )
 
-            assert result["state"] == OrderState.ACTIVE.value
-            # Read-only tasks (validate_order, verify_service) are not in mutating completed_stack
-            mutating_tasks = [t for t in plan.tasks if not t.read_only]
-            assert len(result["completed_tasks"]) == len(mutating_tasks)
-            assert all(state == "SUCCEEDED" for state in result["task_states"].values())
+            assert result["state"] == OrderState.ROLLED_BACK.value
+            assert "start_billing" in result["failure_reason"]

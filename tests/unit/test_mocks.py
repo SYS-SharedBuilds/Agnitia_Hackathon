@@ -4,7 +4,7 @@ from services.mocks.chaos import ChaosConfig, ChaosEngine
 
 
 @pytest.mark.asyncio
-async def test_chaos_engine_fail_n():
+async def test_chaos_engine_fail_n() -> None:
     engine = ChaosEngine()
     engine.set_config(ChaosConfig(mode="fail_n", n=2, status=503, match_action="provision"))
 
@@ -24,7 +24,7 @@ async def test_chaos_engine_fail_n():
 
 
 @pytest.mark.asyncio
-async def test_chaos_engine_business_error():
+async def test_chaos_engine_business_error() -> None:
     engine = ChaosEngine()
     engine.set_config(ChaosConfig(mode="business_error", business_code="OUT_OF_STOCK"))
 

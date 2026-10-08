@@ -6,7 +6,7 @@ from shared.catalog import CatalogError, catalog_loader
 from shared.models import Order, OrderState, SystemType, TaskDefinition
 
 
-def test_order_model_initialization():
+def test_order_model_initialization() -> None:
     order = Order(
         order_id="ord_123",
         client_order_ref="ref_123",
@@ -18,13 +18,13 @@ def test_order_model_initialization():
     assert order.order_id == "ord_123"
 
 
-def test_catalog_loader():
+def test_catalog_loader() -> None:
     product = catalog_loader.load_product("FIBER_500")
     assert product.product == "FIBER_500"
     assert len(product.tasks) == 8
 
 
-def test_catalog_cycle_detection():
+def test_catalog_cycle_detection() -> None:
     from shared.models import ProductDefinition
 
     cyclic_product = ProductDefinition(

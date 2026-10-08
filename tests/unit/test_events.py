@@ -1,7 +1,7 @@
 from shared.events import Event, EventType
 
 
-def test_event_serialization():
+def test_event_serialization() -> None:
     evt = Event(
         order_id="ord_test_01",
         seq=5,

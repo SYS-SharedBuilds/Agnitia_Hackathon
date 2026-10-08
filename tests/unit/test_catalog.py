@@ -2,7 +2,7 @@ from shared.catalog import catalog_loader
 from shared.models import make_idempotency_key
 
 
-def test_catalog_loader_fiber():
+def test_catalog_loader_fiber() -> None:
     product = catalog_loader.load_product("FIBER_500")
     assert product.product == "FIBER_500"
     assert len(product.tasks) >= 6
@@ -16,7 +16,7 @@ def test_catalog_loader_fiber():
     assert "start_billing" in task_ids
 
 
-def test_catalog_loader_all_products():
+def test_catalog_loader_all_products() -> None:
     products = catalog_loader.list_products()
     assert len(products) >= 3
     product_codes = [p.product for p in products]
@@ -25,6 +25,6 @@ def test_catalog_loader_all_products():
     assert "ESIM_ADDON" in product_codes
 
 
-def test_idempotency_key_helper():
+def test_idempotency_key_helper() -> None:
     key = make_idempotency_key("ord_123", "reserve_inventory", "reserve")
     assert key == "ord_123:reserve_inventory:reserve"
