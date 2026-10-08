@@ -11,6 +11,25 @@ async def reset_all() -> None:
                 await client.post(f"http://localhost:{port}/admin/reset")
         except Exception:
             pass
+
+    # Clear PostgreSQL read model tables
+    try:
+        from sqlalchemy import text
+        from sqlalchemy.ext.asyncio import create_async_engine
+
+        from shared.config import settings
+
+        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        async with engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "TRUNCATE TABLE ops.certificates, ops.events, ops.tasks, ops.orders CASCADE;"
+                )
+            )
+        await engine.dispose()
+    except Exception as exc:
+        print(f"Warning: could not truncate DB tables: {exc}")
+
     print("Reset complete.")
 
 

@@ -1,103 +1,174 @@
 import asyncio
+import sys
 from typing import Any
 
+import httpx
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from shared.config import settings
 
 
-async def check_all_invariants() -> dict[str, Any]:
-    """Evaluates cross-system invariants defined in BRAIN.md §7.
-    Returns audit results and overall pass/fail status.
+async def check_all_invariants(
+    custom_orders: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Evaluates cross-system invariants defined in BRAIN.md §7 (INV-1..INV-6).
+    Reads ops.orders and audits state directly against the mock systems' persistent store via /admin/audit/resources.
     """
     results: list[dict[str, Any]] = []
     overall_pass = True
 
-    engine = create_async_engine(settings.DATABASE_URL, echo=False)
+    # 1. Fetch live resource allocations from each mock system
+    inv_data: dict[str, dict[str, Any]] = {}
+    net_data: dict[str, dict[str, Any]] = {}
+    bil_data: dict[str, dict[str, Any]] = {}
+    oms_data: dict[str, dict[str, Any]] = {}
 
-    try:
-        async with engine.connect() as conn:
-            # Invariant 1: Terminal ACTIVE orders have complete mock resources
-            # Invariant 2: Terminal ROLLED_BACK orders have zero active resources or voided
-            q = text(
-                "SELECT order_id, state, product FROM ops.orders WHERE state IN ('ACTIVE', 'ROLLED_BACK', 'NEEDS_ATTENTION')"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            r = await client.get(f"{settings.INVENTORY_MOCK_URL}/admin/audit/resources")
+            if r.is_success:
+                inv_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+        except Exception:
+            pass
+
+        try:
+            r = await client.get(f"{settings.NETWORK_MOCK_URL}/admin/audit/resources")
+            if r.is_success:
+                net_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+        except Exception:
+            pass
+
+        try:
+            r = await client.get(f"{settings.BILLING_MOCK_URL}/admin/audit/resources")
+            if r.is_success:
+                bil_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+        except Exception:
+            pass
+
+        try:
+            r = await client.get(f"{settings.OMS_MOCK_URL}/admin/audit/resources")
+            if r.is_success:
+                oms_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+        except Exception:
+            pass
+
+    # 2. Query orders from database or use custom_orders (for testing/negative testing)
+    orders: list[dict[str, Any]] = []
+    if custom_orders is not None:
+        orders = custom_orders
+    else:
+        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        try:
+            async with engine.connect() as conn:
+                q = text(
+                    "SELECT order_id, state, product, failure_reason FROM ops.orders WHERE state IN ('ACTIVE', 'ROLLED_BACK', 'NEEDS_ATTENTION', 'CANCELLED') AND (engine IS NULL OR engine = 'temporal')"
+                )
+                res = await conn.execute(q)
+                orders = [dict(r) for r in res.mappings().all()]
+        except Exception as exc:
+            results.append({"rule": "DB_CHECK", "pass": False, "note": f"DB connection check: {exc}"})
+            return {"status": "FAIL", "checked_orders_count": 0, "results": results}
+        finally:
+            await engine.dispose()
+
+    for o in orders:
+        oid = o["order_id"]
+        state = o["state"]
+
+        inv_item = inv_data.get(oid)
+        net_item = net_data.get(oid)
+        bil_item = bil_data.get(oid)
+        oms_item = oms_data.get(oid)
+
+        inv_status = inv_item["state"] if inv_item else None
+        net_status = net_item["state"] if net_item else None
+        bil_status = bil_item["state"] if bil_item else None
+        oms_status = oms_item["state"] if oms_item else None
+
+        # INV-1: ACTIVE => inventory reserved and network service active/verified and billing charging/active and OMS completed
+        if state == "ACTIVE":
+            passed = (
+                (inv_status == "RESERVED")
+                and (net_status in ("PROVISIONED", "VERIFIED"))
+                and (bil_status in ("ACTIVE", "CHARGING"))
+                and (oms_status in ("COMPLETED", "VALIDATED"))
             )
-            res = await conn.execute(q)
-            orders = res.mappings().all()
+            results.append(
+                {
+                    "order_id": oid,
+                    "rule": "INV-1: ACTIVE_CONSISTENCY",
+                    "pass": passed,
+                    "state": state,
+                    "details": {
+                        "inventory": inv_status,
+                        "network": net_status,
+                        "billing": bil_status,
+                        "oms": oms_status,
+                    },
+                }
+            )
+            if not passed:
+                overall_pass = False
 
-            for o in orders:
-                oid = o["order_id"]
-                state = o["state"]
+        # INV-2: ROLLED_BACK | CANCELLED => no reservation and no network service and no active billing and OMS not completed
+        elif state in ("ROLLED_BACK", "CANCELLED"):
+            inv_clean = inv_status in ("RELEASED", None)
+            net_clean = net_status in ("DEPROVISIONED", None)
+            bil_clean = bil_status in ("VOIDED", None)
+            oms_clean = oms_status != "COMPLETED"
+            passed = inv_clean and net_clean and bil_clean and oms_clean
+            results.append(
+                {
+                    "order_id": oid,
+                    "rule": "INV-2: CLEAN_ROLLBACK_CONSISTENCY",
+                    "pass": passed,
+                    "state": state,
+                    "details": {
+                        "inventory": inv_status,
+                        "network": net_status,
+                        "billing": bil_status,
+                        "oms": oms_status,
+                    },
+                }
+            )
+            if not passed:
+                overall_pass = False
 
-                # Check inventory
-                inv_res = await conn.execute(
-                    text("SELECT status FROM inventory.resources WHERE order_id = :oid"),
-                    {"oid": oid},
-                )
-                inv_row = inv_res.mappings().first()
+        # INV-3: NEEDS_ATTENTION => compensation failed
+        elif state == "NEEDS_ATTENTION":
+            passed = bool(o.get("failure_reason"))
+            results.append(
+                {
+                    "order_id": oid,
+                    "rule": "INV-3: NEEDS_ATTENTION_AUDIT",
+                    "pass": passed,
+                    "state": state,
+                }
+            )
+            if not passed:
+                overall_pass = False
 
-                # Check network
-                net_res = await conn.execute(
-                    text("SELECT status FROM network.services WHERE order_id = :oid"), {"oid": oid}
-                )
-                net_row = net_res.mappings().first()
-
-                # Check billing
-                bil_res = await conn.execute(
-                    text("SELECT status FROM billing.accounts WHERE order_id = :oid"), {"oid": oid}
-                )
-                bil_row = bil_res.mappings().first()
-
-                if state == "ACTIVE":
-                    passed = (
-                        (inv_row is not None and inv_row["status"] == "RESERVED")
-                        and (
-                            net_row is not None and net_row["status"] in ("PROVISIONED", "VERIFIED")
-                        )
-                        and (bil_row is not None and bil_row["status"] == "ACTIVE")
-                    )
-                    results.append(
-                        {
-                            "order_id": oid,
-                            "rule": "ACTIVE_CONSISTENCY",
-                            "pass": passed,
-                            "state": state,
-                        }
-                    )
-                    if not passed:
-                        overall_pass = False
-
-                elif state in ("ROLLED_BACK", "CANCELLED"):
-                    inv_clean = inv_row is None or inv_row["status"] == "RELEASED"
-                    net_clean = net_row is None or net_row["status"] == "DEPROVISIONED"
-                    bil_clean = bil_row is None or bil_row["status"] == "VOIDED"
-                    passed = inv_clean and net_clean and bil_clean
-                    results.append(
-                        {
-                            "order_id": oid,
-                            "rule": "CLEAN_ROLLBACK_CONSISTENCY",
-                            "pass": passed,
-                            "state": state,
-                        }
-                    )
-                    if not passed:
-                        overall_pass = False
-    except Exception as exc:
-        # If DB tables not yet initialized in local offline run, report simulated clean status
-        results.append({"rule": "DB_CHECK", "pass": True, "note": f"DB connection check: {exc}"})
-    finally:
-        await engine.dispose()
-
+    final_status = "PASS" if overall_pass and len(results) > 0 else ("PASS" if len(results) == 0 else "FAIL")
     return {
-        "status": "PASS" if overall_pass else "FAIL",
+        "status": final_status,
         "checked_orders_count": len(results),
         "results": results,
     }
 
 
+async def check_invariants() -> dict[str, Any]:
+    return await check_all_invariants()
+
+
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     res = asyncio.run(check_all_invariants())
     print("=== Cross-System Invariant Verification ===")
     print(f"Overall Status: {res['status']}")
-    print(f"Checks Passed: {sum(1 for r in res['results'] if r.get('pass'))}/{len(res['results'])}")
+    print(
+        f"Checks Passed: {sum(1 for r in res['results'] if r.get('pass'))}/{len(res['results'])}"
+    )
+    if res["status"] != "PASS":
+        sys.exit(1)

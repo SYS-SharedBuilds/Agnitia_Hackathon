@@ -8,6 +8,8 @@ from shared.catalog import catalog_loader
 
 
 def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     print("=== Validating Product Catalog Definitions ===")
     products = catalog_loader.list_products()
     if not products:
@@ -16,7 +18,7 @@ def main() -> None:
 
     for p in products:
         print(
-            f"✔ Validated product '{p.product}' (v{p.version}): {p.name} with {len(p.tasks)} tasks"
+            f"[PASS] Validated product '{p.product}' (v{p.version}): {p.name} with {len(p.tasks)} tasks"
         )
 
     print("\nAll product definitions are acyclic, consistent, and satisfy saga invariants.")

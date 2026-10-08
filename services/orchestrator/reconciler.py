@@ -137,4 +137,4 @@ class Reconciler:
 
 if __name__ == "__main__":
     rec = Reconciler()
-    asyncio.run(rec.sweep())
+    asyncio.run(rec.run_loop())

@@ -18,64 +18,64 @@ Done = AC met + `make check` green + docs/BRAIN updated if a decision changed. D
 
 ---
 ## Phase 0 — Foundation
-- [ ] **T-01 [P0][M] Monorepo scaffold** — layout per TECHSTACK §7, uv workspace, pnpm web, `.env.example`, Makefile targets (`up down logs check test fmt demo invariants reset-data seed kill-worker start-worker validate-catalog report-data`), pre-commit. AC: `make check` green on skeleton.
-- [ ] **T-02 [P0][M] Compose base** — postgres (3 DBs), redis, `temporalio/server` + `admin-tools` setup job + UI, healthchecks, memory limits, pinned tags. AC: `make up` → Temporal UI :8233, all healthy; worker restart does not lose Temporal data. needs: T-01
-- [ ] **T-03 [P0][M] Contracts first** — `contracts/openapi/*.yaml` for Order API + 5 mocks, `events.schema.json`, `certificate.schema.json`; TS type generation target. AC: contracts lint; `make gen-types` works. needs: T-01
-- [ ] **T-04 [P0][M] Shared package** — Pydantic models, error taxonomy, settings, structlog, idempotency-key + canonical-JSON + hash helpers, PII masker. AC: unit tests; mypy strict. needs: T-03
-- [ ] **T-05 [P0][S] CI** — GitHub Actions: lint, types, unit. AC: PR check green. needs: T-04
+- [x] **T-01 [P0][M] Monorepo scaffold** — layout per TECHSTACK §7, uv workspace, pnpm web, `.env.example`, Makefile targets (`up down logs check test fmt demo invariants reset-data seed kill-worker start-worker validate-catalog report-data`), pre-commit. AC: `make check` green on skeleton.
+- [x] **T-02 [P0][M] Compose base** — postgres (3 DBs), redis, `temporalio/server` + `admin-tools` setup job + UI, healthchecks, memory limits, pinned tags. AC: `make up` → Temporal UI :8233, all healthy; worker restart does not lose Temporal data. needs: T-01
+- [x] **T-03 [P0][M] Contracts first** — `contracts/openapi/*.yaml` for Order API + 5 mocks, `events.schema.json`, `certificate.schema.json`; TS type generation target. AC: contracts lint; `make gen-types` works. needs: T-01
+- [x] **T-04 [P0][M] Shared package** — Pydantic models, error taxonomy, settings, structlog, idempotency-key + canonical-JSON + hash helpers, PII masker. AC: unit tests; mypy strict. needs: T-03
+- [x] **T-05 [P0][S] CI** — GitHub Actions: lint, types, unit. AC: PR check green. needs: T-04
 
 ## Phase 1 — Mock Systems
-- [ ] **T-10 [P0][L] Mock framework** — one FastAPI app by `SYSTEM`; middleware: idempotency store, **tombstone check**, latency, chaos (incl. seeded pure-function mode), logging, `/healthz`, `/metrics`, `/admin/audit/resources`. AC: unit tests for replay, tombstone-reject, every chaos mode, determinism of seeded faults. needs: T-04
-- [ ] **T-11 [P0][M] Inventory mock** — reserve/release (+tombstone), stock, `OUT_OF_STOCK`. AC: reserve→release→release; late reserve after release rejected 409.
-- [ ] **T-12 [P0][M] Network mock** — provision/deprovision/verify, port/VLAN/IP allocation. AC: verify fails if not provisioned; tombstone tested.
-- [ ] **T-13 [P0][M] Billing mock** — create/void account, start/reverse charging. AC: charging on voided account → 409; tombstone tested.
-- [ ] **T-14 [P0][S] OMS mock** — validate/complete/reopen + business validations (422 codes). AC: tests.
-- [ ] **T-15 [P0][M] Notification mock** — enqueue to Redis Stream, async consumer, delivery receipt. AC: ack/redelivery tested.
-- [ ] **T-16 [P0][S] Compose wiring** for 5 mocks. AC: README curl happy path for each. needs: T-11..T-15, T-02
+- [x] **T-10 [P0][L] Mock framework** — one FastAPI app by `SYSTEM`; middleware: idempotency store, **tombstone check**, latency, chaos (incl. seeded pure-function mode), logging, `/healthz`, `/metrics`, `/admin/audit/resources`. AC: unit tests for replay, tombstone-reject, every chaos mode, determinism of seeded faults. needs: T-04
+- [x] **T-11 [P0][M] Inventory mock** — reserve/release (+tombstone), stock, `OUT_OF_STOCK`. AC: reserve→release→release; late reserve after release rejected 409.
+- [x] **T-12 [P0][M] Network mock** — provision/deprovision/verify, port/VLAN/IP allocation. AC: verify fails if not provisioned; tombstone tested.
+- [x] **T-13 [P0][M] Billing mock** — create/void account, start/reverse charging. AC: charging on voided account → 409; tombstone tested.
+- [x] **T-14 [P0][S] OMS mock** — validate/complete/reopen + business validations (422 codes). AC: tests.
+- [x] **T-15 [P0][M] Notification mock** — enqueue to Redis Stream, async consumer, delivery receipt. AC: ack/redelivery tested.
+- [x] **T-16 [P0][S] Compose wiring** for 5 mocks. AC: README curl happy path for each. needs: T-11..T-15, T-02
 
 ## Phase 2 — Orchestration Core
-- [ ] **T-20 [P0][M] Catalog loader + validator** — rules in ARCHITECTURE §4; plan resolution (waves + policies + snapshot). AC: `make validate-catalog`; golden wave tests; negative tests for each rejection rule. needs: T-04
-- [ ] **T-21 [P0][M] System clients** — typed httpx clients; error mapping; headers (`Idempotency-Key`, `X-Chaos-Key`). AC: respx tests for 2xx/4xx/5xx/timeout. needs: T-16, T-04
-- [ ] **T-22 [P0][L] Forward activities + event publishing** — per ARCHITECTURE §7; attempt-aware retrying events. AC: ActivityEnvironment tests. needs: T-21
-- [ ] **T-23 [P0][M] Compensation activities** — undo + tombstone for every mutating action. AC: idempotent-undo tests.
-- [ ] **T-24 [P0][L] Workflow: happy path** — wave scheduling, parallel branches, per-system task queues. AC: time-skipping test ACTIVE; branches concurrent. needs: T-20, T-22
-- [ ] **T-25 [P0][M] Retry policies** from catalog; non-retryable business errors. AC: tests transient→success; business→fast-fail.
-- [ ] **T-26 [P0][L] Saga rollback** — reverse completion order + **unknown-outcome** tasks. AC: parameterized test: failure at **every task position × every failure type** ⇒ consistent end state. needs: T-23, T-24
-- [ ] **T-27 [P0][M] Compensation failure path** → retries → `NEEDS_ATTENTION`. AC: test with `fail_on_compensation`.
-- [ ] **T-28 [P0][S] Best-effort tasks** don't roll back. AC: test.
-- [ ] **T-29 [P0][M] Worker entrypoint** — queues, graceful shutdown, Prometheus. AC: order completes via client script in compose.
-- [ ] **T-30 [P1][M] Signals & query** — cancel, retry_compensation, resolve_manually; `get_state`. AC: tests per signal; audit events.
-- [ ] **T-31 [P0][S] Replay test** — recorded history replays clean; in CI.
+- [x] **T-20 [P0][M] Catalog loader + validator** — rules in ARCHITECTURE §4; plan resolution (waves + policies + snapshot). AC: `make validate-catalog`; golden wave tests; negative tests for each rejection rule. needs: T-04
+- [x] **T-21 [P0][M] System clients** — typed httpx clients; error mapping; headers (`Idempotency-Key`, `X-Chaos-Key`). AC: respx tests for 2xx/4xx/5xx/timeout. needs: T-16, T-04
+- [x] **T-22 [P0][L] Forward activities + event publishing** — per ARCHITECTURE §7; attempt-aware retrying events. AC: ActivityEnvironment tests. needs: T-21
+- [x] **T-23 [P0][M] Compensation activities** — undo + tombstone for every mutating action. AC: idempotent-undo tests.
+- [x] **T-24 [P0][L] Workflow: happy path** — wave scheduling, parallel branches, per-system task queues. AC: time-skipping test ACTIVE; branches concurrent. needs: T-20, T-22
+- [x] **T-25 [P0][M] Retry policies** from catalog; non-retryable business errors. AC: tests transient→success; business→fast-fail.
+- [x] **T-26 [P0][L] Saga rollback** — reverse completion order + **unknown-outcome** tasks. AC: parameterized test: failure at **every task position × every failure type** ⇒ consistent end state. needs: T-23, T-24
+- [x] **T-27 [P0][M] Compensation failure path** → retries → `NEEDS_ATTENTION`. AC: test with `fail_on_compensation`.
+- [x] **T-28 [P0][S] Best-effort tasks** don't roll back. AC: test.
+- [x] **T-29 [P0][M] Worker entrypoint** — queues, graceful shutdown, Prometheus. AC: order completes via client script in compose.
+- [x] **T-30 [P1][M] Signals & query** — cancel, retry_compensation, resolve_manually; `get_state`. AC: tests per signal; audit events.
+- [x] **T-31 [P0][S] Replay test** — recorded history replays clean; in CI.
 
 ## Phase 3 — API, Events, Read Model
-- [ ] **T-40 [P0][M] Order API: submit** — validation, race-safe idempotency, plan snapshot, start workflow (`REJECT_DUPLICATE`), `RECEIVED` sweeper if Temporal is unavailable. AC: S8 incl. concurrent duplicates. needs: T-20, T-29
-- [ ] **T-41 [P0][S] Event publisher** — Redis Streams, seq/event_id. AC: ordering test.
-- [ ] **T-42 [P0][M] Projector** — dedupe, upsert `ops.*`, DLQ. AC: duplicate/out-of-order delivery tests; restart resumes.
-- [ ] **T-43 [P0][M] Read endpoints** — list/detail/events (`upto_seq`)/catalog; pagination. AC: OpenAPI conformance test.
-- [ ] **T-44 [P0][M] SSE** — snapshot then deltas, heartbeat, `Last-Event-ID`. AC: integration test.
-- [ ] **T-45 [P1][S] Operator action endpoints** → signals. AC: audited.
-- [ ] **T-46 [P0][M] Metrics API** — definitions per ARCHITECTURE §15. AC: SQL tests on seeded data.
-- [ ] **T-47 [P1][M] Prometheus + Grafana** provisioned dashboard.
+- [x] **T-40 [P0][M] Order API: submit** — validation, race-safe idempotency, plan snapshot, start workflow (`REJECT_DUPLICATE`), `RECEIVED` sweeper if Temporal is unavailable. AC: S8 incl. concurrent duplicates. needs: T-20, T-29
+- [x] **T-41 [P0][S] Event publisher** — Redis Streams, seq/event_id. AC: ordering test.
+- [x] **T-42 [P0][M] Projector** — dedupe, upsert `ops.*`, DLQ. AC: duplicate/out-of-order delivery tests; restart resumes.
+- [x] **T-43 [P0][M] Read endpoints** — list/detail/events (`upto_seq`)/catalog; pagination. AC: OpenAPI conformance test.
+- [x] **T-44 [P0][M] SSE** — snapshot then deltas, heartbeat, `Last-Event-ID`. AC: integration test.
+- [x] **T-45 [P1][S] Operator action endpoints** → signals. AC: audited.
+- [x] **T-46 [P0][M] Metrics API** — definitions per ARCHITECTURE §15. AC: SQL tests on seeded data.
+- [x] **T-47 [P1][M] Prometheus + Grafana** provisioned dashboard.
 
 ## Phase 4 — Operator Console (P0 core)
-- [ ] **T-50 [P0][M] Web scaffold** — Next.js, Tailwind, shadcn, layout, generated API types, SSE hook, `stateColors.ts`. AC: builds; 1280×720 OK.
-- [ ] **T-51 [P0][M] Overview** — KPIs + live table + trends. AC: live without refresh.
-- [ ] **T-52 [P0][L] Order detail** — live React Flow DAG, attempts badges, timeline, payload drawer. AC: S4 visibly green→red→purple→slate.
-- [ ] **T-53 [P0][S] New-order form.** AC: validation errors displayed.
-- [ ] **T-54 [P0][M] Chaos panel** — per-system chaos toggles/reset via mock admin APIs (proxied by Order API). AC: toggling chaos changes next-call behavior. needs: T-16, T-50
-- [ ] **T-55 [P0][S] Metrics page.**
+- [x] **T-50 [P0][M] Web scaffold** — Next.js, Tailwind, shadcn, layout, generated API types, SSE hook, `stateColors.ts`. AC: builds; 1280×720 OK.
+- [x] **T-51 [P0][M] Overview** — KPIs + live table + trends. AC: live without refresh.
+- [x] **T-52 [P0][L] Order detail** — live React Flow DAG, attempts badges, timeline, payload drawer. AC: S4 visibly green→red→purple→slate.
+- [x] **T-53 [P0][S] New-order form.** AC: validation errors displayed.
+- [x] **T-54 [P0][M] Chaos panel** — per-system chaos toggles/reset via mock admin APIs (proxied by Order API). AC: toggling chaos changes next-call behavior. needs: T-16, T-50
+- [x] **T-55 [P0][S] Metrics page.**
 
 ## Phase 5 — Scenarios, Proof (P0 "Core-Wow")
-- [ ] **T-60 [P0][L] Scenario runner S1–S12** — CLI + `POST /demo/scenarios/{name}`; each asserts terminal state + invariants. AC: `make demo` prints PASS table. needs: T-40, T-46
-- [ ] **T-61 [P0][M] Load generator** — N orders, concurrency, failure mix, seed. AC: 100 orders at ≥ 50 concurrent, zero worker errors.
-- [ ] **T-62 [P0][L] Invariant checker** — reads mock DBs directly; INV-1…INV-6 + leak metrics; **negative test**. AC: PASS after load; corrupted data ⇒ FAIL.
-- [ ] **T-63 [P0][S] Worker-kill demo** (`kill-worker`/`start-worker`) — S7. AC: completes after restart ≤ 15 s.
-- [ ] **T-64 [P0][L] Baseline engine** — sequential scripted pipeline, 3× retry, no compensation; selectable via `engine=baseline`. AC: demonstrably leaks under S4/S5 seeds.
-- [ ] **T-65 [P0][M] A/B proof harness (X1)** — `ab_proof.py` + `POST /demo/ab-proof` + JSON. AC: identical fault schedule verified by test; table printed.
-- [ ] **T-66 [P0][L] Consistency Certificate (X2)** — hash chain, state digest, Ed25519 seal, endpoints, offline verifier, **tamper test**. AC: verify PASS; mutate one event ⇒ FAIL.
-- [ ] **T-67 [P0][M] Property-based chaos suite (X9)** — Hypothesis over failure position/type/compensation faults/delays against Temporal test env. AC: ≥ 1,000 generated schedules, invariants hold; failing seeds auto-saved.
-- [ ] **T-68 [P0][S] S11 late-arrival race** scenario + test. AC: tombstone rejects late forward.
-- [ ] **T-69 [P0][M] Console: Scenarios & Proof pages** — scenario launcher (S1–S12), load-generator form, A/B table (X1), certificate panel + Verify + tamper demo (X2). AC: every scenario launchable and its result visible live. needs: T-60, T-61, T-65, T-66, T-54
+- [x] **T-60 [P0][L] Scenario runner S1–S12** — CLI + `POST /demo/scenarios/{name}`; each asserts terminal state + invariants. AC: `make demo` prints PASS table. needs: T-40, T-46
+- [x] **T-61 [P0][M] Load generator** — N orders, concurrency, failure mix, seed. AC: 100 orders at ≥ 50 concurrent, zero worker errors.
+- [x] **T-62 [P0][L] Invariant checker** — reads mock DBs directly; INV-1…INV-6 + leak metrics; **negative test**. AC: PASS after load; corrupted data ⇒ FAIL.
+- [x] **T-63 [P0][S] Worker-kill demo** (`kill-worker`/`start-worker`) — S7. AC: completes after restart ≤ 15 s.
+- [x] **T-64 [P0][L] Baseline engine** — sequential scripted pipeline, 3× retry, no compensation; selectable via `engine=baseline`. AC: demonstrably leaks under S4/S5 seeds.
+- [x] **T-65 [P0][M] A/B proof harness (X1)** — `ab_proof.py` + `POST /demo/ab-proof` + JSON. AC: identical fault schedule verified by test; table printed.
+- [x] **T-66 [P0][L] Consistency Certificate (X2)** — hash chain, state digest, Ed25519 seal, endpoints, offline verifier, **tamper test**. AC: verify PASS; mutate one event ⇒ FAIL.
+- [x] **T-67 [P0][M] Property-based chaos suite (X9)** — Hypothesis over failure position/type/compensation faults/delays against Temporal test env. AC: ≥ 1,000 generated schedules, invariants hold; failing seeds auto-saved.
+- [x] **T-68 [P0][S] S11 late-arrival race** scenario + test. AC: tombstone rejects late forward.
+- [x] **T-69 [P0][M] Console: Scenarios & Proof pages** — scenario launcher (S1–S12), load-generator form, A/B table (X1), certificate panel + Verify + tamper demo (X2). AC: every scenario launchable and its result visible live. needs: T-60, T-61, T-65, T-66, T-54
 
 ## Phase 6 — Wow Features (P1)
 - [ ] **T-70 [P1][M] Time-Travel Replay (X5)** — slider over `seq` using `events?upto_seq`.

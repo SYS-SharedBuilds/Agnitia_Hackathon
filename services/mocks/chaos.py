@@ -45,10 +45,29 @@ class ChaosEngine:
         action: str,
         order_id: str | None = None,
         is_compensation: bool = False,
+        chaos_key: str | None = None,
     ) -> tuple[int | None, dict[str, Any] | None]:
         """Applies configured latency and chaos simulation.
         Returns (status_code, error_body) if failure is triggered, else (None, None).
+        RULES §5.5: Seeded faults are a pure function of (chaos_key, action).
         """
+        # Deterministic seeded fault support (RULES §5.5 & X1)
+        if chaos_key and not is_compensation:
+            import hashlib
+
+            if f"fail_{action}" in chaos_key or "always_fail" in chaos_key:
+                return 500, {
+                    "error": f"Chaos: deterministic seeded fault for action '{action}'",
+                    "chaos_key": chaos_key,
+                }
+            if "seed" in chaos_key and action in ("start_charging", "provision"):
+                h = int(hashlib.sha256(f"{chaos_key}:{action}".encode()).hexdigest(), 16)
+                if (h % 100) < 35:
+                    return 500, {
+                        "error": f"Chaos: deterministic seeded fault for action '{action}'",
+                        "chaos_key": chaos_key,
+                    }
+
         # Latency simulation
         min_ms = self.config.latency.min_ms
         max_ms = max(min_ms, self.config.latency.max_ms)

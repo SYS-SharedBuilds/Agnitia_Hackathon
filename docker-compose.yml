@@ -32,28 +32,10 @@ services:
   temporal:
     image: temporalio/server:1.24.2
     container_name: switchon-temporal
+    entrypoint: ["temporal", "server", "start-dev", "--ip", "0.0.0.0", "--ui-port", "8233", "--db-filename", "/tmp/temporal.db"]
     ports:
       - "7233:7233"
-    environment:
-      - DB=postgresql
-      - DB_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PWD=postgres
-      - POSTGRES_SEEDS=postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  temporal-ui:
-    image: temporalio/ui:2.26.0
-    container_name: switchon-temporal-ui
-    ports:
-      - "8233:8080"
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
-    depends_on:
-      - temporal
+      - "8233:8233"
 
   mock-oms:
     build:
@@ -144,6 +126,11 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - TEMPORAL_HOST=temporal:7233
       - DEMO_MODE=true
+      - OMS_MOCK_URL=http://mock-oms:8101
+      - INVENTORY_MOCK_URL=http://mock-inventory:8102
+      - NETWORK_MOCK_URL=http://mock-network:8103
+      - BILLING_MOCK_URL=http://mock-billing:8104
+      - NOTIFICATION_MOCK_URL=http://mock-notification:8105
     ports:
       - "8000:8000"
     depends_on:
@@ -259,3 +246,4 @@ services:
 
 volumes:
   pgdata:
+  temporaldata:

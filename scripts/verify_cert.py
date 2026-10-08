@@ -23,7 +23,24 @@ def verify_certificate_offline(
     # Check hash chain digest if event stream is attached
     if ordered_events:
         order_id = body.get("order_id", "")
-        recalculated_digest = compute_event_hash_chain(order_id, ordered_events)
+
+        def _format_ts(t: Any) -> str:
+            s = t.isoformat() if hasattr(t, "isoformat") else str(t)
+            return s.replace(" ", "T").replace("+00:00", "Z")
+
+        # Format events to match canonical representation in certificate
+        norm_events = [
+            {
+                "seq": e["seq"],
+                "type": e["type"],
+                "ts": _format_ts(e["ts"]),
+                "payload": e.get("payload", {}),
+            }
+            if "payload" in e and ("id" in e or "order_id" in e)
+            else e
+            for e in ordered_events
+        ]
+        recalculated_digest = compute_event_hash_chain(order_id, norm_events)
         if recalculated_digest != body.get("events_digest"):
             return {
                 "valid": False,
@@ -39,6 +56,9 @@ def verify_certificate_offline(
 
 
 async def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     parser = argparse.ArgumentParser(description="Verify SwitchOn Consistency Certificate")
     parser.add_argument("--id", help="Order ID to fetch and verify")
     parser.add_argument("--file", help="Path to exported certificate JSON file")
@@ -62,13 +82,13 @@ async def main() -> None:
             )
 
             if args.tamper and events:
-                print("⚠ Simulating tampering of historical event payload...")
+                print("[WARN] Simulating tampering of historical event payload...")
                 events[0]["payload"]["tampered"] = True
 
             v_res = verify_certificate_offline(cert, pub_key, events)
             print("=== Consistency Certificate Verification ===")
             print(f"Order ID: {args.id}")
-            print(f"Status:   {'✔ PASS' if v_res['valid'] else '✘ FAIL'}")
+            print(f"Status:   {'[PASS]' if v_res['valid'] else '[FAIL]'}")
             print(f"Details:  {v_res['reason']}")
             if not v_res["valid"]:
                 sys.exit(1)
