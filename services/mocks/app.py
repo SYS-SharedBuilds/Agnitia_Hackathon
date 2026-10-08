@@ -57,6 +57,22 @@ async def reset_store() -> dict[str, str]:
     return {"status": "cleared"}
 
 
+async def _parse_body(request: Request) -> tuple[dict[str, Any] | None, JSONResponse | None]:
+    try:
+        data = await request.json()
+        if isinstance(data, dict):
+            return data, None
+        return None, JSONResponse(
+            status_code=400,
+            content={"error": "INVALID_JSON", "detail": "Request body must be a JSON object"},
+        )
+    except Exception:
+        return None, JSONResponse(
+            status_code=400,
+            content={"error": "MALFORMED_JSON", "detail": "Could not parse JSON body"},
+        )
+
+
 # OMS Endpoints
 @app.post("/orders/validate")
 async def oms_validate(
@@ -64,7 +80,9 @@ async def oms_validate(
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
-    body = await request.json()
+    body, err_resp = await _parse_body(request)
+    if err_resp or body is None:
+        return err_resp or JSONResponse(status_code=400, content={"error": "MISSING_BODY"})
     order_id = body.get("order_id", "unknown")
 
     # Tombstone check
@@ -157,7 +175,9 @@ async def inventory_reserve(
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
-    body = await request.json()
+    body, err_resp = await _parse_body(request)
+    if err_resp or body is None:
+        return err_resp or JSONResponse(status_code=400, content={"error": "MISSING_BODY"})
     order_id = body.get("order_id", "unknown")
 
     # Tombstone check (RULES §3.4: late-arrival forward rejected)
@@ -224,7 +244,9 @@ async def network_provision(
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
-    body = await request.json()
+    body, err_resp = await _parse_body(request)
+    if err_resp or body is None:
+        return err_resp or JSONResponse(status_code=400, content={"error": "MISSING_BODY"})
     order_id = body.get("order_id", "unknown")
 
     # Tombstone check
@@ -309,7 +331,9 @@ async def billing_create_account(
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
-    body = await request.json()
+    body, err_resp = await _parse_body(request)
+    if err_resp or body is None:
+        return err_resp or JSONResponse(status_code=400, content={"error": "MISSING_BODY"})
     order_id = body.get("order_id", "unknown")
 
     if store.is_tombstoned(idempotency_key):
@@ -423,7 +447,9 @@ async def notify_message(
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
-    body = await request.json()
+    body, err_resp = await _parse_body(request)
+    if err_resp or body is None:
+        return err_resp or JSONResponse(status_code=400, content={"error": "MISSING_BODY"})
     order_id = body.get("order_id", "unknown")
 
     cached = store.check_idempotency(idempotency_key)

@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from typing import Any
+
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
 
@@ -13,6 +15,18 @@ app = FastAPI(
     version="1.0.0",
     description="Durable telecom service activation orchestrator control plane gateway.",
 )
+
+
+# Defensive security headers
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next: Any) -> Response:
+    response: Response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 
 # CORS middleware for Next.js console
 app.add_middleware(

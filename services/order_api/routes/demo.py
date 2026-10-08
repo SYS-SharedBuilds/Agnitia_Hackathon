@@ -1,25 +1,36 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/demo", tags=["Demo"])
+
+VALID_SCENARIOS = {f"S{i}" for i in range(1, 13)}
 
 
 @router.post("/scenarios/{name}")
 async def trigger_scenario(name: str) -> dict[str, Any]:
+    sc = name.strip().upper()
+    if sc not in VALID_SCENARIOS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown scenario '{name}'. Supported scenarios: S1..S12",
+        )
     try:
         from scripts.scenarios import runner
 
-        res = await runner.run_scenario(name)
+        res = await runner.run_scenario(sc)
         return res
     except Exception as exc:
         raise HTTPException(
-            status_code=500, detail=f"Scenario {name} execution failed: {exc}"
+            status_code=500, detail=f"Scenario {sc} execution failed: {exc}"
         ) from exc
 
 
 @router.post("/ab-proof")
-async def trigger_ab_proof(orders: int = 20, seed: int = 42) -> dict[str, Any]:
+async def trigger_ab_proof(
+    orders: int = Query(default=20, ge=1, le=100),
+    seed: int = Query(default=42, ge=0),
+) -> dict[str, Any]:
     try:
         from scripts.ab_proof import run_ab_proof
 
@@ -30,7 +41,10 @@ async def trigger_ab_proof(orders: int = 20, seed: int = 42) -> dict[str, Any]:
 
 
 @router.post("/load")
-async def trigger_load(count: int = 20, failure_rate: float = 0.2) -> dict[str, Any]:
+async def trigger_load(
+    count: int = Query(default=20, ge=1, le=100),
+    failure_rate: float = Query(default=0.2, ge=0.0, le=1.0),
+) -> dict[str, Any]:
     try:
         from scripts.load_generator import run_load_test
 

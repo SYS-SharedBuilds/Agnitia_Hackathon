@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class OrderState(StrEnum):
@@ -76,16 +76,28 @@ class Plan(BaseModel):
 
 
 class OrderCreateRequest(BaseModel):
-    client_order_ref: str
-    customer_id: str
-    product: str
-    plan_name: str | None = None
-    site_address: str | None = None
-    device_id: str | None = None
-    msisdn: str | None = None
-    iccid: str | None = None
-    engine: str = "temporal"  # "temporal" or "baseline" for X1 A/B comparison
-    chaos_key: str | None = None  # X-Chaos-Key for deterministic fault schedules
+    client_order_ref: str = Field(..., min_length=1, max_length=128)
+    customer_id: str = Field(..., min_length=1, max_length=128)
+    product: str = Field(..., min_length=1, max_length=64)
+    plan_name: str | None = Field(default=None, max_length=128)
+    site_address: str | None = Field(default=None, max_length=256)
+    device_id: str | None = Field(default=None, max_length=64)
+    msisdn: str | None = Field(default=None, max_length=32)
+    iccid: str | None = Field(default=None, max_length=32)
+    engine: str = Field(
+        default="temporal", max_length=32
+    )  # "temporal" or "baseline" for X1 A/B comparison
+    chaos_key: str | None = Field(
+        default=None, max_length=128
+    )  # X-Chaos-Key for deterministic fault schedules
+
+    @field_validator("engine")
+    @classmethod
+    def validate_engine(cls, v: str) -> str:
+        cleaned = v.strip().lower()
+        if cleaned not in ("temporal", "baseline"):
+            raise ValueError("engine must be either 'temporal' or 'baseline'")
+        return cleaned
 
 
 class Order(BaseModel):
