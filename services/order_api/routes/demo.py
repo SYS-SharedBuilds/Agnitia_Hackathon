@@ -18,6 +18,17 @@ async def trigger_scenario(name: str) -> dict[str, Any]:
         ) from exc
 
 
+@router.post("/ab-proof")
+async def trigger_ab_proof(orders: int = 20, seed: int = 42) -> dict[str, Any]:
+    try:
+        from scripts.ab_proof import run_ab_proof
+
+        res = await run_ab_proof(orders_count=orders, seed=seed)
+        return res
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"A/B Proof execution failed: {exc}") from exc
+
+
 @router.post("/load")
 async def trigger_load(count: int = 20, failure_rate: float = 0.2) -> dict[str, Any]:
     try:
