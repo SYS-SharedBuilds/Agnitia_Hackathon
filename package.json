@@ -1,0 +1,12 @@
+{
+  "name": "switchon-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SwitchOn Telecom Service Activation Orchestrator",
+  "scripts": {
+    "dev": "python3 scripts/dev.py",
+    "web:dev": "npm run dev --prefix web",
+    "web:build": "npm run build --prefix web",
+    "web:lint": "npm run lint --prefix web"
+  }
+}

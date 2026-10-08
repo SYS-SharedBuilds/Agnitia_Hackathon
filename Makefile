@@ -45,14 +45,13 @@ types:
 check: lint types test
 
 test:
-	python3 -m pytest tests/unit -v
+	PYTHONPATH=. python3 -m pytest tests/unit -v
 
 test-wf:
-	python3 -m pytest tests/workflow -v
+	PYTHONPATH=. python3 -m pytest tests/workflow -v
 
 test-int:
-	python3 -m pytest tests/integration -v
-
+	PYTHONPATH=. python3 -m pytest tests/integration -v
 validate-catalog:
 	python3 scripts/validate_catalog.py
 

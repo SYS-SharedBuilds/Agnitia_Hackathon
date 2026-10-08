@@ -26,12 +26,15 @@ export interface Order {
   client_order_ref: string;
   customer_id: string;
   product: string;
+  product_id?: string;
   state: OrderState;
   created_at: string;
   completed_at?: string;
   activation_ms?: number;
   failure_reason?: string;
   workflow_id: string;
+  current_step?: string;
+  payload?: Record<string, any>;
 }
 
 export interface TaskRecord {
