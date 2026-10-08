@@ -1,119 +1,131 @@
-# BRAIN — SwitchOn Project Memory
+# BRAIN — SwitchOn Project Memory (v2)
 
-> The single source of context. Humans and AI agents read this **first**. Update it whenever a decision changes. If this file and another doc disagree, **fix the disagreement the same day**.
+> Single source of context. Humans and AI agents read this **first**. Update it whenever a decision changes. If this file and another doc disagree, fix the disagreement the same day (precedence: RULES > BRAIN locked decisions > ARCHITECTURE > TASKS).
 
-## 1. One-Paragraph Brief
-SwitchOn automates telecom service activation. One order becomes a dependency-aware task graph executed by a Temporal workflow across five mock systems (OMS, Inventory, Network, Billing, Notification). Transient failures are retried; permanent failures trigger saga compensation in reverse order so no customer is left half-activated. Operators watch everything live in a Next.js console; metrics report activation time and success rate.
+## 1. Brief
+SwitchOn automates telecom service activation. One order becomes a dependency-aware task graph run by a Temporal workflow across five mock systems (OMS, Inventory, Network, Billing, Notification). Transient failures are retried; permanent or unknown-outcome failures trigger saga compensation (with tombstones) so no customer is left half-activated. Operators watch everything live; every terminal order gets a signed **Consistency Certificate**; an **A/B Proof** shows what a scripted baseline leaks versus SwitchOn.
 
-## 2. The Hackathon Win Condition
-Judges score: problem fit, technical depth, working demo, resilience, UX, documentation. Our edge:
+## 2. Win Condition
+Judges weigh problem fit, technical depth, working demo, innovation, resilience, UX, documentation. Our edge, in order of judging impact:
+1. **Proof, not claims** — A/B leak counts (X1), signed certificates (X2), property-based chaos (X9), invariant checker.
+2. **Distributed-systems rigor** — tombstones for late-arrival races (X3), unknown-outcome compensation, idempotency, durable execution.
+3. **Failure is the feature** — 12 scenarios incl. worker kill.
+4. **Visual story** — DAG green → red → purple → slate; replay; explainer.
+5. **Telco credibility** — fallout queue, TMF622-style façade, billing-last ordering.
 
-1. **Failure is the feature.** Most teams demo the happy path. We demo 6 failure modes live, including a worker crash.
-2. **Provable correctness.** An *invariant checker* proves zero orphaned/half-activated resources after chaos runs. Show the number.
-3. **Real engine, not a script.** Temporal durability + replay tests.
-4. **Visual story.** DAG lighting up green, flipping to purple (compensating), ending slate (rolled back) — memorable in 10 seconds.
-5. **Business sense.** Billing starts last; notifications are best-effort; money is never taken for a broken service.
-
-## 3. Mental Model (memorize)
-
-- **Workflow = brain** (pure, deterministic, no I/O).
-- **Activity = hands** (does I/O, idempotent, retried).
-- **Compensation = undo button** (also an activity, also idempotent, runs in reverse completion order).
-- **Event = news** (published after the fact; Temporal is the truth).
-- **Mock = pretend telco system** (stateful, can be sabotaged via chaos API).
+## 3. Mental Model
+- **Workflow = brain** (pure, deterministic). **Activity = hands** (I/O, idempotent, retried). **Compensation = undo + tombstone**. **Event = news** (derived). **Mock = pretend telco system** (stateful, sabotageable). **Certificate = receipt** (verifiable evidence).
 
 ## 4. Glossary
-
 | Term | Meaning |
 |---|---|
-| Order | Customer request to activate a service |
-| Plan | Resolved, versioned task graph for an order |
-| Task | One unit of work against one system |
-| Compensation | Action undoing a completed task's effect |
-| Saga | Sequence of local actions + compensations for consistency |
-| Half-activated | Some systems changed, others not, with no rollback — **forbidden state** |
-| NEEDS_ATTENTION | Compensation failed after retries; operator must act; fully audited |
-| Chaos | Injected failure on a mock system |
-| Invariant | Rule that must always hold after terminal state (see §7) |
+| Plan | Resolved, versioned task graph snapshotted on the order |
+| Compensation | Idempotent undo of a task's effect; also writes a tombstone |
+| Tombstone | Record that a forward idempotency key is cancelled; late forward requests get 409 |
+| Unknown outcome | Timeout/connection loss: effect may exist ⇒ compensate |
+| Half-activated | Some systems changed, others not, no rollback — **forbidden** |
+| Fallout | Telco term for orders needing manual intervention (= `NEEDS_ATTENTION`) |
+| Leak | Inconsistency left behind: billed-without-service, service-without-billing, orphan, stuck |
+| Chaos key | `X-Chaos-Key` used to make faults deterministic per order |
+| Certificate | Signed, hash-chained evidence of an order's history and audited system state |
 
-## 5. Locked Decisions (do not relitigate without evidence)
-
+## 5. Locked Decisions
 | # | Decision | Reason |
 |---|---|---|
-| D1 | Temporal + Python | Best fit for per-order durable sagas |
-| D2 | REST mocks with Idempotency-Key | Demo-friendly, realistic |
-| D3 | Redis Streams for events/queue | Real MQ semantics, light |
-| D4 | Plan passed into workflow as input | Determinism, versioning |
-| D5 | Catalog in YAML | Proves genericity |
-| D6 | Billing charging starts only after service verified | Business correctness |
-| D7 | Notification is best-effort | Must not roll back a working service |
+| D1 | Temporal + Python | Durable per-order sagas |
+| D2 | **`temporalio/server` + `admin-tools`** (not deprecated `auto-setup`) | Maintained, security-patched |
+| D3 | REST mocks with Idempotency-Key | Demo-friendly, realistic |
+| D4 | Redis Streams events/queue | Real MQ semantics, light |
+| D5 | Plan passed as workflow input | Determinism, versioning |
+| D6 | YAML catalog + validator | Genericity + safety rules |
+| D7 | Billing starts only after verify; notify after billing; notify best-effort | Business correctness |
 | D8 | Next.js + React Flow console | Judge-visible polish |
-| D9 | Demo-scale timers via `DEMO_MODE` | Keep demos < 10 s |
-| D10 | Cancelled orders excluded from success-rate denominator | Operator intent ≠ failure |
+| D9 | `DEMO_MODE` compresses time only | Fast demos, no logic fork |
+| D10 | Success rate excludes CANCELLED | Intent ≠ failure |
+| D11 | **Tombstone compensation** | Closes late-arrival orphan race |
+| D12 | **Unknown-outcome ⇒ compensate; business error ⇒ don't** | Correctness |
+| D13 | **Baseline engine gets same retries + same seeded faults** | A/B credibility |
+| D14 | **Ed25519-signed, hash-chained certificates** | Verifiable proof |
+| D15 | **Contract-first** (`contracts/`) | Parallel work; agent safety |
+| D16 | LLM only optional paraphrase, never critical path | Demo reliability |
 
-## 6. Open Questions (resolve early, record answer here)
+## 6. Open Questions (fill early)
+- [ ] Submission deadline & format: ___
+- [ ] Team size / ownership — Workflow & saga: ___ · Mocks & chaos: ___ · API & events: ___ · Console: ___ · Proof & docs: ___
+- [ ] Presentation: live on own laptop? projector resolution? Internet available? (design assumes offline)
+- [ ] Hosted demo needed? Default: local + recorded video.
+- [ ] Organizer's required report/slide template? Adopt it in T-92/T-94.
 
-- [ ] Do we have a laptop + projector fallback? Record a backup video by Phase 7.
-- [ ] Team size and ownership split? (fill in) — Backend/Workflow: ___ · Mocks: ___ · Frontend: ___ · Demo/Report: ___
-- [ ] Hackathon submission format & deadline? (fill in)
-- [ ] Is a hosted demo (VM) needed, or local-only? Default: local + recorded video.
+## 7. Invariants (checked by `scripts/invariants.py` from mock DBs, and embedded in certificates)
+- **INV-1** `ACTIVE` ⇒ inventory reserved ∧ network service active ∧ billing charging active ∧ OMS completed.
+- **INV-2** `ROLLED_BACK|CANCELLED` ⇒ no reservation ∧ no network service ∧ no active billing account/charges ∧ OMS not completed.
+- **INV-3** `NEEDS_ATTENTION` ⇒ ≥1 `COMPENSATION_FAILED` task ∧ audit event with reason.
+- **INV-4** No order has two active resource sets (idempotency).
+- **INV-5** Every mock-side resource maps to an order_id (no orphans); no resource exists for a tombstoned key.
+- **INV-6** Charging never started before service verified (check event order).
 
-## 7. Invariants (checked by `scripts/invariants.py`)
-
-After **every terminal order**:
-1. `ACTIVE` ⇒ inventory reserved ∧ network service active ∧ billing charging started ∧ OMS order completed.
-2. `ROLLED_BACK` / `CANCELLED` ⇒ no active reservation ∧ no network service ∧ no billing account (or voided) ∧ no charges outstanding.
-3. `NEEDS_ATTENTION` ⇒ at least one task in `COMPENSATION_FAILED` and an audit event explaining it.
-4. No order has two active resource sets (idempotency).
-5. Every mock-side resource maps to an order_id (no orphans).
-
-Run after chaos load; print PASS/FAIL table. **This is the proof slide.**
-
-## 8. Demo Script (3–4 minutes)
-
-1. (20s) Problem: show half-activated customer cartoon/slide.
-2. (30s) Submit order → DAG goes green → ACTIVE in ~4s. KPI cards tick.
-3. (40s) Chaos: network 503 ×2 → amber retry badges → ACTIVE.
-4. (60s) Chaos: billing fails after network is live → purple compensating → deprovision → release → ROLLED_BACK. Customer notified.
-5. (30s) Kill worker mid-order (`make kill-worker`) → restart → order resumes.
-6. (30s) Load 100 orders, 20% failures → metrics + invariant PASS.
-7. (20s) Architecture slide + Temporal UI history.
-
-Fallback: pre-recorded video + screenshots in `docs/`.
+## 8. Demo Script (target ≈ 4 min; each beat has a fallback)
+1. **(20 s) Problem** — "Billed for nothing" slide.
+2. **(30 s) Happy path** — submit order; DAG parallel branches; ACTIVE in seconds; open certificate → Verify ✔.
+3. **(40 s) Retries** — network 503 ×2 → amber badges → ACTIVE.
+4. **(60 s) Rollback** — billing fails *after* network is live → purple compensating → slate → explainer card → customer notified. Use Rollback Preview on hover first.
+5. **(30 s) Late-arrival race (S11)** — one sentence on tombstones; show 409 in timeline.
+6. **(30 s) Kill the worker** — `make kill-worker` → restart → resumes.
+7. **(60 s) A/B Proof** — 200 seeded orders: baseline leak table vs SwitchOn zeros; invariant PASS.
+8. **(20 s) Tamper demo** — mutate an event → Verify ✘ → restore.
+9. **(10 s) Architecture slide + Temporal history.**
+Fallback for any beat: pre-recorded clip; keep narrating.
 
 ## 9. Pitch Lines
-- "We don't just switch services on — we guarantee they never get stuck half on."
-- "Every failure ends in a state we can prove is consistent."
+- "We don't just switch services on — we guarantee they never get stuck half on, and we can prove it."
+- "Same faults. Two engines. The baseline leaves *N* broken customers; SwitchOn leaves zero."
 - "Kill the worker. The order still finishes."
+- "Every order ends with a receipt you can verify offline."
 
 ## 10. Known Traps
-- Non-determinism in workflow code (random, time, uuid, dict-order assumptions, direct HTTP) → replay failures.
-- Retrying business errors → wasted time, confusing UI.
-- Compensating in wrong order → orphaned resources.
-- Event/State drift in UI → always reconcile with `get_state` query.
-- Over-polishing the UI before P0 backend invariants pass.
-- Docker memory pressure → cap Postgres/Temporal, close other apps before demo.
+- Non-determinism in workflow code → replay failures.
+- Using deprecated `temporalio/auto-setup`.
+- Retrying business errors; compensating business errors (never applied).
+- Forgetting tombstones ⇒ orphan under timeouts.
+- Compensation order wrong; compensating only *succeeded* tasks and missing unknown-outcome ones.
+- A/B strawman (unequal retries) — destroys credibility.
+- Certificates over-claiming; say what they attest.
+- UI/state drift — always reconcile with snapshot.
+- Polishing UI before P0 invariants pass.
+- Docker memory pressure on demo day.
 
-## 11. Status Board (update daily)
+## 11. Rejection-Risk Register
+| Risk | Likelihood | Impact | Control |
+|---|---|---|---|
+| Demo crashes on stage | M | Severe | Deterministic scenarios, reset script, backup video |
+| "It's just mocks/scripts" critique | M | High | Real engine, RTM, mock-vs-real table, honest scope |
+| "Baseline is a strawman" critique | M | High | D13, documented method, same seeds |
+| Cannot explain design | L | Severe | Q&A drill ×3 |
+| Missing deliverable | L | Severe | RTM + deliverables checklist (T-90…T-95) |
+| Overbuilt, underfinished | M | High | Tiers, cut line, wow-early rule |
 
+## 12. Status Board (update daily)
 | Area | Status | Notes |
 |---|---|---|
-| Repo + compose | ☐ | |
-| Mocks | ☐ | |
+| Repo, compose, contracts | ☐ | |
+| Mocks (+tombstones, chaos) | ☐ | |
 | Workflow happy path | ☐ | |
 | Retries | ☐ | |
-| Saga rollback | ☐ | |
+| Saga rollback (+unknown outcome) | ☐ | |
 | Events + projector | ☐ | |
 | API + SSE | ☐ | |
-| Console | ☐ | |
+| Console core | ☐ | |
 | Metrics | ☐ | |
-| Chaos + scenarios | ☐ | |
+| Scenarios S1–S12 | ☐ | |
 | Invariants | ☐ | |
+| Baseline + A/B | ☐ | |
+| Certificates | ☐ | |
+| Property tests | ☐ | |
+| Wow features | ☐ | |
 | Docs + report | ☐ | |
-| Demo rehearsal | ☐ | |
+| Rehearsal ×3 | ☐ | |
 
-## 12. Decision Log (append-only)
-
+## 13. Decision Log (append-only)
 | Date | Decision | Why | Who |
 |---|---|---|---|
 | | | | |
