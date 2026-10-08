@@ -28,8 +28,9 @@ services:
       timeout: 3s
       retries: 5
 
+  # Temporal deployment: temporalio/server (not deprecated auto-setup)
   temporal:
-    image: temporalio/auto-setup:1.24.0
+    image: temporalio/server:1.24.2
     container_name: switchon-temporal
     ports:
       - "7233:7233"
@@ -39,7 +40,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PWD=postgres
       - POSTGRES_SEEDS=postgres
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     depends_on:
       postgres:
         condition: service_healthy
@@ -183,6 +183,35 @@ services:
       mock-notification:
         condition: service_started
 
+  baseline-worker:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    container_name: switchon-baseline-worker
+    command: ["python", "-m", "services.orchestrator.baseline"]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+      - OMS_MOCK_URL=http://mock-oms:8101
+      - INVENTORY_MOCK_URL=http://mock-inventory:8102
+      - NETWORK_MOCK_URL=http://mock-network:8103
+      - BILLING_MOCK_URL=http://mock-billing:8104
+      - NOTIFICATION_MOCK_URL=http://mock-notification:8105
+      - DEMO_MODE=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-oms:
+        condition: service_started
+      mock-inventory:
+        condition: service_started
+      mock-network:
+        condition: service_started
+      mock-billing:
+        condition: service_started
+      mock-notification:
+        condition: service_started
+
   projector:
     build:
       context: .
@@ -196,6 +225,23 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+
+  reconciler:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    container_name: switchon-reconciler
+    command: ["python", "-m", "services.orchestrator.reconciler"]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/switchon
+      - REDIS_URL=redis://redis:6379/0
+      - OMS_MOCK_URL=http://mock-oms:8101
+      - INVENTORY_MOCK_URL=http://mock-inventory:8102
+      - NETWORK_MOCK_URL=http://mock-network:8103
+      - BILLING_MOCK_URL=http://mock-billing:8104
+    depends_on:
+      postgres:
         condition: service_healthy
 
   web:

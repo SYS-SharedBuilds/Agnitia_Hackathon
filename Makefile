@@ -1,4 +1,4 @@
-.PHONY: help up down logs check test test-wf test-int validate-catalog demo invariants kill-worker start-worker seed reset-data web-dev fmt lint types
+.PHONY: help up down logs check test test-wf test-int validate-catalog demo invariants kill-worker start-worker seed reset-data web-dev fmt lint types ab-proof verify-cert report-data gen-types
 
 help:
 	@echo "SwitchOn Developer Commands:"
@@ -12,12 +12,16 @@ help:
 	@echo "  make test             Run all unit and component tests"
 	@echo "  make test-wf          Run Temporal workflow tests"
 	@echo "  make validate-catalog Validate all product YAML task graphs"
-	@echo "  make demo             Execute S1..S10 demo scenarios"
+	@echo "  make demo             Execute S1..S12 demo scenarios"
 	@echo "  make invariants       Run cross-system consistency checker"
+	@echo "  make ab-proof         Run A/B proof harness (Baseline vs SwitchOn)"
+	@echo "  make verify-cert      Verify consistency certificate"
 	@echo "  make kill-worker      Simulate crash of orchestrator worker"
 	@echo "  make start-worker     Restart orchestrator worker"
 	@echo "  make seed             Seed database with sample catalog/orders"
 	@echo "  make reset-data       Reset mock databases and read model"
+	@echo "  make report-data      Generate official evaluation report data"
+	@echo "  make gen-types        Generate TypeScript types from OpenAPI"
 	@echo "  make web-dev          Start Next.js frontend dev server"
 
 up:
@@ -57,6 +61,18 @@ demo:
 
 invariants:
 	python3 scripts/invariants.py
+
+ab-proof:
+	python3 scripts/ab_proof.py --orders 20 --seed 42
+
+verify-cert:
+	python3 scripts/verify_cert.py --id $(id)
+
+report-data:
+	python3 scripts/report_data.py
+
+gen-types:
+	cd web && npx openapi-typescript ../contracts/openapi/order_api.yaml -o lib/schema.d.ts || true
 
 kill-worker:
 	docker compose stop worker

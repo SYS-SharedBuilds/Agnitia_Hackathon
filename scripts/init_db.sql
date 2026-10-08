@@ -13,12 +13,17 @@ CREATE TABLE IF NOT EXISTS ops.orders (
     client_order_ref VARCHAR(128) UNIQUE NOT NULL,
     customer_id VARCHAR(64) NOT NULL,
     product VARCHAR(64) NOT NULL,
+    catalog_version INTEGER DEFAULT 1,
+    plan_json JSONB DEFAULT '{}'::jsonb,
+    engine VARCHAR(32) DEFAULT 'temporal',
     state VARCHAR(32) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     completed_at TIMESTAMPTZ,
     activation_ms INTEGER,
     failure_reason TEXT,
-    workflow_id VARCHAR(128) NOT NULL
+    explanation JSONB,
+    workflow_id VARCHAR(128) NOT NULL,
+    chaos_key VARCHAR(64)
 );
 
 CREATE TABLE IF NOT EXISTS ops.tasks (
@@ -30,6 +35,7 @@ CREATE TABLE IF NOT EXISTS ops.tasks (
     started_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ,
     last_error TEXT,
+    outcome_known BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (order_id, task_id)
 );
 
@@ -44,11 +50,31 @@ CREATE TABLE IF NOT EXISTS ops.events (
     payload JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
+CREATE TABLE IF NOT EXISTS ops.certificates (
+    order_id VARCHAR(64) PRIMARY KEY,
+    body JSONB NOT NULL,
+    signature TEXT NOT NULL,
+    key_id VARCHAR(64) NOT NULL,
+    issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS ops.drift (
+    id SERIAL PRIMARY KEY,
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    system VARCHAR(32) NOT NULL,
+    resource_ref VARCHAR(128) NOT NULL,
+    class VARCHAR(32) NOT NULL,
+    order_id VARCHAR(64),
+    action VARCHAR(64),
+    resolved_at TIMESTAMPTZ
+);
+
 CREATE TABLE IF NOT EXISTS ops.system_calls (
     id SERIAL PRIMARY KEY,
     order_id VARCHAR(64) NOT NULL,
     task_id VARCHAR(64),
     system VARCHAR(32) NOT NULL,
+    direction VARCHAR(16) DEFAULT 'outbound',
     request JSONB NOT NULL DEFAULT '{}'::jsonb,
     response JSONB NOT NULL DEFAULT '{}'::jsonb,
     status_code INTEGER NOT NULL,
@@ -74,6 +100,12 @@ CREATE TABLE IF NOT EXISTS oms.idempotency (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS oms.tombstones (
+    forward_key VARCHAR(255) PRIMARY KEY,
+    order_id VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Mock Schemas: Inventory
 CREATE TABLE IF NOT EXISTS inventory.resources (
     order_id VARCHAR(64) PRIMARY KEY,
@@ -87,6 +119,12 @@ CREATE TABLE IF NOT EXISTS inventory.idempotency (
     key VARCHAR(255) PRIMARY KEY,
     response JSONB NOT NULL,
     status_code INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS inventory.tombstones (
+    forward_key VARCHAR(255) PRIMARY KEY,
+    order_id VARCHAR(64),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -104,6 +142,12 @@ CREATE TABLE IF NOT EXISTS network.idempotency (
     key VARCHAR(255) PRIMARY KEY,
     response JSONB NOT NULL,
     status_code INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS network.tombstones (
+    forward_key VARCHAR(255) PRIMARY KEY,
+    order_id VARCHAR(64),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -131,6 +175,12 @@ CREATE TABLE IF NOT EXISTS billing.idempotency (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS billing.tombstones (
+    forward_key VARCHAR(255) PRIMARY KEY,
+    order_id VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Mock Schemas: Notification
 CREATE TABLE IF NOT EXISTS notify.messages (
     id SERIAL PRIMARY KEY,
@@ -146,5 +196,11 @@ CREATE TABLE IF NOT EXISTS notify.idempotency (
     key VARCHAR(255) PRIMARY KEY,
     response JSONB NOT NULL,
     status_code INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS notify.tombstones (
+    forward_key VARCHAR(255) PRIMARY KEY,
+    order_id VARCHAR(64),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
