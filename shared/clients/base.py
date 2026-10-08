@@ -33,7 +33,7 @@ class BaseSystemClient:
         action: str,
     ) -> Exception:
         msg = f"System '{self.system_name}' action '{action}' failed with status {status_code}: {response_body}"
-        detail = response_body if isinstance(response_body, dict) else {"raw": str(response_body)}
+        detail = response_body if isinstance(response_body, dict) else {"raw": response_body}
 
         if status_code in (400, 422, 409):
             return BusinessError(msg, detail=detail)
@@ -50,11 +50,15 @@ class BaseSystemClient:
         payload: dict[str, Any],
         idempotency_key: str,
         action: str,
+        chaos_key: str | None = None,
     ) -> dict[str, Any]:
         headers = {
             "Idempotency-Key": idempotency_key,
             "Content-Type": "application/json",
         }
+        if chaos_key:
+            headers["X-Chaos-Key"] = chaos_key
+
         try:
             resp = await self.client.post(path, json=payload, headers=headers)
         except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as exc:
@@ -78,11 +82,15 @@ class BaseSystemClient:
         path: str,
         idempotency_key: str,
         action: str,
+        chaos_key: str | None = None,
     ) -> dict[str, Any]:
         headers = {
             "Idempotency-Key": idempotency_key,
             "Content-Type": "application/json",
         }
+        if chaos_key:
+            headers["X-Chaos-Key"] = chaos_key
+
         try:
             resp = await self.client.delete(path, headers=headers)
         except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as exc:

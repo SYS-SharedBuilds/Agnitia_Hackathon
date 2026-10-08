@@ -8,21 +8,31 @@ class NotificationClient(BaseSystemClient):
         super().__init__(base_url=base_url, system_name="notification")
 
     async def send_activation(
-        self, order_id: str, payload: dict[str, Any], idempotency_key: str
+        self,
+        order_id: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+        chaos_key: str | None = None,
     ) -> dict[str, Any]:
         return await self._post(
             "/messages",
             {"order_id": order_id, "template": "activation", **payload},
             idempotency_key,
             "send_activation",
+            chaos_key=chaos_key,
         )
 
     async def send_failure(
-        self, order_id: str, payload: dict[str, Any], idempotency_key: str
+        self,
+        order_id: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+        chaos_key: str | None = None,
     ) -> dict[str, Any]:
         return await self._post(
             "/messages",
             {"order_id": order_id, "template": "failure", **payload},
             idempotency_key,
             "send_failure",
+            chaos_key=chaos_key,
         )

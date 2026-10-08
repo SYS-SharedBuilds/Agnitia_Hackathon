@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -83,6 +84,8 @@ class OrderCreateRequest(BaseModel):
     device_id: str | None = None
     msisdn: str | None = None
     iccid: str | None = None
+    engine: str = "temporal"  # "temporal" or "baseline" for X1 A/B comparison
+    chaos_key: str | None = None  # X-Chaos-Key for deterministic fault schedules
 
 
 class Order(BaseModel):
@@ -90,12 +93,17 @@ class Order(BaseModel):
     client_order_ref: str
     customer_id: str
     product: str
+    catalog_version: int = 1
+    plan_json: dict[str, Any] = Field(default_factory=dict)
+    engine: str = "temporal"
     state: OrderState = OrderState.RECEIVED
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     completed_at: datetime | None = None
     activation_ms: int | None = None
     failure_reason: str | None = None
+    explanation: dict[str, Any] | None = None
     workflow_id: str
+    chaos_key: str | None = None
 
 
 class TaskExecutionState(BaseModel):
@@ -107,6 +115,7 @@ class TaskExecutionState(BaseModel):
     started_at: datetime | None = None
     ended_at: datetime | None = None
     last_error: str | None = None
+    outcome_known: bool = True
 
 
 def make_idempotency_key(order_id: str, task_id: str, action: str) -> str:

@@ -55,7 +55,7 @@ class Event(BaseModel):
         }
 
     @classmethod
-    def from_redis_dict(cls, data: dict[bytes | str, bytes | str]) -> "Event":
+    def from_redis_dict(cls, data: dict[Any, Any]) -> "Event":
         clean_data: dict[str, str] = {}
         for k, v in data.items():
             key_str = k.decode("utf-8") if isinstance(k, bytes) else k
