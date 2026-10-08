@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SwitchOnEvent",
+  "description": "Event schema published to Redis Streams order.events",
+  "type": "object",
+  "required": ["event_id", "order_id", "seq", "ts", "type"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": ["string", "null"]
+    },
+    "system": {
+      "type": ["string", "null"]
+    },
+    "attempt": {
+      "type": ["integer", "null"]
+    },
+    "state": {
+      "type": ["string", "null"]
+    },
+    "detail": {
+      "type": "object"
+    }
+  }
+}

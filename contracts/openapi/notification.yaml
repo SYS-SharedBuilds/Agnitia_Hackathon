@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Mock Notification System
+  version: 1.0.0
+paths:
+  /messages:
+    post:
+      summary: Send notification message (best-effort)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Chaos-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message accepted / sent
+  /admin/audit/resources:
+    get:
+      summary: List sent messages
+      responses:
+        '200':
+          description: Message audit log

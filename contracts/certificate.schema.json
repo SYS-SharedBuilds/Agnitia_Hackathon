@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ConsistencyCertificate",
+  "description": "Ed25519-signed, hash-chained receipt attesting terminal order consistency and system audit state",
+  "type": "object",
+  "required": [
+    "order_id",
+    "outcome",
+    "catalog_version",
+    "events_digest",
+    "system_state",
+    "invariants",
+    "issued_at",
+    "signature",
+    "key_id"
+  ],
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["ACTIVE", "ROLLED_BACK", "CANCELLED", "NEEDS_ATTENTION"]
+    },
+    "catalog_version": {
+      "type": "integer"
+    },
+    "events_digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "system_state": {
+      "type": "object",
+      "properties": {
+        "inventory": { "type": "object" },
+        "network": { "type": "object" },
+        "billing": { "type": "object" },
+        "oms": { "type": "object" },
+        "notification": { "type": "object" }
+      },
+      "required": ["inventory", "network", "billing", "oms"]
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "result"],
+        "properties": {
+          "id": { "type": "string" },
+          "result": { "type": "string", "enum": ["PASS", "FAIL"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^ed25519:.+$"
+    },
+    "key_id": {
+      "type": "string"
+    }
+  }
+}

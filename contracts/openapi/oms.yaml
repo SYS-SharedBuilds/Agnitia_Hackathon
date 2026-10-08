@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Mock OMS System
+  version: 1.0.0
+paths:
+  /orders/validate:
+    post:
+      summary: Validate order business data
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Chaos-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validated
+        '422':
+          description: Business validation failure (invalid customer, invalid plan)
+  /orders/{order_id}/complete:
+    post:
+      summary: Mark order complete
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order completed in OMS
+  /orders/{order_id}/reopen:
+    post:
+      summary: Reopen completed order (undo + tombstone)
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order reopened
+  /admin/audit/resources:
+    get:
+      summary: List OMS orders
+      responses:
+        '200':
+          description: Audit orders list

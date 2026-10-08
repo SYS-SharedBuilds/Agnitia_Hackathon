@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Mock Network System
+  version: 1.0.0
+paths:
+  /services:
+    post:
+      summary: Provision network service (forward)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Chaos-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Provisioned
+        '409':
+          description: Tombstoned key / conflict
+  /services/{order_id}/verify:
+    post:
+      summary: Verify network service status (read-only verification)
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Verified
+        '422':
+          description: Service not provisioned
+  /services/{order_id}:
+    delete:
+      summary: Deprovision service (undo + tombstone)
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deprovisioned
+  /admin/audit/resources:
+    get:
+      summary: List allocated network services with order_id
+      responses:
+        '200':
+          description: Services list

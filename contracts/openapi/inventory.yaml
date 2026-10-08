@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Mock Inventory System
+  version: 1.0.0
+paths:
+  /reservations:
+    post:
+      summary: Reserve inventory item (forward)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Chaos-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reserved
+        '409':
+          description: Tombstoned key / conflict
+        '422':
+          description: Out of stock
+  /reservations/{order_id}:
+    delete:
+      summary: Release inventory item (undo + write tombstone)
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Released
+  /admin/audit/resources:
+    get:
+      summary: List allocated resources with order_id
+      responses:
+        '200':
+          description: Resource list

@@ -1,0 +1,83 @@
+openapi: 3.0.3
+info:
+  title: Mock Billing System
+  version: 1.0.0
+paths:
+  /accounts:
+    post:
+      summary: Create billing account (forward)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Chaos-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account created
+        '409':
+          description: Tombstoned key / conflict
+  /accounts/{order_id}:
+    delete:
+      summary: Void billing account (undo + tombstone)
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Voided
+  /accounts/{order_id}/charging:
+    post:
+      summary: Start charging on account
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Charging active
+        '409':
+          description: Account voided or tombstoned
+  /accounts/{order_id}/charging/reverse:
+    post:
+      summary: Reverse charges (undo + tombstone)
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Charges reversed
+  /admin/audit/resources:
+    get:
+      summary: List billing accounts and charges
+      responses:
+        '200':
+          description: Audit state
