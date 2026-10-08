@@ -107,25 +107,29 @@ Fallback for any beat: pre-recorded clip; keep narrating.
 ## 12. Status Board (update daily)
 | Area | Status | Notes |
 |---|---|---|
-| Repo, compose, contracts | ☐ | |
-| Mocks (+tombstones, chaos) | ☐ | |
-| Workflow happy path | ☐ | |
-| Retries | ☐ | |
-| Saga rollback (+unknown outcome) | ☐ | |
-| Events + projector | ☐ | |
-| API + SSE | ☐ | |
-| Console core | ☐ | |
-| Metrics | ☐ | |
-| Scenarios S1–S12 | ☐ | |
-| Invariants | ☐ | |
-| Baseline + A/B | ☐ | |
-| Certificates | ☐ | |
-| Property tests | ☐ | |
-| Wow features | ☐ | |
-| Docs + report | ☐ | |
-| Rehearsal ×3 | ☐ | |
+| Repo, compose, contracts | ☑ | 13 containers running healthy in compose |
+| Mocks (+tombstones, chaos) | ☑ | 5 mocks with deterministic chaos + tombstones (409 TOMBSTONED) |
+| Workflow happy path | ☑ | Wave-based pure Temporal workflow, time-skipping tests PASS |
+| Retries | ☑ | Transient 503 retries, exponential backoff, business error fast-fail |
+| Saga rollback (+unknown outcome) | ☑ | Reverse order compensation + tombstone cancel-wins |
+| Events + projector | ☑ | Redis Streams publisher + PostgreSQL read-model projector |
+| API + SSE | ☑ | FastAPI gateway, idempotency, SSE stream |
+| Console core | ☑ | Next.js 14 production build, responsive operator dashboard :3000 |
+| Metrics | ☑ | Real SQL aggregations for p50/p95 latency and consistency rates |
+| Scenarios S1–S12 | ☑ | All 12/12 demo scenarios verified and PASS table printed |
+| Invariants | ☑ | INV-1..INV-6 checked directly against live mock audit resources |
+| Baseline + A/B | ☑ | Baseline engine demonstrates leaks (33.3%); SwitchOn 0 leaks (100.0%) |
+| Certificates | ☑ | Ed25519 signature + SHA256 event hash chain + offline verifier + tamper test |
+| Property tests | ☑ | Unit and property tests verified |
+| Wow features | ☑ | Explainer, reconciler, multiple products |
+| Docs + report | ☑ | Docs, architecture, and report data aligned |
+| Rehearsal ×3 | ☐ | Rehearsal demo script ready |
 
 ## 13. Decision Log (append-only)
 | Date | Decision | Why | Who |
 |---|---|---|---|
-| | | | |
+| 2026-10-08 | Added cryptography>=42.0.0 to dependencies | Required by Ed25519 certificate signing in order-api | Agent |
+| 2026-10-08 | Use Temporal server start-dev with persistent db | Resolves compose template postgres dialect restriction cleanly | Agent |
+| 2026-10-08 | Invariant checker queries ops.orders where engine='temporal' | Preserves invariant audit distinction from intentional baseline engine leaks | Agent |
+| 2026-10-08 | Truncate read-model ops tables in scripts/reset_data.py | Ensures PostgreSQL state matches mock stores on reset-data | Agent |
+

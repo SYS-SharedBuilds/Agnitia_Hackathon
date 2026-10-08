@@ -239,6 +239,7 @@ async def get_order_certificate(
             "issued_at": cert_row["issued_at"].isoformat()
             if hasattr(cert_row["issued_at"], "isoformat")
             else str(cert_row["issued_at"]),
+            "public_key_pem": _cert_signer.get_public_key_pem(),
         }
 
     # Fetch order and events
@@ -257,8 +258,12 @@ async def get_order_certificate(
         )
     ).mappings().all()
 
+    def _format_ts(t: Any) -> str:
+        s = t.isoformat() if hasattr(t, "isoformat") else str(t)
+        return s.replace(" ", "T").replace("+00:00", "Z")
+
     ordered_events = [
-        {"seq": e["seq"], "type": e["type"], "ts": str(e["ts"]), "payload": e["payload"]}
+        {"seq": e["seq"], "type": e["type"], "ts": _format_ts(e["ts"]), "payload": e["payload"]}
         for e in ev_rows
     ]
     digest = compute_event_hash_chain(order_id, ordered_events)

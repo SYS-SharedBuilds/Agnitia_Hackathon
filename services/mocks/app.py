@@ -82,7 +82,7 @@ async def oms_validate(
         )
 
     # Chaos check
-    status, err = await chaos_engine.apply("validate", order_id)
+    status, err = await chaos_engine.apply("validate", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -115,7 +115,7 @@ async def oms_complete(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("complete", order_id)
+    status, err = await chaos_engine.apply("complete", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -173,7 +173,7 @@ async def inventory_reserve(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("reserve", order_id)
+    status, err = await chaos_engine.apply("reserve", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -240,7 +240,7 @@ async def network_provision(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("provision", order_id)
+    status, err = await chaos_engine.apply("provision", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -263,7 +263,7 @@ async def network_verify(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("verify", order_id)
+    status, err = await chaos_engine.apply("verify", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -324,7 +324,7 @@ async def billing_create_account(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("create_account", order_id)
+    status, err = await chaos_engine.apply("create_account", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -377,7 +377,7 @@ async def billing_start_charging(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("start_charging", order_id)
+    status, err = await chaos_engine.apply("start_charging", order_id, chaos_key=x_chaos_key)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
