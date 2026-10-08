@@ -18,6 +18,9 @@ export default function OrderDetailPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSeq, setCurrentSeq] = useState(31);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
+  const [networkLoading, setNetworkLoading] = useState(false);
+  const [networkAudit, setNetworkAudit] = useState<unknown>(null);
   const [resolutionNotes, setResolutionNotes] = useState(
     "Verified HLR profile 310410••••••••• deprovisioned via manual HSS command hssctl-east purge-sub --imsi 31041000004821. Resource lock released. Ticket NOC-41908."
   );
@@ -91,13 +94,30 @@ export default function OrderDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
-          <a
-            className="inline-flex items-center gap-1 text-label-md text-label-md text-[#0A1B2E] hover:text-[#2563EB] px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] transition-colors font-medium shadow-2xs"
-            href="#hlr-portal"
+          <button
+            onClick={async () => {
+              setIsNetworkModalOpen(true);
+              setNetworkLoading(true);
+              try {
+                const res = await fetch("http://localhost:8103/admin/audit/resources");
+                if (res.ok) {
+                  setNetworkAudit(await res.json());
+                } else {
+                  setNetworkAudit({ status: "HLR_GATEWAY_TIMEOUT_504", error: "Connection to upstream HLR slice timed out after 5000ms" });
+                }
+              } catch {
+                setNetworkAudit({ status: "HLR_GATEWAY_TIMEOUT_504", error: "Mock network service (port 8103) unreachable or halted" });
+              } finally {
+                setNetworkLoading(false);
+              }
+            }}
+            className="inline-flex items-center gap-1.5 text-label-md text-label-md text-[#0A1B2E] hover:text-[#2563EB] px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] transition-colors font-medium shadow-2xs cursor-pointer"
+            type="button"
           >
+            <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">cell_tower</span>
             <span>Open Network System</span>
             <span className="material-symbols-outlined text-[14px]">north_east</span>
-          </a>
+          </button>
           <button
             onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center gap-1.5 text-label-md text-label-md text-[#0A1B2E] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] hover:text-[#2563EB] px-3 py-1.5 rounded-lg font-medium transition-colors shadow-2xs"
@@ -191,6 +211,142 @@ export default function OrderDetailPage() {
                 <span className="material-symbols-outlined text-[16px]">check_circle</span>
                 <span>Confirm Manual Resolution</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DIALOG: NETWORK SUBSYSTEM (HLR / UDM GATEWAY) */}
+      {isNetworkModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#0A1B2E]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-[#CBD5E1] max-w-[680px] w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#0A1B2E] flex items-center justify-center text-white">
+                  <span className="material-symbols-outlined text-[20px]">cell_tower</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-headline-sm text-headline-sm font-bold text-[#0A1B2E]">
+                      Network Subsystem Console (HLR / UDM)
+                    </h3>
+                    <span className="font-mono text-[11px] font-semibold bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] px-2 py-0.5 rounded-full">
+                      Port 8103
+                    </span>
+                  </div>
+                  <p className="font-label-sm text-label-sm text-[#64748B] font-mono">
+                    Target Order: {orderId} · Subsystem Slice: hlr-east-01
+                  </p>
+                </div>
+              </div>
+              <button
+                className="text-[#64748B] hover:text-[#0A1B2E] p-1.5 rounded-lg hover:bg-[#F1F5F9] transition-colors"
+                onClick={() => setIsNetworkModalOpen(false)}
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* Status Summary Banner */}
+              <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-[22px] text-[#0A1B2E] shrink-0 mt-0.5">
+                  sync_problem
+                </span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-headline-sm text-[13px] font-bold text-[#0A1B2E]">
+                      Downstream HLR Profile Lock Detected
+                    </span>
+                    <span className="font-mono text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#0A1B2E] text-white">
+                      TIMEOUT_504
+                    </span>
+                  </div>
+                  <p className="font-body-sm text-[12.5px] text-[#475569] leading-relaxed">
+                    Saga compensation activity <code className="font-mono bg-white px-1 py-0.5 rounded border border-[#CBD5E1] text-[#0A1B2E]">deprovision_network</code> failed due to HLR gateway timeout. An orphaned subscriber reservation profile lock remains on IMSI slice.
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Subsystem Inspection */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
+                    Active Slice Telemetry &amp; Resource State
+                  </span>
+                  <a
+                    href="http://localhost:8103/admin/audit/resources"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11.5px] text-[#2563EB] hover:underline font-medium inline-flex items-center gap-1 font-mono"
+                  >
+                    <span>Raw Endpoint ↗</span>
+                  </a>
+                </div>
+
+                <div className="bg-[#0A1B2E] text-[#F8FAFC] p-4 rounded-xl font-mono text-[12px] overflow-x-auto shadow-inner border border-[#1E293B]">
+                  {networkLoading ? (
+                    <div className="flex items-center gap-2 text-[#94A3B8]">
+                      <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                      <span>Querying HLR/UDM gateway on :8103/admin/audit/resources...</span>
+                    </div>
+                  ) : (
+                    <pre className="text-[11.5px] leading-relaxed whitespace-pre-wrap">
+                      {JSON.stringify(
+                        networkAudit || {
+                          subsystem: "Mock Network Gateway (HLR/HSS/UDM)",
+                          port: 8103,
+                          slice: "hlr-east-01",
+                          order_id: orderId,
+                          imsi_lock: "31041000004821",
+                          status: "HALTED_SAGA_TIMEOUT",
+                          attempts_exhausted: 5,
+                          upstream_circuit_breaker: "HALF_OPEN",
+                          suggested_action: "Execute manual purge or retry compensation with updated backoff"
+                        },
+                        null,
+                        2
+                      )}
+                    </pre>
+                  )}
+                </div>
+              </div>
+
+              {/* Troubleshooting Actions */}
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3.5 space-y-2">
+                <div className="text-[12px] font-bold text-[#0A1B2E]">Diagnostic Recommendations:</div>
+                <ul className="text-[12px] text-[#64748B] space-y-1 list-disc list-inside">
+                  <li>Use <strong>Resolve Manually</strong> to record manual NOC verification and clear the fallout blocker.</li>
+                  <li>Click <strong>Retry Compensation</strong> once upstream HLR gateway network latency recovers.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between">
+              <span className="font-mono text-[11px] text-[#64748B]">
+                Subsystem: Network (HLR) · Health: DEGRADED
+              </span>
+              <div className="flex items-center gap-2.5">
+                <button
+                  className="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-[#0A1B2E] bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] transition-colors shadow-2xs font-medium cursor-pointer"
+                  onClick={() => setIsNetworkModalOpen(false)}
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setIsNetworkModalOpen(false);
+                    setIsModalOpen(true);
+                  }}
+                  className="px-4 py-1.5 rounded-lg font-body-md text-body-md font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">build_circle</span>
+                  <span>Proceed to Resolve</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

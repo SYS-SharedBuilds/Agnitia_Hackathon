@@ -160,7 +160,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="relative pt-14 min-h-[calc(100vh-56px)] bg-white p-6 flex-1 text-[#0A1B2E]">
+        <main className="relative pt-20 px-6 pb-10 min-h-[calc(100vh-56px)] bg-white flex-1 text-[#0A1B2E]">
           {children}
         </main>
       </div>

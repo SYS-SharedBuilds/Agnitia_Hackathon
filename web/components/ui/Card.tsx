@@ -27,6 +27,7 @@ export function CardHeader({
   return (
     <div
       className={`px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between ${className}`}
+      {...props}
     >
       {children}
     </div>
@@ -53,6 +54,7 @@ export function CardFooter({
   return (
     <div
       className={`px-5 py-3.5 bg-[#F8FAFC] border-t border-[#E2E8F0] rounded-b-xl flex items-center justify-between ${className}`}
+      {...props}
     >
       {children}
     </div>
