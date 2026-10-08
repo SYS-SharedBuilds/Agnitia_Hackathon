@@ -22,3 +22,4 @@ coverage.xml
 .coverage
 htmlcov/
 tests/histories/*.tmp.json
+*.tsbuildinfo
