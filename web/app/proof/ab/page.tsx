@@ -4,9 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 
 export default function ABProofPage() {
-  const [activeTab, setActiveTab] = useState<"scenarios" | "load" | "ab" | "certs">("ab");
-  const [batchOrders, setBatchOrders] = useState(200);
-  const [seed, setSeed] = useState(42);
+  const batchOrders = 200;
+  const seed = 42;
   const [faultRatio, setFaultRatio] = useState(25);
   const [isRunningProof, setIsRunningProof] = useState(false);
 
@@ -34,24 +33,24 @@ export default function ABProofPage() {
           >
             Scenarios
           </Link>
-          <button
-            onClick={() => setActiveTab("load")}
+          <Link
+            href="/proof/load"
             className="px-4 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
           >
             Load Generator
-          </button>
+          </Link>
           <button
             className="px-4 py-1.5 rounded-lg font-headline-sm text-headline-sm text-on-primary bg-primary shadow-sm flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">balance</span>
             <span>A/B Proof</span>
           </button>
-          <button
-            onClick={() => setActiveTab("certs")}
+          <Link
+            href="/proof/certificates"
             className="px-4 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
           >
             Certificates
-          </button>
+          </Link>
         </div>
 
         <div className="flex items-center gap-3">

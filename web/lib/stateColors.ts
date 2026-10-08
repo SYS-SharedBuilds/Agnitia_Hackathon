@@ -3,41 +3,41 @@ import { OrderState, TaskState } from "./types";
 export function getOrderStateBadgeClass(state: OrderState): string {
   switch (state) {
     case "ACTIVE":
-      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+      return "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]/40 font-semibold";
     case "IN_PROGRESS":
     case "VALIDATED":
     case "RECEIVED":
-      return "bg-blue-500/10 text-blue-500 border-blue-500/20 animate-pulse";
+      return "bg-[#eef3f9] text-[#0A1B2E] border-[#557392] animate-pulse font-medium";
     case "ROLLING_BACK":
     case "ROLLED_BACK":
-      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+      return "bg-[#eef3f9] text-[#557392] border-[#557392]/40 font-medium";
     case "NEEDS_ATTENTION":
-      return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+      return "bg-[#0A1B2E] text-[#ffffff] border-[#0A1B2E] font-semibold shadow-xs";
     case "CANCELLED":
-      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+      return "bg-[#F2F6FB] text-[#557392]/60 border-[#557392]/20 line-through";
     default:
-      return "bg-slate-800 text-slate-400 border-slate-700";
+      return "bg-[#F2F6FB] text-[#557392] border-[#557392]/30";
   }
 }
 
 export function getTaskStateColor(state: TaskState): { bg: string; border: string; text: string } {
   switch (state) {
     case "SUCCEEDED":
-      return { bg: "bg-emerald-950/40", border: "border-emerald-500", text: "text-emerald-400" };
+      return { bg: "bg-[#eef3f9]", border: "border-[#557392]/40", text: "text-[#0A1B2E]" };
     case "RUNNING":
-      return { bg: "bg-blue-950/40", border: "border-blue-500", text: "text-blue-400" };
+      return { bg: "bg-[#eef3f9]", border: "border-[#557392]", text: "text-[#0A1B2E]" };
     case "RETRYING":
-      return { bg: "bg-amber-950/40", border: "border-amber-500", text: "text-amber-400" };
+      return { bg: "bg-[#eef3f9]", border: "border-[#557392]", text: "text-[#557392]" };
     case "FAILED":
-      return { bg: "bg-rose-950/40", border: "border-rose-500", text: "text-rose-400" };
+      return { bg: "bg-[#0A1B2E]", border: "border-[#0A1B2E]", text: "text-[#ffffff]" };
     case "COMPENSATING":
-      return { bg: "bg-purple-950/40", border: "border-purple-500", text: "text-purple-400" };
+      return { bg: "bg-[#eef3f9]", border: "border-[#557392]", text: "text-[#557392]" };
     case "COMPENSATED":
-      return { bg: "bg-slate-900", border: "border-slate-600", text: "text-slate-400" };
+      return { bg: "bg-[#eef3f9]", border: "border-[#557392]/30", text: "text-[#557392]" };
     case "COMPENSATION_FAILED":
-      return { bg: "bg-red-950/60", border: "border-red-600", text: "text-red-400" };
+      return { bg: "bg-[#0A1B2E]", border: "border-[#0A1B2E]", text: "text-[#ffffff]" };
     case "PENDING":
     default:
-      return { bg: "bg-slate-950", border: "border-slate-800", text: "text-slate-500" };
+      return { bg: "bg-[#F2F6FB]", border: "border-[#557392]/20", text: "text-[#557392]" };
   }
 }

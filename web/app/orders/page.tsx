@@ -163,7 +163,7 @@ export default function OrdersPage() {
               id: o.order_id,
               clientRef: `EXT-CRM-${o.order_id.slice(-6)}`,
               customer: o.customer_id,
-              msisdn: o.payload?.msisdn || "+1 555 019-4821",
+              msisdn: String(o.payload?.msisdn || "+1 555 019-4821"),
               product: o.product || "Fiber Broadband 500",
               status: ((o.state as string) === "ACTIVE" ? "SUCCEEDED" : (o.state as string) === "ROLLED_BACK" ? "ROLLED_BACK" : (o.state as string) === "ROLLING_BACK" ? "ROLLING_BACK" : (o.state as string) === "NEEDS_ATTENTION" ? "NEEDS_ATTENTION" : "RUNNING") as DisplayOrder["status"],
               tasksCompleted: (o.state as string) === "ACTIVE" ? 8 : 4,
@@ -177,7 +177,7 @@ export default function OrdersPage() {
             setOrders(mapped);
           }
         }
-      } catch (e) {
+      } catch {
         // Fallback to INITIAL_ORDERS
       }
     };

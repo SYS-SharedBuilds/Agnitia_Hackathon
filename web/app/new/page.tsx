@@ -94,7 +94,7 @@ export default function NewOrderPage() {
       } else {
         router.push("/orders/ORD-20260712-004218");
       }
-    } catch (e) {
+    } catch {
       router.push("/orders/ORD-20260712-004218");
     } finally {
       setSubmitting(false);

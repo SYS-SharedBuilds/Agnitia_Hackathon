@@ -33,49 +33,47 @@ export const DagNode: React.FC<DagNodeProps> = ({
   onClick,
 }) => {
   const isRunning = status === "RUNNING" || status === "COMPENSATING";
-  const isFailed = status === "FAILED";
-  const isSuccess = status === "SUCCEEDED";
 
   return (
     <div
       onClick={onClick}
-      className={`relative rounded-xl border p-4 transition-all select-none cursor-pointer ${
+      className={`relative rounded-xl border p-4 transition-all select-none cursor-pointer bg-white ${
         isSelected
-          ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500"
-          : "border-slate-800 bg-slate-900/80 hover:border-slate-700 hover:bg-slate-900"
+          ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E] shadow-md"
+          : "border-[#557392]/30 hover:border-[#557392] hover:shadow-xs"
       }`}
     >
       {isRunning && (
         <span className="absolute -top-1 -right-1 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#557392] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-[#557392]"></span>
         </span>
       )}
 
       <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-[11px] font-mono font-medium text-slate-400 truncate max-w-[140px]">
+        <span className="text-[11px] font-mono font-medium text-[#557392] truncate max-w-[140px]">
           {id}
         </span>
         <StatusBadge status={status} size="sm" pulse={isRunning} />
       </div>
 
-      <div className="text-sm font-semibold text-slate-100 flex items-center gap-1.5 mb-1.5">
+      <div className="text-sm font-semibold text-[#0A1B2E] flex items-center gap-1.5 mb-1.5">
         {isCompensation && (
-          <span className="material-symbols-outlined text-amber-400 text-sm" title="Compensation Task">
+          <span className="material-symbols-outlined text-[#557392] text-sm" title="Compensation Task">
             undo
           </span>
         )}
         <span className="truncate">{name}</span>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-slate-400 font-mono mt-3 pt-2.5 border-t border-slate-800/80">
+      <div className="flex items-center justify-between text-xs text-[#557392] font-mono mt-3 pt-2.5 border-t border-[#557392]/20">
         <div className="flex items-center gap-1">
-          <span className="material-symbols-outlined text-xs text-slate-500">lan</span>
+          <span className="material-symbols-outlined text-xs text-[#557392]">lan</span>
           <span>{targetSystem || "Internal"}</span>
         </div>
         <div className="flex items-center gap-2">
           {attempts !== undefined && attempts > 1 && (
-            <span className="text-amber-400 text-[10px] bg-amber-500/10 px-1 rounded">
+            <span className="text-[#0A1B2E] text-[10px] bg-[#eef3f9] border border-[#557392]/30 px-1 rounded font-semibold">
               retry #{attempts}
             </span>
           )}

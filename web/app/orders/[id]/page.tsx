@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Order, OrderEvent, TaskRecord } from "@/lib/types";
@@ -10,8 +10,8 @@ export default function OrderDetailPage() {
   const orderId = (typeof id === "string" ? id : Array.isArray(id) ? id[0] : "") || "ORD-20260712-004217";
 
   const [order, setOrder] = useState<Order | null>(null);
-  const [tasks, setTasks] = useState<TaskRecord[]>([]);
-  const [events, setEvents] = useState<OrderEvent[]>([]);
+  const [, setTasks] = useState<TaskRecord[]>([]);
+  const [, setEvents] = useState<OrderEvent[]>([]);
   const [copied, setCopied] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert">("task");
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
@@ -23,7 +23,7 @@ export default function OrderDetailPage() {
   );
   const [verifiedCheckbox, setVerifiedCheckbox] = useState(true);
 
-  const fetchDetail = async () => {
+  const fetchDetail = useCallback(async () => {
     try {
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const [dRes, eRes] = await Promise.all([
@@ -38,16 +38,16 @@ export default function OrderDetailPage() {
       if (eRes.ok) {
         setEvents(await eRes.json());
       }
-    } catch (e) {
+    } catch {
       // Backend not running, using mock state
     }
-  };
+  }, [orderId]);
 
   useEffect(() => {
     fetchDetail();
     const interval = setInterval(fetchDetail, 3000);
     return () => clearInterval(interval);
-  }, [orderId]);
+  }, [fetchDetail]);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(orderId);
