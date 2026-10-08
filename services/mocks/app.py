@@ -26,7 +26,7 @@ async def metrics() -> dict[str, Any]:
     return {"system": SYSTEM_NAME, "status": "healthy"}
 
 
-# Admin Chaos Endpoints
+# Admin Chaos & Audit Endpoints
 @app.get("/admin/chaos")
 async def get_chaos() -> ChaosConfig:
     return chaos_engine.get_config()
@@ -44,6 +44,12 @@ async def reset_chaos() -> dict[str, str]:
     return {"status": "reset"}
 
 
+@app.get("/admin/audit/resources")
+async def audit_resources() -> list[dict[str, Any]]:
+    """Returns allocated resources/entities for consistency and invariant auditing."""
+    return store.list_entities()
+
+
 @app.post("/admin/reset")
 async def reset_store() -> dict[str, str]:
     store.clear()
@@ -54,10 +60,19 @@ async def reset_store() -> dict[str, str]:
 # OMS Endpoints
 @app.post("/orders/validate")
 async def oms_validate(
-    request: Request, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    request: Request,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     body = await request.json()
     order_id = body.get("order_id", "unknown")
+
+    # Tombstone check
+    if store.is_tombstoned(idempotency_key):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "TOMBSTONED", "detail": "Forward action rejected by tombstone"},
+        )
 
     # Idempotency check
     cached = store.check_idempotency(idempotency_key)
@@ -71,7 +86,6 @@ async def oms_validate(
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
-    # Validation logic
     if not body.get("customer_id"):
         res = {"code": "INVALID_CUSTOMER", "error": "Customer ID missing"}
         store.record_idempotency(idempotency_key, 422, res)
@@ -85,8 +99,16 @@ async def oms_validate(
 
 @app.post("/orders/{order_id}/complete")
 async def oms_complete(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
+    if store.is_tombstoned(idempotency_key):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "TOMBSTONED", "detail": "Forward action rejected by tombstone"},
+        )
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -105,8 +127,13 @@ async def oms_complete(
 
 @app.post("/orders/{order_id}/reopen")
 async def oms_reopen(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
 ) -> Response:
+    # Write tombstone for forward complete key
+    forward_key = f"{order_id}:complete_order:complete"
+    store.write_tombstone(forward_key, order_id)
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -126,10 +153,19 @@ async def oms_reopen(
 # Inventory Endpoints
 @app.post("/reservations")
 async def inventory_reserve(
-    request: Request, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    request: Request,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     body = await request.json()
     order_id = body.get("order_id", "unknown")
+
+    # Tombstone check (RULES §3.4: late-arrival forward rejected)
+    if store.is_tombstoned(idempotency_key):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "TOMBSTONED", "detail": "Forward reservation rejected by tombstone"},
+        )
 
     cached = store.check_idempotency(idempotency_key)
     if cached:
@@ -158,8 +194,13 @@ async def inventory_reserve(
 
 @app.delete("/reservations/{order_id}")
 async def inventory_release(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
 ) -> Response:
+    # Write tombstone for the forward reserve key
+    forward_key = f"{order_id}:reserve_inventory:reserve"
+    store.write_tombstone(forward_key, order_id)
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -179,10 +220,19 @@ async def inventory_release(
 # Network Endpoints
 @app.post("/services")
 async def network_provision(
-    request: Request, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    request: Request,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     body = await request.json()
     order_id = body.get("order_id", "unknown")
+
+    # Tombstone check
+    if store.is_tombstoned(idempotency_key):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "TOMBSTONED", "detail": "Forward provision rejected by tombstone"},
+        )
 
     cached = store.check_idempotency(idempotency_key)
     if cached:
@@ -203,7 +253,9 @@ async def network_provision(
 
 @app.post("/services/{order_id}/verify")
 async def network_verify(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     cached = store.check_idempotency(idempotency_key)
     if cached:
@@ -228,8 +280,12 @@ async def network_verify(
 
 @app.delete("/services/{order_id}")
 async def network_deprovision(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
 ) -> Response:
+    forward_key = f"{order_id}:provision_network:provision"
+    store.write_tombstone(forward_key, order_id)
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -249,10 +305,18 @@ async def network_deprovision(
 # Billing Endpoints
 @app.post("/accounts")
 async def billing_create_account(
-    request: Request, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    request: Request,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     body = await request.json()
     order_id = body.get("order_id", "unknown")
+
+    if store.is_tombstoned(idempotency_key):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "TOMBSTONED", "detail": "Account creation rejected by tombstone"},
+        )
 
     cached = store.check_idempotency(idempotency_key)
     if cached:
@@ -273,8 +337,12 @@ async def billing_create_account(
 
 @app.delete("/accounts/{order_id}")
 async def billing_void_account(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
 ) -> Response:
+    forward_key = f"{order_id}:create_billing_account:create_account"
+    store.write_tombstone(forward_key, order_id)
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -293,8 +361,16 @@ async def billing_void_account(
 
 @app.post("/accounts/{order_id}/charging")
 async def billing_start_charging(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
+    if store.is_tombstoned(idempotency_key):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "TOMBSTONED", "detail": "Charging rejected by tombstone"},
+        )
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -318,8 +394,12 @@ async def billing_start_charging(
 
 @app.post("/accounts/{order_id}/charging/reverse")
 async def billing_reverse_charges(
-    order_id: str, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    order_id: str,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
 ) -> Response:
+    forward_key = f"{order_id}:start_billing:start_charging"
+    store.write_tombstone(forward_key, order_id)
+
     cached = store.check_idempotency(idempotency_key)
     if cached:
         return JSONResponse(
@@ -339,7 +419,9 @@ async def billing_reverse_charges(
 # Notification Endpoints
 @app.post("/messages")
 async def notify_message(
-    request: Request, idempotency_key: str = Header(..., alias="Idempotency-Key")
+    request: Request,
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     body = await request.json()
     order_id = body.get("order_id", "unknown")

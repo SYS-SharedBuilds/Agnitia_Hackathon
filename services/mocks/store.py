@@ -4,14 +4,22 @@ from typing import Any
 
 
 class MockStateStore:
-    """In-memory + SQLite persistent store for mock systems state & idempotency replay."""
+    """Persistent SQLite store for mock systems state, idempotency replay, and tombstones.
+    RULES §3.4: Every compensation writes a tombstone for the forward key; forward endpoints check tombstones.
+    """
 
     def __init__(self, system_name: str, db_path: str | None = None) -> None:
         self.system_name = system_name
         self.db_path = db_path or f"/tmp/switchon_mock_{system_name}.sqlite"
+        self._mem_conn: sqlite3.Connection | None = None
+        if self.db_path == ":memory:":
+            self._mem_conn = sqlite3.connect(":memory:")
+            self._mem_conn.row_factory = sqlite3.Row
         self._init_db()
 
     def _get_conn(self) -> sqlite3.Connection:
+        if self._mem_conn is not None:
+            return self._mem_conn
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn
@@ -30,6 +38,15 @@ class MockStateStore:
             )
             conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS tombstones (
+                    forward_key TEXT PRIMARY KEY,
+                    order_id TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS entities (
                     order_id TEXT PRIMARY KEY,
                     state TEXT NOT NULL,
@@ -38,6 +55,21 @@ class MockStateStore:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """
+            )
+            conn.commit()
+
+    def is_tombstoned(self, forward_key: str) -> bool:
+        with self._get_conn() as conn:
+            row = conn.execute(
+                "SELECT forward_key FROM tombstones WHERE forward_key = ?", (forward_key,)
+            ).fetchone()
+            return bool(row is not None)
+
+    def write_tombstone(self, forward_key: str, order_id: str | None = None) -> None:
+        with self._get_conn() as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO tombstones (forward_key, order_id) VALUES (?, ?)",
+                (forward_key, order_id or ""),
             )
             conn.commit()
 
@@ -92,8 +124,22 @@ class MockStateStore:
             conn.commit()
             return cur.rowcount > 0
 
+    def list_entities(self) -> list[dict[str, Any]]:
+        with self._get_conn() as conn:
+            rows = conn.execute("SELECT order_id, state, data, updated_at FROM entities").fetchall()
+            return [
+                {
+                    "order_id": r["order_id"],
+                    "state": r["state"],
+                    "data": json.loads(r["data"]),
+                    "updated_at": r["updated_at"],
+                }
+                for r in rows
+            ]
+
     def clear(self) -> None:
         with self._get_conn() as conn:
             conn.execute("DELETE FROM idempotency")
+            conn.execute("DELETE FROM tombstones")
             conn.execute("DELETE FROM entities")
             conn.commit()
