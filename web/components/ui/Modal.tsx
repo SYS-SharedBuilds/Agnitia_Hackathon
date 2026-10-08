@@ -62,21 +62,21 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className="flex items-start justify-between border-b border-[#557392]/20 px-6 py-4">
           <div>
-            <h3 className="text-base font-semibold text-[#0A1B2E]">{title}</h3>
+            <h3 className="text-base font-semibold text-black">{title}</h3>
             {description && (
               <p className="mt-1 text-xs text-[#557392]">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#557392] hover:bg-[#eef3f9] hover:text-[#0A1B2E] transition-colors"
+            className="rounded-lg p-1.5 text-[#557392] hover:bg-[#eef3f9] hover:text-black transition-colors"
             aria-label="Close dialog"
           >
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
         </div>
 
-        <div className="px-6 py-4 text-[#0A1B2E]">{children}</div>
+        <div className="px-6 py-4 text-black">{children}</div>
 
         {footer && (
           <div className="flex items-center justify-end gap-3 border-t border-[#557392]/20 px-6 py-3.5 bg-[#eef3f9]/50 rounded-b-xl">

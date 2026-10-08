@@ -55,10 +55,10 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "SUCCEEDED":
     case "COMPLETED":
-      style = "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]/40";
+      style = "bg-[#eef3f9] text-black border-[#557392]/40";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E]">check_circle</span>
+          <span className="material-symbols-outlined text-[13px] text-black">check_circle</span>
           <span className="font-semibold">SUCCEEDED</span>
         </>
       );

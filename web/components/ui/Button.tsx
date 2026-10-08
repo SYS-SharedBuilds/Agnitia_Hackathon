@@ -25,17 +25,17 @@ export function Button({
       break;
     case "secondary":
       variantCls =
-        "bg-[#eef3f9] text-[#0A1B2E] hover:bg-[#e4ecf5] border border-[#557392]/30";
+        "bg-[#eef3f9] text-black hover:bg-[#e4ecf5] border border-[#557392]";
       break;
     case "outline":
       variantCls =
-        "bg-white text-[#0A1B2E] hover:bg-[#eef3f9] border border-[#557392]/40 shadow-2xs";
+        "bg-white text-black hover:bg-[#eef3f9] border border-[#557392] shadow-2xs";
       break;
     case "destructive":
       variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] border border-[#0A1B2E] shadow-xs";
       break;
     case "ghost":
-      variantCls = "text-[#557392] hover:bg-[#eef3f9] hover:text-[#0A1B2E]";
+      variantCls = "text-[#557392] hover:bg-[#eef3f9] hover:text-black";
       break;
   }
 

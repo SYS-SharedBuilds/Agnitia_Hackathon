@@ -57,7 +57,7 @@ export const DagNode: React.FC<DagNodeProps> = ({
         <StatusBadge status={status} size="sm" pulse={isRunning} />
       </div>
 
-      <div className="text-sm font-semibold text-[#0A1B2E] flex items-center gap-1.5 mb-1.5">
+      <div className="text-sm font-semibold text-black flex items-center gap-1.5 mb-1.5">
         {isCompensation && (
           <span className="material-symbols-outlined text-[#557392] text-sm" title="Compensation Task">
             undo
@@ -73,7 +73,7 @@ export const DagNode: React.FC<DagNodeProps> = ({
         </div>
         <div className="flex items-center gap-2">
           {attempts !== undefined && attempts > 1 && (
-            <span className="text-[#0A1B2E] text-[10px] bg-[#eef3f9] border border-[#557392]/30 px-1 rounded font-semibold">
+            <span className="text-black text-[10px] bg-[#eef3f9] border border-[#557392]/30 px-1 rounded font-semibold">
               retry #{attempts}
             </span>
           )}

@@ -77,11 +77,11 @@ module.exports = {
         "on-tertiary-fixed-variant": "#3d5672",
 
         // Typography & Outlines
-        // Main Typography & Headers: Deep Navy (#0A1B2E)
+        // Main Typography & Headers: Black (#000000) / Deep Navy (#0A1B2E)
         // Borders, Tabs, Active, Metadata: Blue Slate (#557392)
-        "on-surface": "#0A1B2E",
+        "on-surface": "#000000",
         "on-surface-variant": "#557392",
-        "on-background": "#0A1B2E",
+        "on-background": "#000000",
         outline: "#557392",
         "outline-variant": "#c7d6e6",
 

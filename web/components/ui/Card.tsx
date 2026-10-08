@@ -9,7 +9,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Card({ children, className = "", elevated = false, ...props }: CardProps) {
   return (
     <div
-      className={`bg-white rounded-xl border border-[#557392]/25 ${
+      className={`bg-white rounded-xl border border-[#557392]/30 text-black ${
         elevated ? "shadow-md" : "shadow-xs"
       } ${className}`}
       {...props}
