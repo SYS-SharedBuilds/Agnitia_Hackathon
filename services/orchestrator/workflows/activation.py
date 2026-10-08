@@ -22,11 +22,13 @@ class ServiceActivationWorkflow:
         self.state: OrderState = OrderState.RECEIVED
         self.task_states: dict[str, str] = {}
         self.completed_stack: list[str] = []
+        self.attempted_effects: list[str] = []
         self.cancel_requested: bool = False
         self.cancel_reason: str = ""
         self.failure_reason: str = ""
         self.seq: int = 1
         self.results: dict[str, Any] = {}
+        self.chaos_key: str | None = None
 
     @workflow.signal
     def cancel_order(self, reason: str = "Operator requested cancellation") -> None:
@@ -46,6 +48,7 @@ class ServiceActivationWorkflow:
             "state": self.state.value if isinstance(self.state, OrderState) else str(self.state),
             "task_states": self.task_states,
             "completed_tasks": self.completed_stack,
+            "attempted_effects": self.attempted_effects,
             "cancel_requested": self.cancel_requested,
             "failure_reason": self.failure_reason,
         }
@@ -58,6 +61,7 @@ class ServiceActivationWorkflow:
     @workflow.run
     async def run(self, order_dict: dict[str, Any], plan_dict: dict[str, Any]) -> dict[str, Any]:
         self.order_id = order_dict["order_id"]
+        self.chaos_key = order_dict.get("chaos_key")
         self.plan = Plan(**plan_dict)
         self.state = OrderState.IN_PROGRESS
 
@@ -96,11 +100,11 @@ class ServiceActivationWorkflow:
                     ready_tasks.append(t)
 
             if not ready_tasks:
-                # Deadlock or stuck dependency
+                # Deadlock or unsatisfied dependencies
                 break
 
-            # Execute all ready tasks in parallel wave
-            async def run_single_task(task_def: Any) -> tuple[str, bool, Any]:
+            # Execute ready tasks in parallel wave
+            async def run_single_task(task_def: Any) -> tuple[str, bool, Any, bool]:
                 self.task_states[task_def.id] = TaskState.RUNNING.value
                 r_cfg = task_def.retry
                 retry_policy = RetryPolicy(
@@ -124,23 +128,31 @@ class ServiceActivationWorkflow:
                         start_to_close_timeout=timedelta(seconds=task_def.timeout_sec),
                         retry_policy=retry_policy,
                     )
-                    return task_def.id, True, res
+                    return task_def.id, True, res, False
                 except Exception as exc:
-                    return task_def.id, False, str(exc)
+                    # Detect if error is known business error (known not applied) vs unknown outcome / timeout
+                    err_str = str(exc)
+                    is_business_error = "BusinessError" in err_str or "422" in err_str
+                    return task_def.id, False, err_str, is_business_error
 
             # Parallel gather for the current wave
             results = await asyncio.gather(*[run_single_task(t) for t in ready_tasks])
 
             has_critical_failure = False
-            for tid, ok, res in results:
+            for tid, ok, res, is_biz_err in results:
                 tdef = all_tasks_map[tid]
                 if ok:
                     self.task_states[tid] = TaskState.SUCCEEDED.value
-                    self.completed_stack.append(tid)
+                    if not tdef.read_only:
+                        self.completed_stack.append(tid)
                     self.results[tid] = res
                 else:
                     self.task_states[tid] = TaskState.FAILED.value
                     self.failure_reason = f"Task {tid} failed: {res}"
+                    # RULES §3.2 & §3.3: Unknown outcome (timeout/conn-loss) tasks MUST be compensated!
+                    if not is_biz_err and not tdef.read_only and tdef.compensation:
+                        if tid not in self.attempted_effects:
+                            self.attempted_effects.append(tid)
                     if not tdef.best_effort:
                         has_critical_failure = True
                         failed_task_id = tid
@@ -150,7 +162,8 @@ class ServiceActivationWorkflow:
 
         # Check terminal outcome
         if failed_task_id or self.cancel_requested:
-            # SAGA ROLLBACK: Run compensations in REVERSE completion order
+            # SAGA ROLLBACK:
+            # targets = reverse(completed_stack) + attempted_effects (ambiguous outcome tasks)
             self.state = OrderState.ROLLING_BACK
             await workflow.execute_activity(
                 publish_order_event_activity,
@@ -163,8 +176,17 @@ class ServiceActivationWorkflow:
                 start_to_close_timeout=timedelta(seconds=5),
             )
 
-            compensation_failed = False
+            # Targets list with deduplication preserving order:
+            targets_to_compensate: list[str] = []
+            for tid in self.attempted_effects:
+                if tid not in targets_to_compensate:
+                    targets_to_compensate.append(tid)
             for tid in reversed(self.completed_stack):
+                if tid not in targets_to_compensate:
+                    targets_to_compensate.append(tid)
+
+            compensation_failed = False
+            for tid in targets_to_compensate:
                 tdef = all_tasks_map[tid]
                 if tdef.compensation:
                     self.task_states[tid] = TaskState.COMPENSATING.value
@@ -183,6 +205,7 @@ class ServiceActivationWorkflow:
                                 tdef.system.value,
                                 tdef.compensation,
                                 self._next_seq(),
+                                self.chaos_key,
                             ],
                             start_to_close_timeout=timedelta(seconds=20),
                             retry_policy=comp_retry_policy,
@@ -221,5 +244,6 @@ class ServiceActivationWorkflow:
             "state": self.state.value if isinstance(self.state, OrderState) else str(self.state),
             "task_states": self.task_states,
             "completed_tasks": self.completed_stack,
+            "attempted_effects": self.attempted_effects,
             "failure_reason": self.failure_reason,
         }
