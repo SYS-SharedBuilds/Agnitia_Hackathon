@@ -274,19 +274,19 @@ export default function OverviewPage() {
 
         <div className="flex items-center gap-2.5 flex-wrap shrink-0">
           {/* Auto-refresh Toggle Button */}
-          <div className="inline-flex items-center p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[#0F172A] text-[11.5px] font-mono">
+          <div className="inline-flex items-center p-0.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[#0A1B2E] text-[11.5px] font-mono">
               {!isPaused && (
                 <span className="relative flex h-2 w-2" id="refresh-pulse">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4F46E5] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4F46E5]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
                 </span>
               )}
               <span id="refresh-label">{isPaused ? "Paused" : "Auto-refresh: 5s"}</span>
             </div>
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="px-2.5 py-1 bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] rounded text-[11.5px] font-medium transition-all shadow-xs"
+              className="px-2.5 py-1 bg-white border border-[#CBD5E1] text-[#0A1B2E] hover:bg-[#F1F5F9] rounded text-[11.5px] font-medium transition-colors shadow-2xs"
               id="pause-live-btn"
             >
               {isPaused ? "Resume updates" : "Pause live updates"}
@@ -305,7 +305,7 @@ export default function OverviewPage() {
               a.download = `telemetry-overview-${Date.now()}.json`;
               a.click();
             }}
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E3E8F0] text-[#0F172A] hover:text-[#4F46E5] px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all hover:bg-[#F8FAFC] shadow-xs"
+            className="inline-flex items-center gap-1.5 bg-[#2563EB] text-white hover:bg-[#1D4ED8] px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors shadow-xs"
           >
             <span className="material-symbols-outlined text-[16px]">file_download</span>
             <span>Export Telemetry</span>
@@ -631,60 +631,60 @@ export default function OverviewPage() {
             <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
                   activeTab === "all"
-                    ? "bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE] shadow-xs"
-                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-transparent"
+                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold"
+                    : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-transparent"
                 }`}
               >
                 All (1,284)
               </button>
               <button
                 onClick={() => setActiveTab("running")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
                   activeTab === "running"
-                    ? "bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE] shadow-xs"
-                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-transparent"
+                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold"
+                    : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-transparent"
                 }`}
               >
                 In Progress (42)
               </button>
               <button
                 onClick={() => setActiveTab("succeeded")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
                   activeTab === "succeeded"
-                    ? "bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0] shadow-xs"
-                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-transparent"
+                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold"
+                    : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-transparent"
                 }`}
               >
                 Active (1,136)
               </button>
               <button
                 onClick={() => setActiveTab("rolling-back")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
                   activeTab === "rolling-back"
-                    ? "bg-[#FAF5FF] text-[#7C3AED] border border-[#E9D5FF] shadow-xs"
-                    : "text-[#7C3AED] hover:bg-[#FAF5FF] border border-transparent"
+                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold"
+                    : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-transparent"
                 }`}
               >
                 Rolling Back (8)
               </button>
               <button
                 onClick={() => setActiveTab("rolled-back")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
                   activeTab === "rolled-back"
-                    ? "bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1] shadow-xs"
-                    : "text-[#475569] hover:bg-[#F1F5F9] border border-transparent"
+                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold"
+                    : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-transparent"
                 }`}
               >
                 Rolled Back (75)
               </button>
               <button
                 onClick={() => setActiveTab("needs-attention")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
                   activeTab === "needs-attention"
-                    ? "bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] shadow-xs"
-                    : "text-[#DC2626] hover:bg-[#FEF2F2] border border-transparent"
+                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold"
+                    : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-transparent"
                 }`}
               >
                 Needs Attention (2)

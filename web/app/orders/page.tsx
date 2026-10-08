@@ -314,15 +314,15 @@ export default function OrdersPage() {
               a.download = `orders-export-${Date.now()}.csv`;
               a.click();
             }}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors font-body-md text-body-md font-medium shadow-sm border border-[#E3E8F0]"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors font-body-md text-body-md font-medium shadow-2xs border border-[#CBD5E1]"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px] text-outline">download</span>
+            <span className="material-symbols-outlined text-[18px] text-[#64748B]">download</span>
             <span>Export CSV</span>
           </button>
           <Link
             href="/new"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-primary-container text-on-primary hover:bg-primary transition-colors font-body-md text-body-md font-medium shadow-sm"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors font-body-md text-body-md font-medium shadow-xs"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>New Order</span>
@@ -331,20 +331,20 @@ export default function OrdersPage() {
       </section>
 
       {/* SAVED VIEW TABS */}
-      <div className="flex items-center justify-between bg-surface-container-lowest px-4 rounded-xl shadow-sm border border-[#E3E8F0]">
+      <div className="flex items-center justify-between bg-white px-4 rounded-xl shadow-2xs border border-[#E2E8F0]">
         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
           {/* Tab: All */}
           <button
             onClick={() => setActiveTab("all")}
-            className={`relative py-3.5 font-body-md text-body-md flex items-center gap-2 shrink-0 ${
+            className={`relative py-3.5 font-body-md text-body-md flex items-center gap-2 shrink-0 transition-colors ${
               activeTab === "all"
-                ? "font-semibold text-primary-container border-b-2 border-primary-container"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
           >
             <span>All Orchestrations</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-surface-container-high text-primary-container">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB] font-semibold border border-[#BFDBFE]">
               1,284
             </span>
           </button>
@@ -354,13 +354,13 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("failed")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "failed"
-                ? "font-semibold text-error border-b-2 border-error"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
           >
             <span>Failed last 24h</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-error-container text-error font-semibold">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#0A1B2E] font-semibold border border-[#CBD5E1]">
               14
             </span>
           </button>
@@ -370,13 +370,13 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("slow")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "slow"
-                ? "font-semibold text-tertiary border-b-2 border-tertiary"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
           >
             <span>Slow (&gt;p95)</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-surface-container-highest text-tertiary font-semibold">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#0A1B2E] font-semibold border border-[#CBD5E1]">
               48
             </span>
           </button>
@@ -386,41 +386,41 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("attention")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "attention"
-                ? "font-semibold text-error border-b-2 border-error"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
           >
             <span>Needs Attention</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-error-container text-error font-bold">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#0A1B2E] font-bold border border-[#CBD5E1]">
               2
             </span>
           </button>
         </div>
 
         {/* Auxiliary view selector */}
-        <div className="hidden lg:flex items-center gap-3 font-label-sm text-label-sm text-outline">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>SLA 99.98%
+        <div className="hidden lg:flex items-center gap-3 font-label-sm text-label-sm text-[#64748B]">
+          <span className="flex items-center gap-1 font-mono">
+            <span className="w-2 h-2 rounded-full bg-[#2563EB]"></span>SLA 99.98%
           </span>
           <span>•</span>
-          <span>Latency p95: 4.8s</span>
+          <span className="font-mono">Latency p95: 4.8s</span>
         </div>
       </div>
 
       {/* TABLE CONTAINER CARD */}
-      <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col border border-[#E3E8F0]">
+      <section className="bg-white rounded-xl shadow-2xs overflow-hidden flex flex-col border border-[#E2E8F0]">
         {/* HIGH-DENSITY FILTER TOOLBAR */}
-        <div className="p-3.5 bg-surface-container-lowest flex flex-wrap items-center justify-between gap-2.5 border-b border-[#EDF0F5]">
+        <div className="p-3.5 bg-white flex flex-wrap items-center justify-between gap-2.5 border-b border-[#E2E8F0]">
           {/* Left Filters */}
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
             {/* Search Input */}
             <div className="relative w-full max-w-[290px]">
-              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] text-[18px]">
                 search
               </span>
               <input
-                className="w-full h-8 pl-8 pr-7 bg-surface-container-low rounded font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary-container border border-[#E2E8F0]"
+                className="w-full h-8 pl-8 pr-7 bg-[#F8FAFC] rounded font-body-sm text-body-sm text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#2563EB] border border-[#CBD5E1]"
                 placeholder="Filter Order ID, Client Ref, MSISDN… ⌘F"
                 type="text"
                 value={searchQuery}
@@ -429,7 +429,7 @@ export default function OrdersPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0A1B2E]"
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[14px]">close</span>
@@ -439,42 +439,42 @@ export default function OrdersPage() {
 
             {/* Status Filter Dropdown */}
             <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
+              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
               type="button"
             >
-              <span className="text-outline">Status:</span>
-              <span className="font-medium text-on-surface">All (7 selected)</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+              <span className="text-[#64748B]">Status:</span>
+              <span className="font-medium text-[#0A1B2E]">All (7 selected)</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
             </button>
 
             {/* Product / Plan Filter */}
             <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
+              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
               type="button"
             >
-              <span className="text-outline">Product:</span>
-              <span className="font-medium text-on-surface">All Plans</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+              <span className="text-[#64748B]">Product:</span>
+              <span className="font-medium text-[#0A1B2E]">All Plans</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
             </button>
 
             {/* Date Range Filter */}
             <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
+              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
               type="button"
             >
-              <span className="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
-              <span className="font-medium text-on-surface">Last 24 Hours</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">calendar_today</span>
+              <span className="font-medium text-[#0A1B2E]">Last 24 Hours</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
             </button>
 
             {/* Systems Involved */}
             <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
+              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
               type="button"
             >
-              <span className="text-outline">Systems:</span>
-              <span className="font-medium text-on-surface">All (OMS, HLR, OCS…)</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+              <span className="text-[#64748B]">Systems:</span>
+              <span className="font-medium text-[#0A1B2E]">All (OMS, HLR, OCS…)</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
             </button>
 
             {/* Certificate Toggle Switch */}
@@ -518,12 +518,12 @@ export default function OrdersPage() {
         <div className="w-full overflow-x-auto">
           <table className="w-full text-left table-fixed border-collapse min-w-[1240px]">
             <thead>
-              <tr className="h-10 bg-surface-container-low text-tertiary font-body-sm text-body-sm uppercase tracking-wider select-none font-semibold border-b border-[#E3E8F0]">
+              <tr className="h-10 bg-[#F8FAFC] text-[#64748B] font-body-sm text-body-sm uppercase tracking-wider select-none font-semibold border-b border-[#E2E8F0]">
                 <th className="w-10 px-3 text-center">
                   <input
                     checked={filteredOrders.length > 0 && selectedIds.length === filteredOrders.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded bg-surface-container-lowest text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    className="w-4 h-4 rounded bg-white text-[#2563EB] focus:ring-0 focus:ring-offset-0 cursor-pointer"
                     type="checkbox"
                   />
                 </th>
@@ -539,7 +539,7 @@ export default function OrdersPage() {
                 <th className="w-24 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-container-high/40 font-body-sm text-body-sm">
+            <tbody className="divide-y divide-[#F1F5F9] font-body-sm text-body-sm">
               {filteredOrders.map((ord) => {
                 const isSelected = selectedIds.includes(ord.id);
                 return (
@@ -547,8 +547,8 @@ export default function OrdersPage() {
                     key={ord.id}
                     className={`h-12 transition-colors ${
                       isSelected
-                        ? "bg-surface-container hover:bg-surface-container-high/60"
-                        : "bg-surface-container-lowest hover:bg-surface-container-low"
+                        ? "bg-[#EFF6FF] hover:bg-[#DBEAFE]/70"
+                        : "bg-white hover:bg-[#F8FAFC]"
                     }`}
                   >
                     <td className="px-3 text-center">
@@ -684,23 +684,23 @@ export default function OrdersPage() {
           </div>
           {/* Pagination Buttons */}
           <div className="flex items-center gap-1">
-            <button className="px-2.5 h-7 rounded text-outline hover:bg-surface-container-low disabled:opacity-40 font-medium font-body-sm" disabled type="button">
+            <button className="px-2.5 h-7 rounded text-[#94A3B8] hover:bg-[#F8FAFC] disabled:opacity-40 font-medium font-body-sm" disabled type="button">
               Previous
             </button>
-            <button className="w-7 h-7 rounded bg-primary-container text-on-primary font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
+            <button className="w-7 h-7 rounded bg-[#2563EB] text-white font-medium font-label-sm text-label-sm flex items-center justify-center shadow-2xs" type="button">
               1
             </button>
-            <button className="w-7 h-7 rounded hover:bg-surface-container-low text-on-surface font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
+            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
               2
             </button>
-            <button className="w-7 h-7 rounded hover:bg-surface-container-low text-on-surface font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
+            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
               3
             </button>
-            <span className="px-1 text-outline font-label-sm text-label-sm">…</span>
-            <button className="w-7 h-7 rounded hover:bg-surface-container-low text-on-surface font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
+            <span className="px-1 text-[#94A3B8] font-label-sm text-label-sm">…</span>
+            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
               161
             </button>
-            <button className="px-2.5 h-7 rounded text-on-surface hover:bg-surface-container-low font-medium font-body-sm" type="button">
+            <button className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] font-medium font-body-sm transition-colors" type="button">
               Next
             </button>
           </div>

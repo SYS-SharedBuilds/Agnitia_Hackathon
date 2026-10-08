@@ -92,7 +92,7 @@ export default function OrderDetailPage() {
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           <a
-            className="inline-flex items-center gap-1 text-label-md text-label-md text-[#C2410C] hover:text-[#9A3412] px-3 py-1.5 rounded-lg border border-[#FDBA74] bg-white hover:bg-[#FFEDD5]/50 transition-colors font-medium"
+            className="inline-flex items-center gap-1 text-label-md text-label-md text-[#0A1B2E] hover:text-[#2563EB] px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] transition-colors font-medium shadow-2xs"
             href="#hlr-portal"
           >
             <span>Open Network System</span>
@@ -100,7 +100,7 @@ export default function OrderDetailPage() {
           </a>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 text-label-md text-label-md text-[#9A3412] bg-white border border-[#EA580C]/50 hover:bg-[#FFEDD5] px-3 py-1.5 rounded-lg font-medium transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 text-label-md text-label-md text-[#0A1B2E] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] hover:text-[#2563EB] px-3 py-1.5 rounded-lg font-medium transition-colors shadow-2xs"
           >
             <span className="material-symbols-outlined text-[16px]">build_circle</span>
             <span>Resolve Manually…</span>
@@ -111,7 +111,7 @@ export default function OrderDetailPage() {
               await fetch(`${apiHost}/orders/${orderId}/retry-compensation`, { method: "POST" });
               fetchDetail();
             }}
-            className="inline-flex items-center gap-1.5 text-label-md text-label-md bg-[#4F46E5] hover:bg-[#3525cd] text-white px-3.5 py-1.5 rounded-lg font-semibold transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 text-label-md text-label-md bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3.5 py-1.5 rounded-lg font-semibold transition-colors shadow-xs"
           >
             <span className="material-symbols-outlined text-[16px]">refresh</span>
             <span>Retry Compensation</span>

@@ -17,25 +17,25 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  let variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] shadow-xs";
+  let variantCls = "bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-xs";
 
   switch (variant) {
     case "primary":
-      variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] shadow-xs";
+      variantCls = "bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-xs active:bg-[#1E40AF]";
       break;
     case "secondary":
       variantCls =
-        "bg-[#eef3f9] text-black hover:bg-[#e4ecf5] border border-[#557392]";
+        "bg-white text-[#0A1B2E] hover:bg-[#F1F5F9] border border-[#CBD5E1] active:bg-[#E2E8F0]";
       break;
     case "outline":
       variantCls =
-        "bg-white text-black hover:bg-[#eef3f9] border border-[#557392] shadow-2xs";
+        "bg-white text-[#2563EB] hover:bg-[#EFF6FF] border border-[#2563EB] shadow-2xs";
       break;
     case "destructive":
-      variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] border border-[#0A1B2E] shadow-xs";
+      variantCls = "bg-[#DC2626] text-white hover:bg-[#B91C1C] border border-[#DC2626] shadow-xs";
       break;
     case "ghost":
-      variantCls = "text-[#557392] hover:bg-[#eef3f9] hover:text-black";
+      variantCls = "text-[#0A1B2E] hover:bg-[#F1F5F9] hover:text-[#2563EB]";
       break;
   }
 
