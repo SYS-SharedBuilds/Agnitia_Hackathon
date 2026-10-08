@@ -221,7 +221,7 @@ export default function OrdersPage() {
     switch (status) {
       case "RUNNING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-blue-50 text-[#2563EB] font-label-sm text-label-sm font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#2563EB] border border-[#2563EB] font-label-sm text-label-sm font-semibold shadow-2xs">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
@@ -231,51 +231,51 @@ export default function OrdersPage() {
         );
       case "SUCCEEDED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-emerald-50 text-[#16A34A] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
             SUCCEEDED
           </span>
         );
       case "RETRYING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-amber-50 text-[#D97706] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#D97706]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#64748B]"></span>
             RETRYING
           </span>
         );
       case "NEEDS_ATTENTION":
         return (
-          <span className="inline-flex items-center gap-1 px-2 h-6 rounded-full bg-orange-50 text-[#EA580C] font-label-sm text-label-sm font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 h-6 rounded-full bg-[#0A1B2E] text-white border border-[#0A1B2E] font-label-sm text-label-sm font-semibold shadow-2xs">
             <span className="material-symbols-outlined text-[14px]">warning</span>
             NEEDS_ATTENTION
           </span>
         );
       case "FAILED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-error-container text-error font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-error"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-[#0A1B2E] text-white border border-[#0A1B2E] font-label-sm text-label-sm font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-white"></span>
             FAILED
           </span>
         );
       case "COMPENSATING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-purple-50 text-[#9333EA] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#9333EA] animate-pulse"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#0A1B2E] animate-pulse"></span>
             COMPENSATING
           </span>
         );
       case "COMPENSATED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-slate-100 text-[#5B7087] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#5B7087]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#64748B] border border-[#E2E8F0] font-label-sm text-label-sm font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#94A3B8]"></span>
             COMPENSATED
           </span>
         );
       case "PENDING":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-slate-100 text-[#64748B] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#64748B]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#64748B] border border-[#E2E8F0] font-label-sm text-label-sm font-semibold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#CBD5E1]"></span>
             PENDING
           </span>
         );
@@ -489,7 +489,7 @@ export default function OrdersPage() {
                 <div className="w-7 h-4 bg-surface-container-highest peer-checked:bg-primary-container rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
               </label>
               <span className="font-label-sm text-label-sm text-on-surface flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px] text-[#16A34A]">verified_user</span>
+                <span className="material-symbols-outlined text-[15px] text-[#0A1B2E]">verified_user</span>
                 <span>Signed Cert</span>
               </span>
             </div>
@@ -588,29 +588,25 @@ export default function OrdersPage() {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center justify-between font-label-sm text-label-sm text-on-surface">
                           <span>{ord.tasksCompleted}/{ord.totalTasks}</span>
-                          <span className={ord.status === "FAILED" ? "text-error" : ord.status === "SUCCEEDED" ? "text-[#16A34A]" : "text-outline"}>
+                          <span className={ord.status === "FAILED" ? "text-error" : ord.status === "SUCCEEDED" ? "text-[#0A1B2E] font-medium" : "text-outline"}>
                             {ord.taskDetail}
                           </span>
                         </div>
-                        <div className="flex gap-0.5 h-1.5 w-full bg-surface-container-highest rounded overflow-hidden">
+                        <div className="flex gap-0.5 h-1.5 w-full bg-[#F1F5F9] rounded overflow-hidden">
                           {Array.from({ length: ord.totalTasks }).map((_, tIdx) => {
                             const isFilled = tIdx < ord.tasksCompleted;
                             const barColor =
                               ord.status === "SUCCEEDED"
-                                ? "bg-[#16A34A]"
-                                : ord.status === "FAILED"
-                                ? "bg-error"
-                                : ord.status === "NEEDS_ATTENTION"
-                                ? "bg-[#EA580C]"
-                                : ord.status === "COMPENSATING"
-                                ? "bg-[#9333EA]"
-                                : ord.status === "COMPENSATED"
-                                ? "bg-[#5B7087]"
-                                : "bg-primary-container";
+                                ? "bg-[#0A1B2E]"
+                                : ord.status === "FAILED" || ord.status === "NEEDS_ATTENTION"
+                                ? "bg-[#0A1B2E]"
+                                : ord.status === "COMPENSATING" || ord.status === "COMPENSATED"
+                                ? "bg-[#475569]"
+                                : "bg-[#2563EB]";
                             return (
                               <div
                                 key={tIdx}
-                                className={`flex-1 ${isFilled ? barColor : "bg-surface-container-highest"}`}
+                                className={`flex-1 ${isFilled ? barColor : "bg-[#F1F5F9]"}`}
                               />
                             );
                           })}
@@ -620,36 +616,34 @@ export default function OrdersPage() {
                     <td className="px-3">
                       <span className={`font-label-sm text-label-sm ${
                         ord.retries.includes("exhausted")
-                          ? "px-1.5 py-0.5 rounded bg-error-container text-error font-medium"
+                          ? "px-1.5 py-0.5 rounded bg-[#0A1B2E] text-white font-medium"
                           : ord.retries.includes("backoff")
-                          ? "px-1.5 py-0.5 rounded bg-amber-50 text-[#D97706] font-medium"
-                          : "text-outline"
+                          ? "px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] font-medium border border-[#CBD5E1]"
+                          : "text-[#64748B]"
                       }`}>
                         {ord.retries}
                       </span>
                     </td>
                     <td className="px-3 text-right">
-                      <span className={`font-label-md text-label-md font-medium ${
-                        ord.activationTime.includes("12.") || ord.activationTime.includes("18.") ? "text-[#D97706] font-semibold" : "text-on-surface"
-                      }`}>
+                      <span className="font-label-md text-label-md font-medium text-[#0A1B2E]">
                         {ord.activationTime}
                       </span>
                     </td>
                     <td className="px-3 text-right">
-                      <span className="text-outline font-label-sm text-label-sm">{ord.created}</span>
+                      <span className="text-[#64748B] font-label-sm text-label-sm">{ord.created}</span>
                     </td>
                     <td className="px-3 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         {ord.certStatus === "verified" ? (
-                          <span className="material-symbols-outlined text-[18px] text-[#16A34A]" title="Cryptographic Certificate Verified">
+                          <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]" title="Cryptographic Certificate Verified">
                             verified_user
                           </span>
                         ) : ord.certStatus === "revoked" ? (
-                          <span className="material-symbols-outlined text-[18px] text-error" title="Certificate Revoked / Failed">
+                          <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]" title="Certificate Revoked / Failed">
                             gpp_bad
                           </span>
                         ) : (
-                          <span className="material-symbols-outlined text-[18px] text-outline" title="Pending / In-Progress">
+                          <span className="material-symbols-outlined text-[18px] text-[#CBD5E1]" title="Pending / In-Progress">
                             shield
                           </span>
                         )}
@@ -734,7 +728,7 @@ export default function OrdersPage() {
                 <span>Export Selected (CSV)</span>
               </button>
               <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
-                <span className="material-symbols-outlined text-[16px] text-[#16A34A]">verified_user</span>
+                <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">verified_user</span>
                 <span>Download Certs (ZIP)</span>
               </button>
               <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-error-container hover:bg-error/20 text-error font-body-sm text-body-sm font-medium transition-colors" type="button">
