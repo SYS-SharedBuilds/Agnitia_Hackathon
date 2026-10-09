@@ -89,6 +89,7 @@ export default function NewOrderPage() {
   };
 
   const [validatedSuccess, setValidatedSuccess] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Product specific rate plans in Indian Telecom Context (₹ INR)
@@ -200,26 +201,34 @@ export default function NewOrderPage() {
     }
 
     setFieldErrors(errorsMap);
+    setIsValidating(true);
 
-    if (errs.length > 0) {
-      setValidationErrors(errs);
-      setValidatedSuccess(false);
+    setTimeout(() => {
+      setIsValidating(false);
+      if (errs.length > 0) {
+        setValidationErrors(errs);
+        setValidatedSuccess(false);
 
-      // Focus first invalid input field
-      const firstKey = Object.keys(errorsMap)[0];
-      if (firstKey === "fullName") document.getElementById("cust-fullname")?.focus();
-      else if (firstKey === "email") document.getElementById("cust-email")?.focus();
-      else if (firstKey === "msisdn") document.getElementById("cust-msisdn")?.focus();
-      else if (firstKey === "streetAddress") document.getElementById("site-address")?.focus();
-      else if (firstKey === "simIccid") document.getElementById("sim-iccid")?.focus();
-      else if (firstKey === "clientRef") document.getElementById("client-ref")?.focus();
+        // Focus first invalid input field and scroll to error banner
+        const firstKey = Object.keys(errorsMap)[0];
+        if (firstKey === "fullName") document.getElementById("cust-fullname")?.focus();
+        else if (firstKey === "email") document.getElementById("cust-email")?.focus();
+        else if (firstKey === "msisdn") document.getElementById("cust-msisdn")?.focus();
+        else if (firstKey === "streetAddress") document.getElementById("site-address")?.focus();
+        else if (firstKey === "simIccid") document.getElementById("sim-iccid")?.focus();
+        else if (firstKey === "clientRef") document.getElementById("client-ref")?.focus();
 
-      return false;
-    } else {
-      setValidationErrors([]);
-      setValidatedSuccess(true);
-      return true;
-    }
+        document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return false;
+      } else {
+        setValidationErrors([]);
+        setValidatedSuccess(true);
+        document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return true;
+      }
+    }, 250);
+
+    return errs.length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -319,7 +328,7 @@ export default function NewOrderPage() {
         <div className="col-span-12 lg:col-span-7 flex flex-col gap-6">
           <section className="bg-surface-container-lowest rounded-xl p-6 sm:p-7 shadow-sm border border-[#E3E8F0]">
             {/* Header */}
-            <div className="mb-5">
+            <div className="mb-5" id="validation-feedback-anchor">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-secondary-container bg-surface-container px-2 py-0.5 rounded">
                   Orchestration Intent
@@ -541,20 +550,23 @@ export default function NewOrderPage() {
                   <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="plan-select">
                     Catalog Rate Plan
                   </label>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-2.5">
                     <select
-                      className="flex-1 h-9 px-3 bg-surface rounded text-on-surface font-body-md text-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
+                      className="w-full flex-1 min-w-0 h-9 px-3 bg-surface rounded text-on-surface font-body-md text-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest truncate"
                       id="plan-select"
                       value={ratePlan}
-                      onChange={(e) => setRatePlan(e.target.value)}
+                      onChange={(e) => {
+                        setRatePlan(e.target.value);
+                        setValidatedSuccess(false);
+                      }}
                     >
                       {PRODUCT_RATE_PLANS[productType].plans.map((p) => (
                         <option key={p} value={p}>{p}</option>
                       ))}
                     </select>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0]">
-                      <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
-                      <span>{PRODUCT_RATE_PLANS[productType].sla}</span>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0] self-start lg:self-auto max-w-full">
+                      <span className="w-2 h-2 rounded-full bg-[#0A1B2E] shrink-0"></span>
+                      <span className="truncate">{PRODUCT_RATE_PLANS[productType].sla}</span>
                     </div>
                   </div>
                 </div>
@@ -810,11 +822,30 @@ export default function NewOrderPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleValidate}
-                    className="h-9 px-4 bg-surface hover:bg-surface-container rounded-lg text-body-md font-body-md text-on-surface font-medium flex items-center gap-1.5 transition-colors border border-[#E2E8F0]"
+                    disabled={isValidating}
+                    className={`h-9 px-4 rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 transition-all border ${
+                      validatedSuccess
+                        ? "bg-[#F0FDF4] text-[#166534] border-[#86EFAC] shadow-2xs"
+                        : "bg-surface hover:bg-surface-container text-on-surface border-[#E2E8F0] shadow-xs active:scale-[0.98]"
+                    }`}
                     type="button"
                   >
-                    <span className="material-symbols-outlined text-[18px]">fact_check</span>
-                    <span>Validate Form</span>
+                    {isValidating ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] animate-spin text-[#0A1B2E]">progress_activity</span>
+                        <span>Validating...</span>
+                      </>
+                    ) : validatedSuccess ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] text-[#166534]">check_circle</span>
+                        <span>Form Validated ✔</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[18px]">fact_check</span>
+                        <span>Validate Form</span>
+                      </>
+                    )}
                   </button>
                   <button
                     disabled={submitting}
