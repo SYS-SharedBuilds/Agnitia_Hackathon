@@ -352,6 +352,33 @@ export default function NewOrderPage() {
         </aside>
       )}
 
+      {/* REGISTRAR DE-CLUTTER NOTICE */}
+      <div className="mb-5 bg-sky-50 border border-sky-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sky-950 shadow-2xs">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <span className="material-symbols-outlined text-[20px]">badge</span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm">Retail Subscriber &amp; Partner Registration Moved</span>
+              <span className="text-[10.5px] font-mono font-semibold bg-sky-200/80 text-sky-800 px-2 py-0.5 rounded-full">
+                USER PORTAL
+              </span>
+            </div>
+            <p className="text-xs text-sky-800 mt-0.5">
+              Subscriber onboarding, E.118 SIM assignment, and scenario error simulations are managed in the Registrar Portal.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/registrar/new-order"
+          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+        >
+          <span>Open Registrar Portal</span>
+          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </Link>
+      </div>
+
       {/* MAIN TWO-COLUMN WORKSPACE (12-COL GRID) */}
       <div className="grid grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: STEPPED ORDER CREATION FORM (7 COLS) */}

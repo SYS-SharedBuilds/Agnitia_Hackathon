@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
@@ -14,6 +14,18 @@ export function RegistrarShell({ children }: { children: React.ReactNode }) {
   const { user, switchRole, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const navLinks = [
     {
@@ -184,19 +196,78 @@ export function RegistrarShell({ children }: { children: React.ReactNode }) {
                 <span>New Activation</span>
               </Link>
 
-              {/* User Profile Pill */}
-              <div className="hidden lg:flex items-center gap-3 pl-3 border-l border-slate-200">
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 text-slate-700 flex items-center justify-center font-bold text-xs shadow-2xs">
-                  {user?.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "AP"}
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-semibold text-slate-900 truncate max-w-[140px]">
-                    {user?.name || "Aanya Patel"}
+              {/* User Profile Dropdown Pill */}
+              <div className="relative pl-3 border-l border-slate-200" ref={userMenuRef}>
+                <button
+                  onClick={() => setShowUserDropdown((prev) => !prev)}
+                  className="hidden lg:flex items-center gap-2.5 p-1 rounded-lg hover:bg-slate-100/70 transition-colors text-left cursor-pointer group"
+                  aria-expanded={showUserDropdown}
+                  aria-label="Registrar Profile and Session Menu"
+                >
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 border border-sky-400 text-white flex items-center justify-center font-bold text-xs shadow-2xs group-hover:scale-105 transition-transform">
+                    {user?.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "AP"}
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-semibold text-slate-900 truncate max-w-[130px]">
+                      {user?.name || "Aanya Patel"}
+                    </span>
+                    <span className="text-[11px] text-slate-500 truncate max-w-[130px]">
+                      Authorized Registrar
+                    </span>
+                  </div>
+                  <span className={`material-symbols-outlined text-[18px] text-slate-400 transition-transform ${showUserDropdown ? "rotate-180" : ""}`}>
+                    expand_more
                   </span>
-                  <span className="text-[11px] text-slate-500 truncate max-w-[140px]">
-                    Authorized Registrar
-                  </span>
-                </div>
+                </button>
+
+                {showUserDropdown && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white text-slate-900 rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-1">
+                    <div className="px-3.5 py-2.5 border-b border-slate-100">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <p className="text-[11px] font-mono font-bold text-slate-900 uppercase">
+                          Registrar Session
+                        </p>
+                      </div>
+                      <p className="text-xs font-medium text-slate-700 mt-0.5 truncate">
+                        {user?.organization || "Bharat Telecom Partner Services"}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        switchRole("admin");
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-slate-500">admin_panel_settings</span>
+                      <span>Switch to Admin / NOC Portal</span>
+                    </button>
+
+                    <Link
+                      href="/login"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-slate-500">swap_horiz</span>
+                      <span>Switch Account / Persona</span>
+                    </Link>
+
+                    <div className="border-t border-slate-100 my-1" />
+
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-red-600">logout</span>
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Mobile menu toggle */}

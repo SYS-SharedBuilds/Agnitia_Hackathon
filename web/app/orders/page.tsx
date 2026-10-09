@@ -408,13 +408,6 @@ export default function OrdersPage() {
             <span className="material-symbols-outlined text-[18px] text-[#000000]">download</span>
             <span>Export CSV</span>
           </button>
-          <Link
-            href="/new"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-[#0A1B2E] text-white hover:bg-[#14263b] transition-colors font-body-md text-body-md font-medium shadow-xs"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            <span>New Order</span>
-          </Link>
         </div>
       </section>
 

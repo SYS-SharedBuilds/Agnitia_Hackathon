@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
 interface NotificationItem {
   id: string;
@@ -63,9 +64,22 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // If on subscriber registrar portal or login, let page render its own dedicated layout
   if (pathname.startsWith("/registrar") || pathname === "/login") {
@@ -85,7 +99,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const navItems = [
     { name: "Overview", href: "/", pathKey: "overview", icon: "grid_view" },
     { name: "Orders", href: "/orders", pathKey: "orders", icon: "receipt_long" },
-    { name: "New Order", href: "/new", pathKey: "new-order", icon: "add_circle" },
     { name: "Fallout Queue", href: "/fallout", pathKey: "fallout-queue", icon: "report_problem", badge: "14", badgeColor: "bg-[#eef3f9] text-[#0A1B2E] border-[#0A1B2E]" },
     { name: "Metrics", href: "/metrics", pathKey: "metrics", icon: "monitoring" },
     { name: "Scenarios & Proof", href: "/proof", pathKey: "scenarios-proof", icon: "verified" },
@@ -190,19 +203,79 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <span className="font-label-sm text-label-sm font-bold">Live · SSE</span>
             </div>
           </div>
-          <div className="flex items-center gap-2.5 pt-1 border-t border-[#CBD5E1]">
-            <div className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#000000] flex items-center justify-center font-bold text-xs shrink-0">
-              AS
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-body-md text-body-md font-bold text-[#000000] truncate">
-                Aarav Sharma
+          {/* Interactive Profile Row with Clickable Popover Menu */}
+          <div className="relative pt-1 border-t border-[#CBD5E1]" ref={profileRef}>
+            <button
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              className="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[#F8FAFC] transition-colors text-left cursor-pointer group"
+              aria-expanded={profileMenuOpen}
+              aria-label="User Profile and Account Menu"
+            >
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                {user?.name ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() : "AS"}
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-body-md text-body-md font-bold text-[#000000] truncate">
+                  {user?.name || "Aarav Sharma"}
+                </span>
+                <span className="font-body-sm text-body-sm text-slate-500 font-medium truncate">
+                  {user?.role === "admin" ? "Lead Orchestrator (NOC)" : "Authorized Registrar"}
+                </span>
+              </div>
+              <span className={`material-symbols-outlined text-[18px] text-slate-400 transition-transform ${profileMenuOpen ? "rotate-180" : ""}`}>
+                expand_less
               </span>
-              <span className="font-body-sm text-body-sm text-[#000000] font-medium truncate">
-                Lead Orchestrator
-              </span>
-            </div>
+            </button>
+
+            {/* Profile Popover Menu */}
+            {profileMenuOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-xl border border-[#CBD5E1] p-1.5 z-50 animate-in fade-in slide-in-from-bottom-2">
+                <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span className="text-[11px] font-mono font-bold text-slate-900 uppercase">
+                      Active Session
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 truncate mt-0.5 font-medium">
+                    {user?.organization || "SwitchOn Central Network Operations Command"}
+                  </p>
+                </div>
+
+                <Link
+                  href="/registrar"
+                  onClick={() => setProfileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-sky-600">badge</span>
+                  <span>Switch to Registrar Portal</span>
+                </Link>
+
+                <Link
+                  href="/login"
+                  onClick={() => setProfileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-slate-500">swap_horiz</span>
+                  <span>Switch Account / Persona</span>
+                </Link>
+
+                <div className="border-t border-slate-100 my-1" />
+
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors cursor-pointer text-left"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-red-600">logout</span>
+                  <span>Log Out</span>
+                </button>
+              </div>
+            )}
           </div>
+
           <Link
             href="/registrar"
             className="flex items-center justify-center gap-1.5 w-full py-1.5 px-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold border border-sky-200 transition-colors shadow-2xs"
