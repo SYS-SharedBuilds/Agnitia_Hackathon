@@ -66,6 +66,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // If on subscriber registrar portal or login, let page render its own dedicated layout
+  if (pathname.startsWith("/registrar") || pathname === "/login") {
+    return <>{children}</>;
+  }
+
   const handleMarkAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
@@ -188,7 +194,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <div className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#000000] flex items-center justify-center font-bold text-xs shrink-0">
               AS
             </div>
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 flex-1">
               <span className="font-body-md text-body-md font-bold text-[#000000] truncate">
                 Aarav Sharma
               </span>
@@ -197,6 +203,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </span>
             </div>
           </div>
+          <Link
+            href="/registrar"
+            className="flex items-center justify-center gap-1.5 w-full py-1.5 px-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold border border-sky-200 transition-colors shadow-2xs"
+          >
+            <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+            <span>Subscriber / Registrar Portal</span>
+          </Link>
         </div>
       </aside>
 
