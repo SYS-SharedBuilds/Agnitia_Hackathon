@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FalloutDagCanvas } from "@/components/ui/FalloutDagCanvas";
 
@@ -112,6 +112,50 @@ export default function FalloutQueuePage() {
   const [resolutionTicket, setResolutionTicket] = useState("INC-94821");
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [activeDagNode, setActiveDagNode] = useState<string>("rollback-deprovision");
+
+  // Fetch real incidents needing attention from Order API
+  useEffect(() => {
+    const fetchLiveFallout = async () => {
+      try {
+        const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiHost}/orders?limit=100`);
+        if (res.ok) {
+          const apiOrders = await res.json();
+          const attentionOrders = apiOrders.filter(
+            (o: { state: string }) => o.state === "NEEDS_ATTENTION"
+          );
+          if (attentionOrders.length > 0) {
+            const liveIncidents: FalloutIncident[] = attentionOrders.map(
+              (o: { order_id: string; customer_id: string; msisdn?: string; product: string; failure_reason?: string; created_at?: string }) => ({
+                id: o.order_id,
+                customer: o.customer_id,
+                msisdn: o.msisdn || "+1 555 019-4821",
+                plan: o.product,
+                subsystem: "HLR/HSS Gateway",
+                summary: o.failure_reason || "Compensation stalled / manual operator intervention needed",
+                errorCode: "hlr:timeout-exhausted",
+                slaElapsed: "12m",
+                ageMinutes: 12,
+                slaSeverity: "high",
+                createdAt: o.created_at || new Date().toISOString(),
+                status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
+              })
+            );
+            setIncidents((prev) => {
+              const liveIds = new Set(liveIncidents.map((i) => i.id));
+              const nonDuplicated = prev.filter((p) => !liveIds.has(p.id));
+              return [...liveIncidents, ...nonDuplicated];
+            });
+          }
+        }
+      } catch {
+        // Fallback to initial incidents
+      }
+    };
+    fetchLiveFallout();
+    const interval = setInterval(fetchLiveFallout, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const activeDataSet: FalloutIncident[] = activeTab === "active" ? incidents : resolvedIncidents;
   const selectedIncident = activeDataSet.find((i: FalloutIncident) => i.id === selectedId) || activeDataSet[0];
