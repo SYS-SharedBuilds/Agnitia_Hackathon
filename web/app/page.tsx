@@ -357,7 +357,7 @@ export default function OverviewPage() {
             {/* Proportional horizontal stacked bar */}
             <div className="mt-5 space-y-2">
               <div className="w-full h-8 rounded-lg overflow-hidden flex shadow-2xs border border-[#E2E8F0]">
-                <div className="bg-[#22C55E] h-full flex items-center justify-center text-white text-[10.5px] font-bold font-mono tracking-wide" style={{ width: "88.5%" }} title="ACTIVE: 1,136 (88.5%)">
+                <div className="bg-[#19772f] h-full flex items-center justify-center text-white text-[10.5px] font-bold font-mono tracking-wide" style={{ width: "88.5%" }} title="ACTIVE: 1,136 (88.5%)">
                   88.5%
                 </div>
                 <div className="bg-[#8B7B65] h-full flex items-center justify-center text-white text-[9.5px] font-bold font-mono" style={{ width: "7.8%" }} title="ROLLED_BACK: 100 (7.8%)">
@@ -371,10 +371,10 @@ export default function OverviewPage() {
 
             {/* Breakdown Legend */}
             <div className="grid grid-cols-2 gap-2.5 pt-4 mt-4 border-t border-[#F1F5F9]">
-              <div className="p-2.5 bg-[#F0FDF4] rounded-lg border border-[#22C55E]/40 flex flex-col">
+              <div className="p-2.5 bg-[#F0FDF4] rounded-lg border border-[#19772f]/40 flex flex-col">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="h-2 w-2 rounded-full bg-[#22C55E]"></span>
-                  <span className="text-[11px] font-mono font-bold text-[#22C55E]">ACTIVE</span>
+                  <span className="h-2 w-2 rounded-full bg-[#19772f]"></span>
+                  <span className="text-[11px] font-mono font-bold text-[#19772f]">ACTIVE</span>
                 </div>
                 <div className="flex items-baseline justify-between">
                   <span className="text-[17px] font-mono font-bold text-[#0F172A]">1,136</span>
