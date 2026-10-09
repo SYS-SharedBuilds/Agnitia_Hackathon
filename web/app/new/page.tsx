@@ -132,29 +132,24 @@ export default function NewOrderPage() {
     setValidationErrors([]);
   };
 
-  const handleValidate = () => {
+  // Pure sync validation — no DOM side-effects. Used by both handleValidate and handleSubmit.
+  const runValidation = (): { errs: string[]; errorsMap: Record<string, string> } => {
     const errs: string[] = [];
     const errorsMap: Record<string, string> = {};
 
-    // Customer
     if (!fullName.trim()) {
       errs.push("customer_id: Customer full legal name or ID is required");
       errorsMap.fullName = "Full Legal Name is required";
     }
-
     if (!email.trim() || !email.includes("@")) {
       errs.push("email: Valid billing / service email address is required");
       errorsMap.email = "Valid email address required";
     }
-
-    // MSISDN (10-digit Indian Mobile Number)
     const cleanMsisdn = msisdn.replace(/\D/g, "");
     if (!cleanMsisdn || cleanMsisdn.length < 10) {
       errs.push("msisdn: Target phone MSISDN must contain 10 digits (e.g., 98201 54821)");
       errorsMap.msisdn = "Valid 10-digit mobile number required";
     }
-
-    // Address (Mandatory for Fiber broadband ONT dispatch)
     if (productType === "fiber") {
       if (!streetAddress.trim()) {
         errs.push("site_address: Flat / House / Street address is required for FTTH physical drop & ONT installation");
@@ -178,8 +173,6 @@ export default function NewOrderPage() {
         errorsMap.zip = "Valid 6-digit PIN Code required";
       }
     }
-
-    // SIM / ICCID (Mandatory for 5G & eSIM - 18 to 22 digits starting with 89)
     const cleanIccid = simIccid.replace(/\s+/g, "");
     if (!cleanIccid || cleanIccid.length < 18 || cleanIccid.length > 22 || !/^\d+$/.test(cleanIccid)) {
       errs.push("iccid: Invalid E.118 SIM identifier (expected 18-22 digits starting with 89)");
@@ -188,8 +181,6 @@ export default function NewOrderPage() {
       errs.push("iccid: E.118 SIM identifier must begin with telecom prefix '89'");
       errorsMap.simIccid = "Must begin with prefix 89";
     }
-
-    // Client Ref (Idempotency Key)
     if (!clientRef.trim()) {
       errs.push("client_order_ref: Missing client order reference (Idempotency Key)");
       errorsMap.clientRef = "Client order reference required";
@@ -197,9 +188,13 @@ export default function NewOrderPage() {
       errs.push("client_order_ref: Maximum length is 128 characters");
       errorsMap.clientRef = "Maximum 128 characters";
     }
+    return { errs, errorsMap };
+  };
+
+  const handleValidate = () => {
+    const { errs, errorsMap } = runValidation();
 
     setIsValidating(true);
-
     setTimeout(() => {
       setIsValidating(false);
       if (errs.length > 0) {
@@ -216,12 +211,10 @@ export default function NewOrderPage() {
         else if (firstKey === "clientRef") document.getElementById("client-ref")?.focus();
 
         document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        return false;
       } else {
         setValidationErrors([]);
         setValidatedSuccess(true);
-        document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        return true;
+        // No scroll on success — user is already looking at the submit button area
       }
     }, 250);
 
@@ -232,8 +225,13 @@ export default function NewOrderPage() {
     e.preventDefault();
     if (submitting) return;
 
-    const isValid = handleValidate();
-    if (!isValid) return;
+    const { errs } = runValidation();
+    if (errs.length > 0) {
+      setValidationErrors(errs);
+      setValidatedSuccess(false);
+      document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
 
     setSubmitting(true);
     try {

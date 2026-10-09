@@ -14,6 +14,7 @@ import {
   Node,
   MarkerType,
 } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { InteractiveDagNode, DagNodeData } from "@/components/ui/InteractiveDagNode";
 import { TaskRecord } from "@/lib/types";
 
@@ -39,49 +40,67 @@ export function OrderDagCanvas({
   dagMinimap,
   tasks = [],
 }: OrderDagProps) {
+  // Define standard layout coordinate registry for product task graphs
+  const positions: Record<string, { x: number; y: number }> = useMemo(
+    () => ({
+      validate_order: { x: 30, y: 155 },
+      // Inventory tasks (Wave 2, Upper branch)
+      reserve_inventory: { x: 270, y: 70 },
+      reserve_sim: { x: 270, y: 70 },
+      reserve_esim_profile: { x: 270, y: 70 },
+      // Billing account setup (Wave 2, Lower branch)
+      create_billing_account: { x: 270, y: 240 },
+      // Network provisioning (Wave 3, Upper branch)
+      provision_network: { x: 490, y: 70 },
+      provision_5g_core: { x: 490, y: 70 },
+      activate_network_profile: { x: 490, y: 70 },
+      // Verification tasks (Wave 4, Convergence)
+      verify_service: { x: 710, y: 70 },
+      verify_sim_registration: { x: 710, y: 70 },
+      verify_activation: { x: 710, y: 70 },
+      // Billing start (Wave 5)
+      start_billing: { x: 930, y: 155 },
+      // Completion (Wave 6)
+      complete_order: { x: 1150, y: 100 },
+      notify_customer: { x: 1150, y: 220 },
+      // Compensation / Rollback cascade positions
+      deprovision_network: { x: 490, y: 350 },
+      release_inventory: { x: 270, y: 350 },
+      void_billing_account: { x: 50, y: 350 },
+    }),
+    []
+  );
+
+  const systemLabels: Record<string, string> = useMemo(
+    () => ({
+      oms: "OMS",
+      inventory: "SIM/eSIM",
+      network: "Network",
+      billing: "OCS",
+      notification: "SMS-C",
+    }),
+    []
+  );
+
   const getInitialNodes = useCallback((): Node<DagNodeData>[] => {
     // If we have live tasks from the backend, build the DAG dynamically!
     if (tasks && tasks.length > 0) {
-
-      // Define standard layout coordinate registry for product task graphs
-      const positions: Record<string, { x: number; y: number }> = {
-        validate_order: { x: 30, y: 155 },
-        reserve_inventory: { x: 270, y: 70 },
-        reserve_sim: { x: 270, y: 70 },
-        reserve_esim_profile: { x: 270, y: 70 },
-        provision_network: { x: 490, y: 70 },
-        provision_5g_core: { x: 490, y: 70 },
-        activate_network_profile: { x: 490, y: 70 },
-        create_billing_account: { x: 270, y: 240 },
-        verify_service: { x: 710, y: 70 },
-        verify_sim_registration: { x: 710, y: 70 },
-        verify_activation: { x: 710, y: 70 },
-        start_billing: { x: 930, y: 155 },
-        complete_order: { x: 1150, y: 155 },
-        notify_customer: { x: 1150, y: 260 },
-        deprovision_network: { x: 490, y: 350 },
-        release_inventory: { x: 270, y: 350 },
-        void_billing_account: { x: 50, y: 350 },
-      };
-
-      const systemLabels: Record<string, string> = {
-        oms: "OMS",
-        inventory: "SIM/eSIM",
-        network: "Network",
-        billing: "OCS",
-        notification: "SMS-C",
-      };
-
       return tasks.map((t, idx) => {
-        const pos = positions[t.task_id] || { x: 30 + (idx % 4) * 230, y: 70 + Math.floor(idx / 4) * 110 };
+        const pos =
+          positions[t.task_id] || {
+            x: 30 + (idx % 4) * 230,
+            y: 70 + Math.floor(idx / 4) * 110,
+          };
         const isSelected = selectedTaskId === t.task_id;
-        
+
         let status: DagNodeData["status"] = "SUCCEEDED";
         let isStalled = false;
         const isBestEffort = t.task_id === "notify_customer";
 
         if (t.state === "RUNNING") {
-          status = "SUCCEEDED"; // rendered with animated attempt
+          status = "RUNNING";
+        } else if (t.state === "RETRYING") {
+          status = "RETRYING";
         } else if (t.state === "FAILED") {
           status = "FAILED";
         } else if (t.state === "COMPENSATION_FAILED") {
@@ -104,13 +123,17 @@ export function OrderDagCanvas({
           position: pos,
           data: {
             taskId: t.task_id,
-            system: systemLabels[t.system.toLowerCase()] || t.system.toUpperCase(),
+            system:
+              systemLabels[t.system.toLowerCase()] || t.system.toUpperCase(),
             name: nameFormatted,
             metaLeft: t.attempts > 1 ? `Attempt ×${t.attempts}` : t.state,
             metaRight: t.last_error ? "Error" : "Done",
             status,
             badgeText: t.attempts > 1 ? `×${t.attempts}` : undefined,
-            badgeStyle: t.state === "FAILED" || t.state === "COMPENSATION_FAILED" ? "failed" : "default",
+            badgeStyle:
+              t.state === "FAILED" || t.state === "COMPENSATION_FAILED"
+                ? "failed"
+                : "default",
             isResolved,
             isStalled,
             isBestEffort,
@@ -122,7 +145,7 @@ export function OrderDagCanvas({
       });
     }
 
-    // Default Fallback Demo Graph
+    // Default Fallback Demo Graph (S11 Fallout Scenario)
     return [
       {
         id: "validate_order",
@@ -279,11 +302,125 @@ export function OrderDagCanvas({
         },
       },
     ];
-  }, [isResolved, selectedTaskId, tasks]);
+  }, [isResolved, selectedTaskId, tasks, positions, systemLabels]);
 
-  const initialEdges: Edge[] = useMemo(
-    () => [
+  // Compute dynamic edges matching the product catalog task DAG
+  const computeEdges = useCallback((): Edge[] => {
+    if (tasks && tasks.length > 0) {
+      const taskIds = new Set(tasks.map((t) => t.task_id));
+      const edgesList: Edge[] = [];
+
+      const addEdgeIfBothExist = (
+        source: string,
+        target: string,
+        color = "#2563EB",
+        styleExtra?: React.CSSProperties
+      ) => {
+        if (taskIds.has(source) && taskIds.has(target)) {
+          edgesList.push({
+            id: `e-${source}-${target}`,
+            source,
+            target,
+            type: "smoothstep",
+            markerEnd: { type: MarkerType.ArrowClosed, color },
+            style: { stroke: color, strokeWidth: 2, ...styleExtra },
+          });
+        }
+      };
+
+      // Detect inventory task variant
+      const invTask = tasks.find((t) =>
+        ["reserve_inventory", "reserve_sim", "reserve_esim_profile"].includes(t.task_id)
+      )?.task_id;
+
+      // Detect network task variant
+      const netTask = tasks.find((t) =>
+        ["provision_network", "provision_5g_core", "activate_network_profile"].includes(t.task_id)
+      )?.task_id;
+
+      // Detect verify task variant
+      const verTask = tasks.find((t) =>
+        ["verify_service", "verify_sim_registration", "verify_activation"].includes(t.task_id)
+      )?.task_id;
+
       // Forward Execution Wave 1 -> Wave 2
+      if (invTask) {
+        addEdgeIfBothExist("validate_order", invTask);
+      }
+      addEdgeIfBothExist("validate_order", "create_billing_account");
+
+      // Wave 2 -> Wave 3
+      if (invTask && netTask) {
+        addEdgeIfBothExist(invTask, netTask);
+      }
+      if (invTask) {
+        addEdgeIfBothExist(invTask, "create_billing_account");
+      }
+
+      // Wave 3 -> Wave 4 (Verify)
+      if (netTask && verTask) {
+        addEdgeIfBothExist(netTask, verTask);
+      }
+      if (verTask) {
+        addEdgeIfBothExist("create_billing_account", verTask);
+      }
+
+      // Wave 4 -> Wave 5 (Start Billing)
+      if (verTask) {
+        addEdgeIfBothExist(verTask, "start_billing");
+      } else if (netTask) {
+        addEdgeIfBothExist(netTask, "start_billing");
+      }
+
+      // Wave 5 -> Wave 6 (Complete & Notify)
+      addEdgeIfBothExist("start_billing", "complete_order");
+      addEdgeIfBothExist("start_billing", "notify_customer");
+
+      // Compensation edges if compensation tasks exist in order
+      addEdgeIfBothExist(
+        "start_billing",
+        "deprovision_network",
+        "#ED2C2C",
+        { strokeWidth: 2.5, strokeDasharray: "4 4" }
+      );
+      addEdgeIfBothExist(
+        "deprovision_network",
+        "release_inventory",
+        "#8B7B65",
+        { strokeDasharray: "3 3" }
+      );
+      addEdgeIfBothExist(
+        "release_inventory",
+        "void_billing_account",
+        "#8B7B65",
+        { strokeDasharray: "3 3" }
+      );
+      addEdgeIfBothExist(
+        "void_billing_account",
+        "notify_customer",
+        "#94A3B8",
+        { strokeDasharray: "3 3" }
+      );
+
+      // If we couldn't match known patterns, construct sequential chain fallback
+      if (edgesList.length === 0 && tasks.length > 1) {
+        for (let i = 0; i < tasks.length - 1; i++) {
+          edgesList.push({
+            id: `e-${tasks[i].task_id}-${tasks[i + 1].task_id}`,
+            source: tasks[i].task_id,
+            target: tasks[i + 1].task_id,
+            type: "smoothstep",
+            markerEnd: { type: MarkerType.ArrowClosed, color: "#2563EB" },
+            style: { stroke: "#2563EB", strokeWidth: 2 },
+          });
+        }
+      }
+
+      return edgesList;
+    }
+
+    // Static fallback edges for S11 demo scenario
+    return [
       {
         id: "e-validate-reserve",
         source: "validate_order",
@@ -300,7 +437,6 @@ export function OrderDagCanvas({
         markerEnd: { type: MarkerType.ArrowClosed, color: "#2563EB" },
         style: { stroke: "#2563EB", strokeWidth: 2 },
       },
-      // Branch A Pipeline
       {
         id: "e-reserve-provision",
         source: "reserve_inventory",
@@ -317,7 +453,6 @@ export function OrderDagCanvas({
         markerEnd: { type: MarkerType.ArrowClosed, color: "#2563EB" },
         style: { stroke: "#2563EB", strokeWidth: 2 },
       },
-      // Branch Convergence to Start Charging
       {
         id: "e-verify-charging",
         source: "verify_service",
@@ -334,7 +469,6 @@ export function OrderDagCanvas({
         markerEnd: { type: MarkerType.ArrowClosed, color: "#2563EB" },
         style: { stroke: "#2563EB", strokeWidth: 2 },
       },
-      // Saga Compensation Rollback Cascade
       {
         id: "e-charging-deprovision",
         source: "start_billing",
@@ -368,14 +502,13 @@ export function OrderDagCanvas({
         markerEnd: { type: MarkerType.ArrowClosed, color: "#E2E8F0" },
         style: { stroke: "#E2E8F0", strokeWidth: 2, strokeDasharray: "3 3" },
       },
-    ],
-    []
-  );
+    ];
+  }, [tasks]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(getInitialNodes());
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(computeEdges());
 
-  // Sync node data updates when tasks, resolution, or selection changes
+  // Sync node and edge data updates when tasks, resolution, or selection changes
   useEffect(() => {
     if (tasks && tasks.length > 0) {
       const freshNodes = getInitialNodes();
@@ -394,6 +527,8 @@ export function OrderDagCanvas({
           };
         });
       });
+      // Synchronize dynamic edges
+      setEdges(computeEdges());
     } else {
       setNodes((currentNodes) =>
         currentNodes.map((node) => {
@@ -422,8 +557,9 @@ export function OrderDagCanvas({
           };
         })
       );
+      setEdges(computeEdges());
     }
-  }, [tasks, isResolved, selectedTaskId, getInitialNodes, setNodes]);
+  }, [tasks, isResolved, selectedTaskId, getInitialNodes, computeEdges, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) =>
@@ -449,7 +585,7 @@ export function OrderDagCanvas({
   );
 
   return (
-    <div className="w-full h-full relative select-none">
+    <div className="w-full h-full min-h-[580px] relative select-none">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -459,8 +595,8 @@ export function OrderDagCanvas({
         onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.4}
+        fitViewOptions={{ padding: 0.15 }}
+        minZoom={0.2}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
@@ -495,7 +631,7 @@ export function OrderDagCanvas({
       {/* Floating Interactive Guide Pill */}
       <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs border border-[#CBD5E1] rounded-full px-3 py-1 shadow-xs pointer-events-none flex items-center gap-2 text-[11px] font-mono text-[#0A1B2E]">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Interactive Canvas · Drag tags to restructure · Connect handles</span>
+        <span>Interactive Canvas · Drag nodes to restructure · Connect handles</span>
       </div>
     </div>
   );
