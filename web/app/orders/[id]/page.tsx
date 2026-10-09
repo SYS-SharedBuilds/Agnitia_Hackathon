@@ -11,9 +11,10 @@ export default function OrderDetailPage() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [, setTasks] = useState<TaskRecord[]>([]);
-  const [, setEvents] = useState<OrderEvent[]>([]);
+  const [events, setEvents] = useState<OrderEvent[]>([]);
   const [copied, setCopied] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert">("task");
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSeq, setCurrentSeq] = useState(31);
@@ -685,7 +686,7 @@ export default function OrderDetailPage() {
             <div className="flex items-center gap-2.5">
               <span className="material-symbols-outlined text-[18px] text-primary-container">account_tree</span>
               <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                Execution DAG &amp; Saga Compensation Graph
+                Order Orchestration: OMS → Inventory → Network → Verification → Billing → Notification
               </span>
               <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-mono">
                 Temporal v1.18.4
@@ -1233,7 +1234,10 @@ export default function OrderDetailPage() {
             </span>
           </div>
           <div className="flex items-center gap-2.5">
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#CBD5E1] transition-colors shadow-2xs">
+            <button
+              onClick={() => setIsAuditModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer"
+            >
               <span className="material-symbols-outlined text-[16px]">receipt_long</span>
               <span>View Audit Log</span>
             </button>
@@ -1249,6 +1253,85 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* MODAL: ORDER EVENT AUDIT LOG */}
+      {isAuditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#0A1B2E]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-[#CBD5E1] max-w-[760px] w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#0A1B2E] flex items-center justify-center text-white shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-sm text-headline-sm font-bold text-[#0A1B2E]">
+                    Order Lifecycle Audit Log
+                  </h3>
+                  <p className="font-label-sm text-label-sm text-[#64748B] font-mono">
+                    {orderId} · Cryptographic Linear Sequence
+                  </p>
+                </div>
+              </div>
+              <button
+                className="text-[#64748B] hover:text-[#0A1B2E] p-1 rounded-md transition-colors"
+                onClick={() => setIsAuditModalOpen(false)}
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Event List Body */}
+            <div className="p-6 overflow-y-auto space-y-3 flex-1 bg-[#F8FAFC]">
+              {(events && events.length > 0 ? events : [
+                { id: 1, seq: 1, type: "order.received", ts: "2026-07-12T14:22:04.110Z", payload: { client_ref: "EXT-CRM-991024", product: "Fiber Broadband 500" } },
+                { id: 2, seq: 2, type: "order.validated", ts: "2026-07-12T14:22:04.330Z", payload: { catalog_version: 1, acyclic_dag: true } },
+                { id: 3, seq: 3, type: "task.started", ts: "2026-07-12T14:22:04.420Z", payload: { task_id: "reserve_inventory", system: "inventory" } },
+                { id: 4, seq: 4, type: "task.succeeded", ts: "2026-07-12T14:22:04.760Z", payload: { task_id: "reserve_inventory", sim_iccid: "89014103211123456780" } },
+                { id: 5, seq: 5, type: "task.started", ts: "2026-07-12T14:22:04.780Z", payload: { task_id: "provision_network", system: "network" } },
+                { id: 6, seq: 6, type: "task.succeeded", ts: "2026-07-12T14:22:06.200Z", payload: { task_id: "provision_network", hlr_slice: "hlr-east-01" } },
+                { id: 7, seq: 7, type: "task.started", ts: "2026-07-12T14:22:06.210Z", payload: { task_id: "start_charging", system: "billing" } },
+                { id: 8, seq: 8, type: "task.failed", ts: "2026-07-12T14:22:07.820Z", payload: { task_id: "start_charging", error: "OCS_TIMEOUT_504" } },
+                { id: 9, seq: 9, type: "task.compensating", ts: "2026-07-12T14:22:07.850Z", payload: { task_id: "deprovision_network", attempt: 1 } },
+                { id: 10, seq: 10, type: "task.compensation_failed", ts: "2026-07-12T14:22:09.112Z", payload: { task_id: "deprovision_network", retries: 5, status: "HLR_GATEWAY_TIMEOUT_504" } },
+                { id: 11, seq: 11, type: "order.needs_attention", ts: "2026-07-12T14:22:09.120Z", payload: { reason: "Compensation halted; waiting for operator NOC review" } },
+              ]).map((evt, idx) => (
+                <div key={idx} className="p-3.5 bg-white rounded-lg border border-[#CBD5E1] shadow-2xs font-mono text-label-sm">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="px-1.5 py-0.2 rounded bg-[#0A1B2E] text-white font-bold text-[10.5px]">
+                        Seq #{evt.seq || idx + 1}
+                      </span>
+                      <span className="font-semibold text-[#0A1B2E] text-body-sm font-sans">
+                        {evt.type}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#64748B]">
+                      {new Date(evt.ts).toLocaleTimeString()} UTC
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[#475569] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0] overflow-x-auto">
+                    {JSON.stringify(evt.payload || {}, null, 2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 bg-white border-t border-[#E2E8F0] flex items-center justify-between shrink-0">
+              <span className="font-mono text-xs text-[#64748B]">
+                Cryptographic Merkle Tree Hash: sha256:e3b0c44298fc1c149afbf4c8996fb924
+              </span>
+              <button
+                onClick={() => setIsAuditModalOpen(false)}
+                className="px-4 py-1.5 rounded-lg font-body-md text-body-md font-medium bg-[#0A1B2E] text-white hover:bg-[#14263b] transition-colors"
+              >
+                Close Audit View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
