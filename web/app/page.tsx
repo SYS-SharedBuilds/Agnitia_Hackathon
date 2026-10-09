@@ -356,58 +356,59 @@ export default function OverviewPage() {
             </div>
             {/* Proportional horizontal stacked bar */}
             <div className="mt-5 space-y-2">
-              <div className="w-full h-8 rounded-lg overflow-hidden flex shadow-2xs border border-[#CBD5E1]">
-                <div className="bg-[#0A1B2E] h-full flex items-center justify-center text-white text-[10.5px] font-bold font-mono tracking-wide" style={{ width: "88.5%" }} title="ACTIVE: 1,136 (88.5%)">
+              <div className="w-full h-8 rounded-lg overflow-hidden flex shadow-2xs border border-[#E2E8F0]">
+                <div className="bg-[#22C55E] h-full flex items-center justify-center text-white text-[10.5px] font-bold font-mono tracking-wide" style={{ width: "88.5%" }} title="ACTIVE: 1,136 (88.5%)">
                   88.5%
                 </div>
-                <div className="bg-[#475569] h-full flex items-center justify-center text-white text-[9.5px] font-bold font-mono" style={{ width: "7.8%" }} title="ROLLED_BACK: 100 (7.8%)">
+                <div className="bg-[#8B7B65] h-full flex items-center justify-center text-white text-[9.5px] font-bold font-mono" style={{ width: "7.8%" }} title="ROLLED_BACK: 100 (7.8%)">
                   8%
                 </div>
-                <div className="bg-[#94A3B8] h-full min-w-[7px]" style={{ width: "1.2%" }} title="NEEDS_ATTENTION: 15 (1.2%)"></div>
-                <div className="bg-[#CBD5E1] h-full min-w-[12px]" style={{ width: "2.5%" }} title="CANCELLED: 33 (2.5%)"></div>
+                <div className="bg-[#EEB930] h-full min-w-[7px]" style={{ width: "1.2%" }} title="NEEDS_ATTENTION: 15 (1.2%)"></div>
+                <div className="bg-[#ED2C2C] h-full min-w-[12px]" style={{ width: "2.5%" }} title="CANCELLED: 33 (2.5%)"></div>
               </div>
-              <p className="text-[11px] text-[#64748B] text-right font-mono">Proportional status distribution</p>
+              <p className="text-[11px] text-[#475569] text-right font-mono">Proportional status distribution</p>
             </div>
+
             {/* Breakdown Legend */}
             <div className="grid grid-cols-2 gap-2.5 pt-4 mt-4 border-t border-[#F1F5F9]">
-              <div className="p-2.5 bg-white rounded-lg border border-[#CBD5E1] flex flex-col">
+              <div className="p-2.5 bg-[#F0FDF4] rounded-lg border border-[#22C55E]/40 flex flex-col">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
-                  <span className="text-[11px] font-mono font-bold text-[#0A1B2E]">ACTIVE</span>
+                  <span className="h-2 w-2 rounded-full bg-[#22C55E]"></span>
+                  <span className="text-[11px] font-mono font-bold text-[#22C55E]">ACTIVE</span>
                 </div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[17px] font-mono font-bold text-[#0A1B2E]">1,136</span>
-                  <span className="text-[11px] font-mono text-[#64748B] font-medium">88.5%</span>
+                  <span className="text-[17px] font-mono font-bold text-[#0F172A]">1,136</span>
+                  <span className="text-[11px] font-mono text-[#475569] font-medium">88.5%</span>
                 </div>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-[#CBD5E1] flex flex-col">
+              <div className="p-2.5 bg-[#F5F5F4] rounded-lg border border-[#8B7B65]/40 flex flex-col">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="h-2 w-2 rounded-full bg-[#475569]"></span>
-                  <span className="text-[11px] font-mono font-bold text-[#0A1B2E]">ROLLED_BACK</span>
+                  <span className="h-2 w-2 rounded-full bg-[#8B7B65]"></span>
+                  <span className="text-[11px] font-mono font-bold text-[#8B7B65]">ROLLED_BACK</span>
                 </div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[17px] font-mono font-bold text-[#0A1B2E]">100</span>
-                  <span className="text-[11px] font-mono text-[#64748B] font-medium">7.8%</span>
+                  <span className="text-[17px] font-mono font-bold text-[#0F172A]">100</span>
+                  <span className="text-[11px] font-mono text-[#475569] font-medium">7.8%</span>
                 </div>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-[#CBD5E1] flex flex-col">
+              <div className="p-2.5 bg-[#FEFCE8] rounded-lg border border-[#EEB930]/40 flex flex-col">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="h-2 w-2 rounded-full bg-[#94A3B8]"></span>
-                  <span className="text-[11px] font-mono font-bold text-[#0A1B2E]">NEEDS_ATTN</span>
+                  <span className="h-2 w-2 rounded-full bg-[#EEB930]"></span>
+                  <span className="text-[11px] font-mono font-bold text-[#EEB930]">NEEDS_ATTN</span>
                 </div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[17px] font-mono font-bold text-[#0A1B2E]">15</span>
-                  <span className="text-[11px] font-mono text-[#64748B] font-semibold">1.2%</span>
+                  <span className="text-[17px] font-mono font-bold text-[#0F172A]">15</span>
+                  <span className="text-[11px] font-mono text-[#475569] font-semibold">1.2%</span>
                 </div>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-[#CBD5E1] flex flex-col">
+              <div className="p-2.5 bg-[#FEF2F2] rounded-lg border border-[#ED2C2C]/40 flex flex-col">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="h-2 w-2 rounded-full bg-[#CBD5E1]"></span>
-                  <span className="text-[11px] font-mono font-bold text-[#0A1B2E]">CANCELLED</span>
+                  <span className="h-2 w-2 rounded-full bg-[#ED2C2C]"></span>
+                  <span className="text-[11px] font-mono font-bold text-[#ED2C2C]">CANCELLED</span>
                 </div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[17px] font-mono font-bold text-[#0A1B2E]">33</span>
-                  <span className="text-[11px] font-mono text-[#64748B] font-medium">2.5%</span>
+                  <span className="text-[17px] font-mono font-bold text-[#0F172A]">33</span>
+                  <span className="text-[11px] font-mono text-[#475569] font-medium">2.5%</span>
                 </div>
               </div>
             </div>

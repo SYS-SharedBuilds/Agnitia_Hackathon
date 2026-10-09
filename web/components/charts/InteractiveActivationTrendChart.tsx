@@ -211,20 +211,20 @@ export function InteractiveActivationTrendChart() {
 
           <div className="flex items-center gap-3.5 flex-wrap text-[11.5px] font-medium font-mono">
             <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#0A1B2E]"></span>
-              <span className="text-[#0A1B2E]">p50 ({visibleData[visibleData.length - 1]?.p50.toFixed(1)}s)</span>
+              <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB]"></span>
+              <span className="text-[#0F172A]">p50 ({visibleData[visibleData.length - 1]?.p50.toFixed(1)}s)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#475569]"></span>
-              <span className="text-[#0A1B2E]">p95 ({visibleData[visibleData.length - 1]?.p95.toFixed(1)}s)</span>
+              <span className="text-[#0F172A]">p95 ({visibleData[visibleData.length - 1]?.p95.toFixed(1)}s)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#94A3B8]"></span>
-              <span className="text-[#0A1B2E]">p99 ({visibleData[visibleData.length - 1]?.p99.toFixed(1)}s)</span>
+              <span className="h-2.5 w-2.5 rounded-full bg-[#EEB930]"></span>
+              <span className="text-[#0F172A]">p99 Spikes ({visibleData[visibleData.length - 1]?.p99.toFixed(1)}s)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3.5 border-b-2 border-dashed border-[#0A1B2E]"></span>
-              <span className="text-[#0A1B2E]">SLO 6.0s Target</span>
+              <span className="w-3.5 border-b-2 border-dashed border-[#ED2C2C]"></span>
+              <span className="text-[#0F172A]">SLO 6.0s Target</span>
             </div>
           </div>
         </div>
@@ -265,7 +265,7 @@ export function InteractiveActivationTrendChart() {
 
           {/* SLO Reference Line */}
           <line
-            stroke="#0A1B2E"
+            stroke="#ED2C2C"
             strokeDasharray="5 4"
             strokeWidth="1.6"
             x1={paddingLeft}
@@ -273,22 +273,22 @@ export function InteractiveActivationTrendChart() {
             y1={getY(6.0)}
             y2={getY(6.0)}
           />
-          <rect fill="#F1F5F9" height="18" rx="3" stroke="#CBD5E1" width="95" x={paddingLeft + innerWidth + 5} y={getY(6.0) - 9} />
-          <text className="text-[9.5px] fill-[#0A1B2E] font-mono font-bold" textAnchor="middle" x={paddingLeft + innerWidth + 52} y={getY(6.0) + 3}>
+          <rect fill="#FEF2F2" height="18" rx="3" stroke="#ED2C2C" width="95" x={paddingLeft + innerWidth + 5} y={getY(6.0) - 9} />
+          <text className="text-[9.5px] fill-[#ED2C2C] font-mono font-bold" textAnchor="middle" x={paddingLeft + innerWidth + 52} y={getY(6.0) + 3}>
             SLO 6.0s Target
           </text>
 
           {/* Curves */}
-          <path d={pathP99} fill="none" stroke="#94A3B8" strokeLinecap="round" strokeWidth="2.4" />
-          <path d={pathP95} fill="none" stroke="#475569" strokeLinecap="round" strokeWidth="2.4" />
-          <path d={pathP50} fill="none" stroke="#0A1B2E" strokeLinecap="round" strokeWidth="2.4" />
+          <path d={pathP99} fill="none" stroke="#EEB930" strokeLinecap="round" strokeWidth="2.4" />
+          <path d={pathP95} fill="none" stroke="#475569" strokeLinecap="round" strokeWidth="2.2" />
+          <path d={pathP50} fill="none" stroke="#2563EB" strokeLinecap="round" strokeWidth="2.6" />
 
           {/* Dots on points */}
           {visibleData.map((d, i) => (
             <g key={i}>
-              <circle cx={getX(i)} cy={getY(d.p99)} fill="#94A3B8" r="3" stroke="#FFFFFF" strokeWidth="1.5" />
+              <circle cx={getX(i)} cy={getY(d.p99)} fill="#EEB930" r="3.5" stroke="#FFFFFF" strokeWidth="1.5" />
               <circle cx={getX(i)} cy={getY(d.p95)} fill="#475569" r="3" stroke="#FFFFFF" strokeWidth="1.5" />
-              <circle cx={getX(i)} cy={getY(d.p50)} fill="#0A1B2E" r="3.5" stroke="#FFFFFF" strokeWidth="1.5" />
+              <circle cx={getX(i)} cy={getY(d.p50)} fill="#2563EB" r="4" stroke="#FFFFFF" strokeWidth="1.5" />
             </g>
           ))}
 

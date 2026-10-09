@@ -95,11 +95,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-white font-body-md text-[#0A1B2E] antialiased flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] font-body-md text-[#0F172A] antialiased flex flex-col">
       {/* Backdrop for mobile drawer */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-[#0A1B2E]/50 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-40 bg-[#0F172A]/50 backdrop-blur-xs md:hidden"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -115,20 +115,20 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           {/* Logo & Version */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-[#E2E8F0] shrink-0 bg-white">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 group">
-              <div className="h-8 w-8 rounded-lg bg-[#0A1B2E] text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:bg-[#14263b] transition-colors">
+              <div className="h-8 w-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:bg-[#1D4ED8] transition-colors">
                 ⚡
               </div>
-              <span className="font-headline-sm text-headline-sm text-[#0A1B2E] tracking-tight font-bold">
+              <span className="font-headline-sm text-headline-sm text-[#0F172A] tracking-tight font-bold">
                 SwitchOn
               </span>
             </Link>
             <div className="flex items-center gap-1.5">
-              <span className="font-label-sm text-label-sm bg-white text-[#0A1B2E] px-1.5 py-0.5 rounded font-mono font-semibold border border-[#CBD5E1]">
+              <span className="font-label-sm text-label-sm bg-white text-[#0F172A] px-1.5 py-0.5 rounded font-mono font-semibold border border-[#E2E8F0]">
                 v2.4
               </span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="md:hidden p-1 text-[#64748B] hover:text-[#0A1B2E] rounded-md"
+                className="md:hidden p-1 text-[#475569] hover:text-[#0F172A] rounded-md"
                 aria-label="Close navigation"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -376,7 +376,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="relative pt-18 sm:pt-20 px-3 sm:px-6 lg:px-8 pb-10 min-h-[calc(100vh-56px)] bg-white flex-1 text-[#0A1B2E] max-w-[2400px] w-full mx-auto">
+        <main className="relative pt-18 sm:pt-20 px-3 sm:px-6 lg:px-8 pb-10 min-h-[calc(100vh-56px)] bg-[#F8FAFC] flex-1 text-[#0F172A] max-w-[2400px] w-full mx-auto">
           {children}
         </main>
       </div>

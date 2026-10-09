@@ -176,22 +176,22 @@ export default function TamperedCertificatePage() {
         {/* Centered Verified Receipt Document Container */}
         <div className="w-full max-w-5xl bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant/30 p-6 md:p-10 mb-8 flex flex-col gap-6">
           {/* 1. Prominent Tampered Failure Alert Banner */}
-          <div className="bg-error-container/40 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-error/30">
+          <div className="bg-[#ED2C2C] text-white rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-[#ED2C2C] shadow-md">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-error flex items-center justify-center shrink-0 text-white">
+              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0 text-white">
                 <span className="material-symbols-outlined text-[24px]">gpp_bad</span>
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-1 font-headline-sm text-headline-sm text-error font-semibold">
-                  <span>Verification FAILED — Hash mismatch at event #14 (NetworkSliceCreated)</span>
+                <div className="flex items-center gap-1 font-headline-sm text-headline-sm text-white font-bold tracking-tight">
+                  <span>Verification FAILED — Hash Mismatch at Event #14 (NetworkSliceCreated)</span>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                <p className="font-body-sm text-body-sm text-white/90 mt-0.5">
                   Computed hash{" "}
-                  <code className="font-label-sm text-label-sm font-semibold text-error bg-surface-container-lowest px-1 rounded font-mono">
+                  <code className="font-label-sm text-label-sm font-bold text-white bg-black/25 px-1.5 py-0.5 rounded font-mono">
                     0x7c9b…e4a1
                   </code>{" "}
                   does not match recorded state digest{" "}
-                  <code className="font-label-sm text-label-sm font-semibold text-on-surface bg-surface-container-lowest px-1 rounded font-mono">
+                  <code className="font-label-sm text-label-sm font-bold text-white bg-black/25 px-1.5 py-0.5 rounded font-mono">
                     0xDEAD…BEEF
                   </code>
                   . Cryptographic proof broke linearizability guarantees.
