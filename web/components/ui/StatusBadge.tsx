@@ -30,10 +30,10 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
     case "PENDING":
     case "DRAFT":
     case "DRAFT_/_PENDING":
-      style = "bg-white text-[#64748B] border-[#E2E8F0]";
+      style = "bg-[#FEFCE8] text-[#EEB930] border-[#EEB930]";
       content = (
         <>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8]"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#EEB930]"></span>
           <span>{status}</span>
         </>
       );
@@ -41,12 +41,12 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "RUNNING":
     case "IN_PROGRESS":
-      style = "bg-white text-[#0A1B2E] border-[#0A1B2E]";
+      style = "bg-[#EFF6FF] text-[#2563EB] border-[#2563EB]";
       content = (
         <>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
           </span>
           <span className="font-semibold tracking-wide">RUNNING</span>
         </>
@@ -55,57 +55,70 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "SUCCEEDED":
     case "COMPLETED":
-      style = "bg-white text-[#0A1B2E] border-[#CBD5E1]";
+    case "ACTIVE":
+      style = "bg-[#F0FDF4] text-[#22C55E] border-[#22C55E]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E]">check_circle</span>
+          <span className="material-symbols-outlined text-[13px] text-[#22C55E]">check_circle</span>
           <span className="font-semibold">SUCCEEDED</span>
         </>
       );
       break;
 
-    case "FAILED":
-      style = "bg-[#0A1B2E] text-white border-[#0A1B2E]";
+    case "RETRYING":
+      style = "bg-[#FEFCE8] text-[#EEB930] border-[#EEB930]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-white">cancel</span>
-          <span className="font-semibold text-white">FAILED</span>
+          <span className="material-symbols-outlined text-[13px] text-[#EEB930] animate-spin">refresh</span>
+          <span className="font-semibold">RETRYING</span>
+        </>
+      );
+      break;
+
+    case "FAILED":
+      style = "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C]";
+      content = (
+        <>
+          <span className="material-symbols-outlined text-[13px] text-[#ED2C2C]">cancel</span>
+          <span className="font-semibold text-[#ED2C2C]">FAILED</span>
         </>
       );
       break;
 
     case "NEEDS_ATTENTION":
-      style = "bg-white text-[#0A1B2E] border-[#0A1B2E] font-bold";
+      style = "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C] font-bold";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E]">priority_high</span>
-          <span className="font-semibold text-[#0A1B2E]">NEEDS ATTENTION</span>
+          <span className="material-symbols-outlined text-[13px] text-[#ED2C2C]">priority_high</span>
+          <span className="font-semibold text-[#ED2C2C]">NEEDS ATTENTION</span>
         </>
       );
       break;
 
     case "COMPENSATING":
-      style = "bg-white text-[#0A1B2E] border-[#CBD5E1]";
+    case "ROLLING_BACK":
+      style = "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E] animate-spin">sync</span>
-          <span className="font-semibold">COMPENSATING</span>
+          <span className="material-symbols-outlined text-[13px] text-[#ED2C2C] animate-spin">sync</span>
+          <span className="font-semibold">ROLLING BACK</span>
         </>
       );
       break;
 
     case "COMPENSATED":
-      style = "bg-white text-[#64748B] border-[#CBD5E1]";
+    case "ROLLED_BACK":
+      style = "bg-[#F5F5F4] text-[#8B7B65] border-[#8B7B65]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#64748B]">undo</span>
+          <span className="material-symbols-outlined text-[13px] text-[#8B7B65]">undo</span>
           <span className="font-semibold">COMPENSATED</span>
         </>
       );
       break;
 
     case "CANCELLED":
-      style = "bg-white text-[#94A3B8] border-[#E2E8F0]";
+      style = "bg-[#F5F5F4] text-[#8B7B65] border-[#E2E8F0]";
       content = <span className="line-through">{status}</span>;
       break;
 

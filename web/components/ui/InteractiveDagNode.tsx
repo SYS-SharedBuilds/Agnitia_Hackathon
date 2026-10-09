@@ -27,51 +27,80 @@ export const InteractiveDagNode = ({
 }) => {
   const isSelected = selected || data.isSelected;
 
+  const isFailed = data.status === "FAILED" || data.badgeStyle === "failed";
+  const isSucceeded = data.status === "SUCCEEDED" || data.status === "RESOLVED";
+  const isRunning = data.status === "RUNNING";
+  const isRetrying = data.status === "RETRYING";
+  const isCompensated = data.status === "COMPENSATED" || data.status === "STALLED";
+
+  // Derive card background, border color, and accent
+  let cardBg = "bg-white";
+  let cardBorder = "border-[#E2E8F0]";
+  let accentBarColor = "#2563EB";
+  let haloShadow = "";
+
+  if (isSucceeded) {
+    cardBg = "bg-[#F0FDF4]";
+    cardBorder = "border-[#22C55E]";
+    accentBarColor = "#22C55E";
+  } else if (isFailed) {
+    cardBg = "bg-[#FEF2F2]";
+    cardBorder = "border-[#ED2C2C]";
+    accentBarColor = "#ED2C2C";
+    haloShadow = "shadow-[0_0_14px_#ed2c2cb3]";
+  } else if (isRunning) {
+    cardBg = "bg-[#EFF6FF]";
+    cardBorder = "border-[#2563EB]";
+    accentBarColor = "#2563EB";
+  } else if (isRetrying) {
+    cardBg = "bg-[#FEFCE8]";
+    cardBorder = "border-[#EEB930]";
+    accentBarColor = "#EEB930";
+  } else if (isCompensated) {
+    cardBg = "bg-[#F5F5F4]";
+    cardBorder = "border-[#8B7B65]";
+    accentBarColor = "#8B7B65";
+  }
+
   return (
     <div className="relative group">
       {/* Target handle on Left */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-2.5 !h-2.5 !bg-[#0A1B2E] !border-2 !border-white transition-transform hover:!scale-125"
+        className="!w-2.5 !h-2.5 !bg-[#0F172A] !border-2 !border-white transition-transform hover:!scale-125"
       />
       {/* Top handle for branch convergence / re-routing */}
       <Handle
         type="target"
         id="top"
         position={Position.Top}
-        className="!w-2 !h-2 !bg-[#0A1B2E] !border-2 !border-white opacity-0 group-hover:opacity-100 transition-opacity"
+        className="!w-2 !h-2 !bg-[#0F172A] !border-2 !border-white opacity-0 group-hover:opacity-100 transition-opacity"
       />
 
       {/* Main card box */}
       <div
-        className={`w-[175px] min-h-[74px] p-2.5 rounded-lg flex flex-col justify-between transition-all select-none shadow-xs border ${
+        className={`w-[175px] min-h-[74px] p-2.5 rounded-lg flex flex-col justify-between transition-all select-none border ${cardBg} ${cardBorder} ${haloShadow} ${
           data.isStalled
-            ? "bg-[#F8FAFC] opacity-80"
+            ? "opacity-85"
             : data.isBestEffort
-            ? "bg-white opacity-85 border-dashed border-2"
-            : "bg-white hover:shadow-md"
+            ? "border-dashed border-2"
+            : "hover:shadow-md"
         } ${
           isSelected
-            ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E] shadow-md !opacity-100"
-            : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+            ? "!border-[#0F172A] ring-2 ring-[#0F172A] shadow-md !opacity-100"
+            : ""
         }`}
         style={{
           borderLeft: data.isBestEffort
             ? undefined
-            : data.isStalled
-            ? "4px solid #CBD5E1"
-            : "4px solid #0A1B2E",
+            : `4px solid ${accentBarColor}`,
         }}
       >
         {/* Header row: system tag & status */}
         <div className="flex items-center justify-between gap-1 mb-1">
           <span
-            className={`font-mono text-[10px] px-1.5 py-0.5 rounded font-bold uppercase truncate max-w-[85px] ${
-              data.badgeStyle === "noc"
-                ? "bg-[#0A1B2E] text-white"
-                : "bg-[#F1F5F9] text-[#0A1B2E]"
-            }`}
+            className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold uppercase truncate max-w-[85px] bg-[#0F172A] text-white"
           >
             {data.system}
           </span>
@@ -80,40 +109,47 @@ export const InteractiveDagNode = ({
             {data.badgeText && (
               <span
                 className={`font-mono text-[9px] px-1 py-0.2 rounded border font-bold ${
-                  data.badgeStyle === "failed" || data.status === "FAILED"
-                    ? "bg-red-50 text-red-700 border-red-200"
-                    : "bg-white text-[#0A1B2E] border-[#CBD5E1]"
+                  isFailed
+                    ? "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C]"
+                    : "bg-white text-[#0F172A] border-[#E2E8F0]"
                 }`}
               >
                 {data.badgeText}
               </span>
             )}
 
-            {data.status === "SUCCEEDED" && (
-              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E]"></span>
-                SUCCEEDED
+            {isSucceeded && (
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#22C55E] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
+                {data.status === "RESOLVED" ? "RESOLVED" : "ACTIVE"}
               </span>
             )}
 
-            {data.status === "FAILED" && (
-              <span className="inline-flex items-center gap-0.5 font-mono text-[10px] text-red-600 font-bold">
+            {isFailed && (
+              <span className="inline-flex items-center gap-0.5 font-mono text-[10px] text-[#ED2C2C] font-bold">
                 <span className="material-symbols-outlined text-[13px]">warning</span>
                 FAILED
               </span>
             )}
 
-            {data.status === "RESOLVED" && (
-              <span className="inline-flex items-center gap-0.5 font-mono text-[10px] text-[#0A1B2E] font-bold">
-                <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                RESOLVED
+            {isRunning && (
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#2563EB] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-ping"></span>
+                RUNNING
               </span>
             )}
 
-            {data.status === "STALLED" && (
-              <span className="inline-flex items-center gap-0.5 font-mono text-[10px] text-[#64748B] font-semibold">
-                <span className="material-symbols-outlined text-[12px]">pause_circle</span>
-                STALLED
+            {isRetrying && (
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#EEB930] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#EEB930] animate-pulse"></span>
+                RETRY
+              </span>
+            )}
+
+            {isCompensated && !isFailed && !isSucceeded && (
+              <span className="inline-flex items-center gap-0.5 font-mono text-[10px] text-[#8B7B65] font-semibold">
+                <span className="material-symbols-outlined text-[12px]">undo</span>
+                UNDONE
               </span>
             )}
 
@@ -126,21 +162,21 @@ export const InteractiveDagNode = ({
         </div>
 
         {/* Task Name */}
-        <div className="text-[12px] font-semibold text-[#0A1B2E] truncate mb-1">
+        <div className="text-[12px] font-semibold text-[#0F172A] truncate mb-1">
           {data.name}
         </div>
 
         {/* Footer row: Meta Left & Meta Right */}
-        <div className="flex items-center justify-between font-mono text-[10px] text-[#64748B] pt-0.5 border-t border-slate-100/60">
+        <div className="flex items-center justify-between font-mono text-[10px] text-[#475569] pt-0.5 border-t border-[#E2E8F0]/70">
           <span className="truncate max-w-[95px]">{data.metaLeft}</span>
           <span className="shrink-0">{data.metaRight}</span>
         </div>
       </div>
 
-      {/* Tooltip for special alerts (e.g. NOC resolution / stall info) */}
+      {/* Tooltip for special alerts */}
       {data.tooltipText && (
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[280px] bg-white rounded-lg shadow-xl border border-[#CBD5E1] p-2.5 z-40 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#0A1B2E] mb-0.5">
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[280px] bg-white rounded-lg shadow-xl border border-[#E2E8F0] p-2.5 z-40 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#0F172A] mb-0.5">
             <span className="material-symbols-outlined text-[14px]">
               {data.isResolved ? "task_alt" : "error"}
             </span>
@@ -157,13 +193,13 @@ export const InteractiveDagNode = ({
         type="source"
         id="bottom"
         position={Position.Bottom}
-        className="!w-2 !h-2 !bg-[#0A1B2E] !border-2 !border-white opacity-0 group-hover:opacity-100 transition-opacity"
+        className="!w-2 !h-2 !bg-[#0F172A] !border-2 !border-white opacity-0 group-hover:opacity-100 transition-opacity"
       />
       {/* Source handle on Right */}
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-2.5 !h-2.5 !bg-[#0A1B2E] !border-2 !border-white transition-transform hover:!scale-125"
+        className="!w-2.5 !h-2.5 !bg-[#0F172A] !border-2 !border-white transition-transform hover:!scale-125"
       />
     </div>
   );

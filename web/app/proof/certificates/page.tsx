@@ -518,19 +518,19 @@ export default function CertificatesProofPage() {
                     key={evt.step}
                     className={`relative flex flex-col md:flex-row md:items-center justify-between p-3 rounded-lg transition-all gap-2 border ${
                       mutated
-                        ? "bg-error-container/40 border-error/40"
-                        : "bg-surface-container-low hover:bg-surface-container-high border-outline-variant/20"
+                        ? "bg-[#FEF2F2] border-[#ED2C2C]"
+                        : "bg-white hover:bg-[#F0FDF4]/40 border-[#22C55E]/70 shadow-2xs"
                     }`}
                   >
                     <div
-                      className={`absolute -left-6 sm:-left-8 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full ring-4 ring-surface-container-lowest transition-colors ${
-                        mutated ? "bg-error" : idx === 7 ? "bg-secondary" : "bg-primary"
+                      className={`absolute -left-6 sm:-left-8 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full ring-4 ring-white transition-colors ${
+                        mutated ? "bg-[#ED2C2C]" : "bg-[#22C55E]"
                       }`}
                     ></div>
                     <div className="flex items-center gap-3">
                       <span
                         className={`font-label-sm text-label-sm font-semibold px-2 py-0.5 rounded font-mono ${
-                          mutated ? "text-error bg-error/10" : idx === 7 ? "text-secondary bg-secondary/10" : "text-primary bg-primary/10"
+                          mutated ? "text-[#ED2C2C] bg-[#FEF2F2] border border-[#ED2C2C]" : "text-[#22C55E] bg-[#F0FDF4] border border-[#22C55E]"
                         }`}
                       >
                         {evt.step}
