@@ -1,9 +1,10 @@
-import "./globals.css";
+import type { Metadata } from "next";
 import Shell from "./Shell";
+import "./globals.css";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "SwitchOn — Telecom Service Activation Orchestrator",
-  description: "Durable saga orchestration control plane for telecom activations",
+  description: "Durable telecom service activation orchestrator powered by Temporal Python SDK, FastAPI, Redis Streams, and Next.js.",
 };
 
 export default function RootLayout({
@@ -13,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-[#F6F8FB] font-body-md text-on-surface antialiased">
+      <body className="bg-white font-body-md text-[#0A1B2E] antialiased">
         <Shell>{children}</Shell>
       </body>
     </html>

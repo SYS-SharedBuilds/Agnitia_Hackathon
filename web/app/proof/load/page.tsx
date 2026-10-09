@@ -40,7 +40,7 @@ export default function LoadGeneratorPage() {
               12
             </span>
           </Link>
-          <button className="px-3.5 py-2 rounded-lg font-body-md text-body-md font-semibold text-primary bg-[#EEF2FF] shadow-sm flex items-center gap-2">
+          <button className="px-3.5 py-2 rounded-lg font-body-md text-body-md font-semibold text-primary bg-[#F8FAFC] shadow-sm flex items-center gap-2">
             <span className="material-symbols-outlined text-[17px] text-primary">speed</span>
             <span>Load Generator</span>
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
@@ -87,7 +87,7 @@ export default function LoadGeneratorPage() {
       </div>
 
       {/* DETERMINISTIC WORKLOAD NOTIFICATION BANNER */}
-      <div className="bg-gradient-to-r from-[#EEF2FF] via-[#F5F3FF] to-white border border-[#C7D2FE] rounded-lg p-3.5 flex items-center justify-between text-on-surface text-body-sm font-body-sm shadow-xs">
+      <div className="bg-gradient-to-r from-[#F8FAFC] via-[#F5F3FF] to-white border border-[#CBD5E1] rounded-lg p-3.5 flex items-center justify-between text-on-surface text-body-sm font-body-sm shadow-xs">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 rounded-md bg-primary-container text-white items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-[18px]">hub</span>
@@ -102,7 +102,7 @@ export default function LoadGeneratorPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]"></span>
             <span>Mesh synchronized</span>
           </span>
-          <span className="text-[#C7D2FE]">·</span>
+          <span className="text-[#CBD5E1]">·</span>
           <span className="font-mono">Sync latency: 1.1ms</span>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function LoadGeneratorPage() {
                 <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Load Profile Configuration</h2>
                 <p className="font-body-sm text-body-sm text-[#64748B] mt-0.5">Parameters for synthetic saga generation</p>
               </div>
-              <span className="font-label-sm text-label-sm font-medium px-2.5 py-1 rounded-full bg-[#EEF2FF] text-primary border border-[#C7D2FE]">
+              <span className="font-label-sm text-label-sm font-medium px-2.5 py-1 rounded-full bg-[#F8FAFC] text-primary border border-[#CBD5E1]">
                 Synthetic Traffic Generator
               </span>
             </div>
@@ -380,10 +380,10 @@ export default function LoadGeneratorPage() {
                 </h2>
                 <p className="font-body-sm text-body-sm text-[#64748B] mt-0.5">Live distributed execution metrics across 8 k6 pods</p>
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#2563EB] font-label-sm text-label-sm font-mono">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0A1B2E] font-label-sm text-label-sm font-mono">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
                 </span>
                 <span>RUNNING (84% Completed)</span>
                 <span className="text-blue-300">·</span>
@@ -410,15 +410,15 @@ export default function LoadGeneratorPage() {
               </div>
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3">
                 <div className="font-body-sm text-[12px] text-[#64748B]">Worker Errors</div>
-                <div className="font-mono text-headline-md text-headline-md font-bold text-[#16A34A] mt-0.5">0</div>
-                <div className="font-label-sm text-[11px] text-[#16A34A] font-semibold mt-1 inline-flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
-                  <span>0 Failures / Green</span>
+                <div className="font-mono text-headline-md text-headline-md font-bold text-[#0A1B2E] mt-0.5">0</div>
+                <div className="font-label-sm text-[11px] text-[#0A1B2E] font-semibold mt-1 inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
+                  <span>0 Failures / Nominal</span>
                 </div>
               </div>
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3">
                 <div className="font-body-sm text-[12px] text-[#64748B]">ETA Remaining</div>
-                <div className="font-mono text-headline-md text-headline-md font-bold text-on-surface mt-0.5">2.4s</div>
+                <div className="font-mono text-headline-md text-headline-md font-bold text-[#0A1B2E] mt-0.5">2.4s</div>
                 <div className="font-label-sm text-[11px] text-[#64748B] mt-1">16 sagas left</div>
               </div>
             </div>
@@ -481,7 +481,7 @@ export default function LoadGeneratorPage() {
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono group-hover:text-on-surface font-semibold">
                       38
                     </span>
-                    <div className="w-full bg-[#4F46E5] hover:bg-[#4338CA] rounded-t-sm transition-all" style={{ height: "85%" }}></div>
+                    <div className="w-full bg-[#0A1B2E] hover:bg-[#1E293B] rounded-t-sm transition-all" style={{ height: "85%" }}></div>
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono mt-1">0-1s</span>
                   </div>
                   {/* Bin 1-2s: 32 orders */}
@@ -489,7 +489,7 @@ export default function LoadGeneratorPage() {
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono group-hover:text-on-surface font-semibold">
                       32
                     </span>
-                    <div className="w-full bg-[#6366F1] hover:bg-[#4F46E5] rounded-t-sm transition-all" style={{ height: "72%" }}></div>
+                    <div className="w-full bg-[#1E293B] hover:bg-[#334155] rounded-t-sm transition-all" style={{ height: "72%" }}></div>
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono mt-1">1-2s</span>
                   </div>
                   {/* Bin 2-3s: 10 orders */}
@@ -497,7 +497,7 @@ export default function LoadGeneratorPage() {
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono group-hover:text-on-surface font-semibold">
                       10
                     </span>
-                    <div className="w-full bg-[#818CF8] hover:bg-[#6366F1] rounded-t-sm transition-all" style={{ height: "24%" }}></div>
+                    <div className="w-full bg-[#334155] hover:bg-[#475569] rounded-t-sm transition-all" style={{ height: "24%" }}></div>
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono mt-1">2-3s</span>
                   </div>
                   {/* Bin 3-4s: 3 orders */}
@@ -505,7 +505,7 @@ export default function LoadGeneratorPage() {
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono group-hover:text-on-surface font-semibold">
                       3
                     </span>
-                    <div className="w-full bg-[#A5B4FC] hover:bg-[#818CF8] rounded-t-sm transition-all" style={{ height: "8%" }}></div>
+                    <div className="w-full bg-[#475569] hover:bg-[#64748B] rounded-t-sm transition-all" style={{ height: "8%" }}></div>
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono mt-1">3-4s</span>
                   </div>
                   {/* Bin 4-5s: 1 order */}
@@ -513,7 +513,7 @@ export default function LoadGeneratorPage() {
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono group-hover:text-on-surface font-semibold">
                       1
                     </span>
-                    <div className="w-full bg-[#C7D2FE] hover:bg-[#A5B4FC] rounded-t-sm transition-all" style={{ height: "3%" }}></div>
+                    <div className="w-full bg-[#94A3B8] hover:bg-[#CBD5E1] rounded-t-sm transition-all" style={{ height: "3%" }}></div>
                     <span className="font-label-sm text-[10px] text-[#64748B] font-mono mt-1">4-5s</span>
                   </div>
                   {/* Bin >5s: 0 orders */}
@@ -524,7 +524,7 @@ export default function LoadGeneratorPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[11px] font-body-sm text-[#64748B] pt-1">
-                  <span className="text-[#10B981] font-medium">✓ 100% of activations within 6.00s telecommunication SLA</span>
+                  <span className="text-[#0A1B2E] font-medium">✓ 100% of activations within 6.00s telecommunication SLA</span>
                   <span className="font-mono">Total Measured: 84 sagas</span>
                 </div>
               </div>
@@ -533,35 +533,35 @@ export default function LoadGeneratorPage() {
             {/* Outcome Counters Strip */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
               {/* Active Success */}
-              <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg p-3.5 flex flex-col justify-between space-y-2">
+              <div className="bg-white border border-[#CBD5E1] rounded-lg p-3.5 flex flex-col justify-between space-y-2 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm font-semibold text-[#166534]">ACTIVE</span>
-                  <span className="material-symbols-outlined text-[18px] text-[#16A34A]">check_circle</span>
+                  <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">ACTIVE</span>
+                  <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">check_circle</span>
                 </div>
-                <div className="font-mono text-headline-lg text-headline-lg font-bold text-[#15803D]">72</div>
-                <p className="font-body-sm text-[11px] text-[#166534] leading-tight">
+                <div className="font-mono text-headline-lg text-headline-lg font-bold text-[#0A1B2E]">72</div>
+                <p className="font-body-sm text-[11px] text-[#64748B] leading-tight">
                   Successfully provisioned in OMS, HLR, and OCS
                 </p>
               </div>
               {/* Clean Rollback */}
-              <div className="bg-[#EEF2FF] border border-[#C7D2FE] rounded-lg p-3.5 flex flex-col justify-between space-y-2">
+              <div className="bg-white border border-[#CBD5E1] rounded-lg p-3.5 flex flex-col justify-between space-y-2 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm font-semibold text-[#3730A3]">ROLLED_BACK</span>
-                  <span className="material-symbols-outlined text-[18px] text-[#4F46E5]">replay</span>
+                  <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">ROLLED_BACK</span>
+                  <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">replay</span>
                 </div>
-                <div className="font-mono text-headline-lg text-headline-lg font-bold text-[#4338CA]">10</div>
-                <p className="font-body-sm text-[11px] text-[#3730A3] leading-tight">
+                <div className="font-mono text-headline-lg text-headline-lg font-bold text-[#0A1B2E]">10</div>
+                <p className="font-body-sm text-[11px] text-[#64748B] leading-tight">
                   Compensated without leaks; Merkle tombstoned
                 </p>
               </div>
               {/* Fallout Needs Attention */}
-              <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-lg p-3.5 flex flex-col justify-between space-y-2">
+              <div className="bg-white border border-[#CBD5E1] rounded-lg p-3.5 flex flex-col justify-between space-y-2 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm font-semibold text-[#92400E]">NEEDS_ATTENTION</span>
-                  <span className="material-symbols-outlined text-[18px] text-[#D97706]">warning</span>
+                  <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">NEEDS_ATTENTION</span>
+                  <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">warning</span>
                 </div>
-                <div className="font-mono text-headline-lg text-headline-lg font-bold text-[#B45309]">2</div>
-                <p className="font-body-sm text-[11px] text-[#92400E] leading-tight">
+                <div className="font-mono text-headline-lg text-headline-lg font-bold text-[#0A1B2E]">2</div>
+                <p className="font-body-sm text-[11px] text-[#64748B] leading-tight">
                   Circuit breaker halted; quarantined to Fallout Queue
                 </p>
               </div>
@@ -570,11 +570,11 @@ export default function LoadGeneratorPage() {
             {/* Active Worker Thread Pool Visualizer */}
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 space-y-2">
               <div className="flex items-center justify-between font-label-sm text-label-sm">
-                <span className="text-on-surface font-semibold flex items-center gap-1.5">
+                <span className="text-[#0A1B2E] font-semibold flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[15px] text-[#64748B]">memory</span>
                   Distributed Worker Node Health (8 Pods)
                 </span>
-                <span className="text-[#059669] font-mono font-medium">0 Dropped Frames</span>
+                <span className="text-[#0A1B2E] font-mono font-medium">0 Dropped Frames</span>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                 {[
@@ -589,10 +589,10 @@ export default function LoadGeneratorPage() {
                 ].map((node) => (
                   <div key={node.name} className="bg-white border border-[#CBD5E1] rounded px-2 py-1.5 flex flex-col items-center">
                     <div className="flex items-center gap-1 text-[10px] font-mono text-[#64748B]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]"></span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                       <span>{node.name}</span>
                     </div>
-                    <span className="font-mono text-[11px] font-semibold text-on-surface mt-0.5">{node.count}</span>
+                    <span className="font-mono text-[11px] font-semibold text-[#0A1B2E] mt-0.5">{node.count}</span>
                   </div>
                 ))}
               </div>

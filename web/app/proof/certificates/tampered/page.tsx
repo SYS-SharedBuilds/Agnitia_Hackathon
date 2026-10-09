@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 
 export default function TamperedCertificatePage() {
-  const [selectedOrder, setSelectedOrder] = useState("ORD-20260712-004212");
+  const selectedOrder = "ORD-20260712-004212";
   const [copiedCLI, setCopiedCLI] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showHexDiff, setShowHexDiff] = useState(false);

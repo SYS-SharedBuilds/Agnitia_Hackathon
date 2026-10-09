@@ -9,7 +9,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Card({ children, className = "", elevated = false, ...props }: CardProps) {
   return (
     <div
-      className={`bg-surface-container-lowest rounded-xl border border-[#E3E8F0] ${
+      className={`bg-white rounded-xl border border-[#E2E8F0] text-[#0A1B2E] ${
         elevated ? "shadow-md" : "shadow-xs"
       } ${className}`}
       {...props}
@@ -26,7 +26,7 @@ export function CardHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`px-5 py-4 border-b border-[#EDF0F5] flex items-center justify-between ${className}`}
+      className={`px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between ${className}`}
       {...props}
     >
       {children}
@@ -53,7 +53,7 @@ export function CardFooter({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`px-5 py-3.5 bg-surface-container-low/60 border-t border-[#EDF0F5] rounded-b-xl flex items-center justify-between ${className}`}
+      className={`px-5 py-3.5 bg-[#F8FAFC] border-t border-[#E2E8F0] rounded-b-xl flex items-center justify-between ${className}`}
       {...props}
     >
       {children}

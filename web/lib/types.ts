@@ -1,4 +1,3 @@
-import { z } from "zod";
 
 export type OrderState =
   | "RECEIVED"
@@ -34,7 +33,7 @@ export interface Order {
   failure_reason?: string;
   workflow_id: string;
   current_step?: string;
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
 }
 
 export interface TaskRecord {
@@ -56,7 +55,7 @@ export interface OrderEvent {
   ts: string;
   type: string;
   task_id?: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 export interface MetricsSummary {

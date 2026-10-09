@@ -360,7 +360,7 @@ export default function ScenariosProofPage() {
           </div>
           <span className="text-outline-variant">·</span>
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#16A34A]"></span>
+            <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
             <span className="font-mono text-on-surface font-semibold">11</span> Clean
           </div>
           <span className="text-outline-variant">·</span>
@@ -504,8 +504,8 @@ export default function ScenariosProofPage() {
                     <span className="font-label-sm text-label-sm font-mono px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold border border-outline-variant/40">
                       {sc.num}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-mono bg-[rgba(22,163,74,0.08)] text-[#16A34A] border border-[#16A34A]/20">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-mono bg-white text-[#0A1B2E] border border-[#CBD5E1] shadow-2xs">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                       <span>PASS · {sc.duration}</span>
                     </span>
                   </div>
@@ -701,8 +701,8 @@ export default function ScenariosProofPage() {
                       {row.duration}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-mono bg-[rgba(22,163,74,0.08)] text-[#16A34A] border border-[#16A34A]/20">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-mono bg-white text-[#0A1B2E] border border-[#CBD5E1] shadow-2xs">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                         <span>VERIFIED PASS</span>
                       </span>
                     </td>

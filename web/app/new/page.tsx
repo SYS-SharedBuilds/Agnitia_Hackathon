@@ -94,7 +94,7 @@ export default function NewOrderPage() {
       } else {
         router.push("/orders/ORD-20260712-004218");
       }
-    } catch (e) {
+    } catch {
       router.push("/orders/ORD-20260712-004218");
     } finally {
       setSubmitting(false);
@@ -105,24 +105,24 @@ export default function NewOrderPage() {
     <div className="flex flex-col w-full">
       {/* FLOATING GLOBAL TOAST NOTIFICATION */}
       {showToast && (
-        <aside aria-label="Order status alert" className="w-full mb-5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg p-3.5 shadow-sm transition-all duration-200">
+        <aside aria-label="Order status alert" className="w-full mb-5 bg-white border border-[#CBD5E1] rounded-lg p-3.5 shadow-2xs transition-all duration-200">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-[#DCFCE7] flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[#16A34A] text-[20px]">check_circle</span>
+              <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[#0A1B2E] text-[20px]">check_circle</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5 min-w-0">
-                <span className="font-headline-sm text-headline-sm text-[#14532D] whitespace-nowrap">Order Accepted — 202 Accepted</span>
-                <span className="hidden sm:inline text-[#86EFAC]">•</span>
-                <span className="font-label-md text-label-md text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded font-mono">ORD-20260712-004218</span>
-                <span className="hidden md:inline text-body-sm font-body-sm text-[#166534] truncate">
-                  Saga execution initiated on Temporal cluster <span className="font-label-sm font-mono text-[#14532D]">prod-us-east-4</span>
+                <span className="font-headline-sm text-headline-sm text-[#0A1B2E] whitespace-nowrap font-bold">Order Accepted — 202 Accepted</span>
+                <span className="hidden sm:inline text-[#CBD5E1]">•</span>
+                <span className="font-label-md text-label-md text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded font-mono font-semibold">ORD-20260712-004218</span>
+                <span className="hidden md:inline text-body-sm font-body-sm text-[#64748B] truncate">
+                  Saga execution initiated on Temporal cluster <span className="font-label-sm font-mono text-[#0A1B2E]">prod-us-east-4</span>
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link
-                className="inline-flex items-center gap-1 text-[#4F46E5] hover:text-[#3730A3] bg-white border border-[#C7D2FE] px-3 py-1.5 rounded-lg text-body-sm font-body-sm shadow-xs transition-colors"
+                className="inline-flex items-center gap-1 text-white bg-[#0A1B2E] hover:bg-[#14263b] px-3 py-1.5 rounded-lg text-body-sm font-body-sm shadow-xs transition-colors font-medium"
                 href="/orders/ORD-20260712-004218"
               >
                 <span>Open live view</span>
@@ -130,7 +130,7 @@ export default function NewOrderPage() {
               </Link>
               <button
                 aria-label="Dismiss banner"
-                className="p-1 text-[#15803D] hover:text-[#14532D] hover:bg-[#DCFCE7] rounded transition-colors"
+                className="p-1 text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F1F5F9] rounded transition-colors"
                 onClick={() => setShowToast(false)}
                 type="button"
               >
@@ -162,25 +162,25 @@ export default function NewOrderPage() {
 
             {/* RFC-7807 Summary Banner (Conditional) */}
             {validationErrors.length > 0 && (
-              <div className="mb-7 bg-[#FEF2F2] border border-[#FECACA] rounded-lg p-4">
+              <div className="mb-7 bg-white border border-[#0A1B2E] rounded-lg p-4 shadow-2xs">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[#DC2626] text-[20px] shrink-0 mt-0.5">report_problem</span>
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[20px] shrink-0 mt-0.5">report_problem</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-label-sm text-label-sm font-bold text-[#991B1B] uppercase tracking-wide">
+                      <span className="font-label-sm text-label-sm font-bold text-[#0A1B2E] uppercase tracking-wide">
                         RFC-7807 Problem Details
                       </span>
-                      <span className="font-label-sm text-label-sm text-[#7F1D1D] bg-[#FEE2E2] px-1.5 py-0.5 rounded font-mono">
+                      <span className="font-label-sm text-label-sm text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-1.5 py-0.5 rounded font-mono">
                         422 Unprocessable Entity
                       </span>
                     </div>
-                    <p className="font-label-md text-label-md font-mono text-[#991B1B] mt-1 break-all">
+                    <p className="font-label-md text-label-md font-mono text-[#0A1B2E] mt-1 break-all">
                       urn:ietf:params:telecom:order-validation-failed
                     </p>
-                    <ul className="mt-3 space-y-1.5 font-body-sm text-body-sm text-[#991B1B]">
+                    <ul className="mt-3 space-y-1.5 font-body-sm text-body-sm text-[#64748B]">
                       {validationErrors.map((err, idx) => (
                         <li key={idx} className="flex items-start gap-1.5">
-                          <span className="font-mono font-semibold text-[#DC2626] shrink-0">•</span>
+                          <span className="font-mono font-semibold text-[#0A1B2E] shrink-0">•</span>
                           <span>{err}</span>
                         </li>
                       ))}
@@ -238,12 +238,12 @@ export default function NewOrderPage() {
                         value={msisdn}
                         onChange={(e) => setMsisdn(e.target.value)}
                       />
-                      <span className="material-symbols-outlined absolute right-2.5 text-[#16A34A] text-[18px]" title="Portability Verified">
+                      <span className="material-symbols-outlined absolute right-2.5 text-[#0A1B2E] text-[18px]" title="Portability Verified">
                         verified
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1.5 text-[#16A34A] font-body-sm text-body-sm">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[#64748B] font-body-sm text-body-sm">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                       <span>Validated via National Number Portability DB (Routing point: SP-US-3341)</span>
                     </div>
                   </div>
@@ -253,94 +253,94 @@ export default function NewOrderPage() {
               {/* Section 2: Product & Tier */}
               <fieldset className="space-y-4">
                 <legend className="w-full flex items-center gap-3 pb-2.5 border-b border-[#EDF0F5]">
-                  <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-[#0A1B2E] text-white flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">
                     2
                   </span>
-                  <span className="font-headline-sm text-headline-sm text-on-surface">Product &amp; Service Tier</span>
+                  <span className="font-headline-sm text-headline-sm text-[#0A1B2E]">Product &amp; Service Tier</span>
                 </legend>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Option A: Fiber Broadband */}
                   <label
                     onClick={() => setProductType("fiber")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
-                      productType === "fiber" ? "bg-[#EEF2FF] border-[#4F46E5]" : "bg-surface hover:bg-surface-container-low border-[#E2E8F0]"
+                      productType === "fiber" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`material-symbols-outlined text-[22px] ${productType === "fiber" ? "text-[#4F46E5]" : "text-on-surface-variant"}`}>
+                        <span className={`material-symbols-outlined text-[22px] ${productType === "fiber" ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                           router
                         </span>
                         <input
                           checked={productType === "fiber"}
                           onChange={() => setProductType("fiber")}
-                          className="w-4 h-4 text-[#4F46E5] focus:ring-0 focus:outline-none"
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
                       </div>
-                      <span className="font-headline-sm text-headline-sm text-on-surface block">Fiber Broadband</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                      <span className="font-headline-sm text-headline-sm text-[#0A1B2E] block font-bold">Fiber Broadband</span>
+                      <p className="font-body-sm text-body-sm text-[#64748B] mt-1 leading-relaxed">
                         FTTH GPON/XGS-PON with static IP option and ONT auto-discovery.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#4F46E5] font-semibold">Broadband Core</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#0A1B2E] font-semibold">Broadband Core</span>
                   </label>
 
                   {/* Option B: 5G Postpaid */}
                   <label
                     onClick={() => setProductType("5g")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
-                      productType === "5g" ? "bg-[#EEF2FF] border-[#4F46E5]" : "bg-surface hover:bg-surface-container-low border-[#E2E8F0]"
+                      productType === "5g" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`material-symbols-outlined text-[22px] ${productType === "5g" ? "text-[#4F46E5]" : "text-on-surface-variant"}`}>
+                        <span className={`material-symbols-outlined text-[22px] ${productType === "5g" ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                           cell_tower
                         </span>
                         <input
                           checked={productType === "5g"}
                           onChange={() => setProductType("5g")}
-                          className="w-4 h-4 text-[#4F46E5] focus:ring-0 focus:outline-none"
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
                       </div>
-                      <span className="font-headline-sm text-headline-sm text-on-surface block">5G Postpaid</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                      <span className="font-headline-sm text-headline-sm text-[#0A1B2E] block font-bold">5G Postpaid</span>
+                      <p className="font-body-sm text-body-sm text-[#64748B] mt-1 leading-relaxed">
                         Standalone 5G NR network slice with VoNR and dynamic QoS profile.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-on-surface-variant">5G SA Slice</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#64748B]">5G SA Slice</span>
                   </label>
 
                   {/* Option C: eSIM Add-on */}
                   <label
                     onClick={() => setProductType("esim")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
-                      productType === "esim" ? "bg-[#EEF2FF] border-[#4F46E5]" : "bg-surface hover:bg-surface-container-low border-[#E2E8F0]"
+                      productType === "esim" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`material-symbols-outlined text-[22px] ${productType === "esim" ? "text-[#4F46E5]" : "text-on-surface-variant"}`}>
+                        <span className={`material-symbols-outlined text-[22px] ${productType === "esim" ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                           sim_card
                         </span>
                         <input
                           checked={productType === "esim"}
                           onChange={() => setProductType("esim")}
-                          className="w-4 h-4 text-[#4F46E5] focus:ring-0 focus:outline-none"
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
                       </div>
-                      <span className="font-headline-sm text-headline-sm text-on-surface block">eSIM Add-on</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                      <span className="font-headline-sm text-headline-sm text-[#0A1B2E] block font-bold">eSIM Add-on</span>
+                      <p className="font-body-sm text-body-sm text-[#64748B] mt-1 leading-relaxed">
                         Instant remote SIM provisioning (RSP) via SM-DP+ server profile.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-on-surface-variant">GSMA RSP v3</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#64748B]">GSMA RSP v3</span>
                   </label>
                 </div>
 
@@ -360,7 +360,7 @@ export default function NewOrderPage() {
                       <option>Fiber Enterprise Pro 2.5G ($180/mo)</option>
                     </select>
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0]">
-                      <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
                       <span>SLA: p99 latency &lt; 12ms</span>
                     </div>
                   </div>
@@ -426,14 +426,14 @@ export default function NewOrderPage() {
                   </div>
                 </div>
                 {/* Geocode Status Chip */}
-                <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg p-2.5 flex items-center justify-between text-body-sm font-body-sm text-[#14532D]">
+                <div className="bg-white border border-[#CBD5E1] rounded-lg p-2.5 flex items-center justify-between text-body-sm font-body-sm text-[#0A1B2E] shadow-2xs">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#0A1B2E] shrink-0"></span>
                     <span className="font-mono text-label-sm">● Geocoded: lat 44.0462, lon -123.0220</span>
-                    <span className="text-[#86EFAC] hidden md:inline">|</span>
-                    <span className="font-mono text-label-sm text-[#15803D] hidden md:inline">Terminal DP: FTTH-CAB-92A (Available · Port 4 Free)</span>
+                    <span className="text-[#CBD5E1] hidden md:inline">|</span>
+                    <span className="font-mono text-label-sm text-[#64748B] hidden md:inline">Terminal DP: FTTH-CAB-92A (Available · Port 4 Free)</span>
                   </div>
-                  <span className="font-label-sm text-label-sm font-semibold uppercase text-[#16A34A] tracking-wider">Ready</span>
+                  <span className="font-label-sm text-label-sm font-semibold uppercase text-[#0A1B2E] tracking-wider">Ready</span>
                 </div>
               </fieldset>
 
@@ -448,25 +448,25 @@ export default function NewOrderPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* SIM ICCID */}
                   <div>
-                    <label className={`block font-body-sm text-body-sm font-medium mb-1 ${simIccid.length < 19 ? "text-[#991B1B]" : "text-on-surface"}`} htmlFor="sim-iccid">
+                    <label className="block font-body-sm text-body-sm font-medium mb-1 text-[#0A1B2E]" htmlFor="sim-iccid">
                       SIM ICCID (E.118)
                     </label>
                     <div className="relative">
                       <input
                         className={`w-full h-9 px-3 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border ${
-                          simIccid.length < 19 ? "border-[#DC2626] focus:border-[#DC2626]" : "border-[#E2E8F0]"
+                          simIccid.length < 19 ? "border-[#0A1B2E] focus:border-[#0A1B2E]" : "border-[#E2E8F0]"
                         } focus:bg-surface-container-lowest`}
                         id="sim-iccid"
                         type="text"
                         value={simIccid}
                         onChange={(e) => setSimIccid(e.target.value)}
                       />
-                      <span className={`material-symbols-outlined absolute right-2.5 top-2 text-[18px] ${simIccid.length < 19 ? "text-[#DC2626]" : "text-[#16A34A]"}`}>
+                      <span className="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-[#0A1B2E]">
                         {simIccid.length < 19 ? "error" : "check"}
                       </span>
                     </div>
                     {simIccid.length < 19 && (
-                      <p className="font-label-sm text-label-sm text-[#DC2626] mt-1.5 flex items-start gap-1">
+                      <p className="font-label-sm text-label-sm text-[#0A1B2E] mt-1.5 flex items-start gap-1">
                         <span className="shrink-0 font-bold">RFC-7807:</span>
                         <span>Field &apos;iccid&apos; fails Luhn checksum check. Expected 19-20 digits.</span>
                       </p>
@@ -485,11 +485,11 @@ export default function NewOrderPage() {
                         value={deviceImei}
                         onChange={(e) => setDeviceImei(e.target.value)}
                       />
-                      <span className="material-symbols-outlined absolute right-2.5 top-2 text-[#16A34A] text-[18px]">check</span>
+                      <span className="material-symbols-outlined absolute right-2.5 top-2 text-[#0A1B2E] text-[18px]">check</span>
                     </div>
-                    <p className="font-label-sm text-label-sm text-[#16A34A] mt-1.5 flex items-center gap-1 font-mono">
+                    <p className="font-label-sm text-label-sm text-[#64748B] mt-1.5 flex items-center gap-1 font-mono">
                       <span>Valid TAC:</span>
-                      <span className="font-medium">Apple iPhone 15 Pro (A3102)</span>
+                      <span className="font-medium text-[#0A1B2E]">Apple iPhone 15 Pro (A3102)</span>
                     </p>
                   </div>
                 </div>
@@ -599,7 +599,7 @@ export default function NewOrderPage() {
                   </button>
                   <button
                     disabled={submitting}
-                    className="h-9 px-5 bg-primary-container hover:bg-[#4338CA] text-on-primary rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                    className="h-9 px-5 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                     type="submit"
                   >
                     <span>{submitting ? "Submitting..." : "Submit Order"}</span>
@@ -618,35 +618,35 @@ export default function NewOrderPage() {
             <div className="flex items-start justify-between gap-3 mb-3 pb-3 border-b border-[#EDF0F5]">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-headline-sm text-headline-sm text-on-surface">Resolved Task Graph</h2>
-                  <span className="font-label-sm text-label-sm text-[#4F46E5] bg-[#EEF2FF] px-2 py-0.5 rounded-full font-mono font-semibold">
+                  <h2 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">Resolved Task Graph</h2>
+                  <span className="font-label-sm text-label-sm text-[#0A1B2E] bg-white border border-[#CBD5E1] px-2 py-0.5 rounded-full font-mono font-semibold shadow-2xs">
                     6 Tasks · Est. 4.2s
                   </span>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                <p className="font-body-sm text-body-sm text-[#64748B] mt-1">
                   Saga Preview: Parallel branches synchronize before physical activation.
                 </p>
               </div>
             </div>
-            <div className="bg-surface rounded-lg p-2.5 mb-4 text-body-sm font-body-sm text-on-surface-variant flex items-center gap-2 border border-[#E2E8F0]">
-              <span className="material-symbols-outlined text-secondary text-[18px] shrink-0">call_split</span>
-              <span><strong>Parallel Fork:</strong> Branch A (SIM) runs concurrently with Branch B (Billing).</span>
+            <div className="bg-[#F8FAFC] rounded-lg p-2.5 mb-4 text-body-sm font-body-sm text-[#64748B] flex items-center gap-2 border border-[#E2E8F0]">
+              <span className="material-symbols-outlined text-[#0A1B2E] text-[18px] shrink-0">call_split</span>
+              <span><strong className="text-[#0A1B2E]">Parallel Fork:</strong> Branch A (SIM) runs concurrently with Branch B (Billing).</span>
             </div>
 
             {/* Visual Miniature DAG organized by Waves */}
             <div className="space-y-3 font-mono text-label-sm">
               {/* WAVE 1 */}
-              <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+              <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-on-surface-variant uppercase text-label-sm font-semibold tracking-wider">Wave 1 · Root</span>
-                  <span className="text-on-surface-variant">220ms</span>
+                  <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 1 · Root</span>
+                  <span className="text-[#64748B]">220ms</span>
                 </div>
-                <div className="bg-surface-container-lowest rounded p-2 flex items-center justify-between border border-[#EDF0F5]">
+                <div className="bg-[#F8FAFC] rounded p-2 flex items-center justify-between border border-[#E2E8F0]">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#4F46E5] text-[18px]">verified_user</span>
-                    <span className="text-on-surface font-medium">Validate Order</span>
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">verified_user</span>
+                    <span className="text-[#0A1B2E] font-medium">Validate Order</span>
                   </div>
-                  <span className="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">OMS Core</span>
+                  <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">OMS Core</span>
                 </div>
               </div>
 
@@ -656,31 +656,31 @@ export default function NewOrderPage() {
               </div>
 
               {/* WAVE 2 (Forked in parallel) */}
-              <div className="bg-[#F8FAFC] rounded-lg p-2.5 border border-[#E2E8F0]">
+              <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[#475569] uppercase text-label-sm font-semibold tracking-wider">Wave 2 · Parallel Fork</span>
+                  <span className="text-[#0A1B2E] uppercase text-label-sm font-semibold tracking-wider">Wave 2 · Parallel Fork</span>
                   <span className="text-[#64748B]">max 420ms</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="bg-surface-container-lowest rounded p-2 border border-[#EDF0F5]">
+                  <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#2563EB] text-[10px] font-bold">BRANCH A</span>
+                      <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH A</span>
                       <span className="text-[#64748B]">340ms</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#2563EB] text-[16px]">inventory_2</span>
-                      <span className="text-on-surface truncate">Reserve Inventory</span>
+                      <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">inventory_2</span>
+                      <span className="text-[#0A1B2E] truncate font-medium">Reserve Inventory</span>
                     </div>
                     <div className="text-[#64748B] text-[10px] mt-1">SIM/eSIM Pool</div>
                   </div>
-                  <div className="bg-surface-container-lowest rounded p-2 border border-[#EDF0F5]">
+                  <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#7C3AED] text-[10px] font-bold">BRANCH B</span>
+                      <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH B</span>
                       <span className="text-[#64748B]">420ms</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#7C3AED] text-[16px]">account_balance_wallet</span>
-                      <span className="text-on-surface truncate">Create Billing Acc</span>
+                      <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">account_balance_wallet</span>
+                      <span className="text-[#0A1B2E] truncate font-medium">Create Billing Acc</span>
                     </div>
                     <div className="text-[#64748B] text-[10px] mt-1">OCS Billing Core</div>
                   </div>
@@ -693,17 +693,17 @@ export default function NewOrderPage() {
               </div>
 
               {/* WAVE 3 */}
-              <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+              <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-on-surface-variant uppercase text-label-sm font-semibold tracking-wider">Wave 3 · Network Sync</span>
-                  <span className="text-on-surface-variant">1,420ms</span>
+                  <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 3 · Network Sync</span>
+                  <span className="text-[#64748B]">1,420ms</span>
                 </div>
-                <div className="bg-surface-container-lowest rounded p-2 flex items-center justify-between border border-[#EDF0F5]">
+                <div className="bg-[#F8FAFC] rounded p-2 flex items-center justify-between border border-[#E2E8F0]">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#EA580C] text-[18px]">settings_ethernet</span>
-                    <span className="text-on-surface font-medium">Provision Network</span>
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">settings_ethernet</span>
+                    <span className="text-[#0A1B2E] font-medium">Provision Network</span>
                   </div>
-                  <span className="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">HLR/HSS Gateway</span>
+                  <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">HLR/HSS Gateway</span>
                 </div>
               </div>
 
@@ -714,69 +714,69 @@ export default function NewOrderPage() {
 
               {/* WAVE 4 & 5 */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+                <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-on-surface-variant text-[10px] uppercase font-bold">Wave 4</span>
-                    <span className="text-on-surface-variant">680ms</span>
+                    <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 4</span>
+                    <span className="text-[#64748B]">680ms</span>
                   </div>
-                  <div className="bg-surface-container-lowest rounded p-1.5 text-on-surface truncate flex items-center gap-1.5 border border-[#EDF0F5]">
-                    <span className="material-symbols-outlined text-[#16A34A] text-[16px]">sync_alt</span>
-                    <span>Verify Sync</span>
+                  <div className="bg-[#F8FAFC] rounded p-1.5 text-[#0A1B2E] truncate flex items-center gap-1.5 border border-[#E2E8F0]">
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">sync_alt</span>
+                    <span className="font-medium">Verify Sync</span>
                   </div>
                 </div>
-                <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+                <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-on-surface-variant text-[10px] uppercase font-bold">Wave 5</span>
-                    <span className="text-on-surface-variant">310ms</span>
+                    <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 5</span>
+                    <span className="text-[#64748B]">310ms</span>
                   </div>
-                  <div className="bg-surface-container-lowest rounded p-1.5 text-on-surface truncate flex items-center gap-1.5 border border-[#EDF0F5]">
-                    <span className="material-symbols-outlined text-[#0284C7] text-[16px]">payments</span>
-                    <span>Start Rating</span>
+                  <div className="bg-[#F8FAFC] rounded p-1.5 text-[#0A1B2E] truncate flex items-center gap-1.5 border border-[#E2E8F0]">
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">payments</span>
+                    <span className="font-medium">Start Rating</span>
                   </div>
                 </div>
               </div>
 
               {/* WAVE 6 */}
-              <div className="bg-surface rounded-lg p-2 border border-[#E2E8F0]">
+              <div className="bg-white rounded-lg p-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-on-surface-variant text-[10px] uppercase font-bold">Wave 6</span>
-                    <span className="text-on-surface">Notify Customer (SMS-C)</span>
+                    <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 6</span>
+                    <span className="text-[#0A1B2E] font-medium">Notify Customer (SMS-C)</span>
                   </div>
-                  <span className="text-on-surface-variant text-[10px]">180ms · best-effort</span>
+                  <span className="text-[#64748B] text-[10px]">180ms · best-effort</span>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Bottom Card: Quick Fill & Chaos Engine */}
-          <section className="bg-surface-container-lowest rounded-xl p-5 shadow-sm space-y-4 border border-[#E3E8F0]">
+          <section className="bg-white rounded-xl p-5 shadow-2xs space-y-4 border border-[#CBD5E1]">
             {/* Quick Fill Controls */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[#F59E0B] text-[18px]">bolt</span>
+                <span className="font-headline-sm text-headline-sm text-[#0A1B2E] flex items-center gap-1.5 font-bold">
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">bolt</span>
                   <span>Quick Presets</span>
                 </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant">Click to autofill</span>
+                <span className="font-label-sm text-label-sm text-[#64748B]">Click to autofill</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-body-sm font-body-sm text-on-surface border border-[#E2E8F0] transition-colors"
+                  className="px-2.5 py-1 rounded bg-white hover:bg-[#F8FAFC] text-body-sm font-body-sm text-[#0A1B2E] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer font-medium"
                   onClick={() => fillPreset("fiber")}
                   type="button"
                 >
                   Residential Fiber
                 </button>
                 <button
-                  className="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-body-sm font-body-sm text-on-surface border border-[#E2E8F0] transition-colors"
+                  className="px-2.5 py-1 rounded bg-white hover:bg-[#F8FAFC] text-body-sm font-body-sm text-[#0A1B2E] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer font-medium"
                   onClick={() => fillPreset("5g")}
                   type="button"
                 >
                   Enterprise 5G
                 </button>
                 <button
-                  className="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-body-sm font-body-sm text-on-surface border border-[#E2E8F0] transition-colors"
+                  className="px-2.5 py-1 rounded bg-white hover:bg-[#F8FAFC] text-body-sm font-body-sm text-[#0A1B2E] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer font-medium"
                   onClick={() => fillPreset("esim")}
                   type="button"
                 >
@@ -786,16 +786,16 @@ export default function NewOrderPage() {
             </div>
 
             {/* Chaos & Failure Injection Accordion */}
-            <details className="group bg-surface rounded-lg overflow-hidden border border-[#E2E8F0]" open>
-              <summary className="cursor-pointer list-none p-3 bg-surface hover:bg-surface-container-low flex items-center justify-between select-none transition-colors border-b border-[#EDF0F5]">
+            <details className="group bg-white rounded-lg overflow-hidden border border-[#CBD5E1]" open>
+              <summary className="cursor-pointer list-none p-3 bg-white hover:bg-[#F8FAFC] flex items-center justify-between select-none transition-colors border-b border-[#CBD5E1]">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#EA580C] text-[18px]">science</span>
-                  <span className="font-headline-sm text-headline-sm text-on-surface">Chaos &amp; Fault Injection</span>
-                  <span className="font-label-sm text-label-sm font-bold bg-[#FEF3C7] text-[#92400E] px-1.5 py-0.5 rounded uppercase border border-[#FDE68A]">
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">science</span>
+                  <span className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">Chaos &amp; Fault Injection</span>
+                  <span className="font-label-sm text-label-sm font-bold bg-[#F1F5F9] text-[#0A1B2E] px-1.5 py-0.5 rounded uppercase border border-[#CBD5E1]">
                     Test Only
                   </span>
                 </div>
-                <span className="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform text-[20px]">
+                <span className="material-symbols-outlined text-[#64748B] group-open:rotate-180 transition-transform text-[20px]">
                   expand_more
                 </span>
               </summary>

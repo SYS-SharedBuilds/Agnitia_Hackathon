@@ -72,6 +72,6 @@ strict_equality = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-p no:launch_testing -p no:launch_testing_ros -ra -q --asyncio-mode=auto"
+addopts = "-p no:launch_ros -p no:launch_testing -ra -q --asyncio-mode=auto"
 testpaths = ["tests"]
 pythonpath = [".", "shared", "services/orchestrator", "services/order_api", "services/mocks"]

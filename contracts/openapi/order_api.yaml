@@ -111,6 +111,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Certificate'
+  /orders/{order_id}/cancel:
+    post:
+      summary: Cancel in-flight order
+      operationId: cancelOrder
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: reason
+          in: query
+          schema:
+            type: string
+            default: Operator signal
+      responses:
+        '200':
+          description: Cancellation signaled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  order_id:
+                    type: string
+  /orders/{order_id}/resolve:
+    post:
+      summary: Manually resolve order in NEEDS_ATTENTION state
+      operationId: resolveOrder
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: note
+          in: query
+          schema:
+            type: string
+            default: Manually cleared by operator
+      responses:
+        '200':
+          description: Manual resolution signaled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  order_id:
+                    type: string
   /certificates/verify:
     post:
       summary: Verify consistency certificate offline or online

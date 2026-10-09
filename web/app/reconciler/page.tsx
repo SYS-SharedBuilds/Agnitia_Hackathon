@@ -349,15 +349,15 @@ export default function ReconcilerPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">
+              <h1 className="font-headline-lg text-headline-lg text-[#0A1B2E] tracking-tight font-semibold">
                 Resource Drift Reconciler
               </h1>
-              <span className="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#4F46E5] font-semibold border border-[#C7D2FE]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] animate-pulse"></span>
+              <span className="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-white text-[#0A1B2E] font-semibold border border-[#CBD5E1] shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E] animate-pulse"></span>
                 ACTIVE AUDITOR
               </span>
             </div>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+            <p className="font-body-md text-body-md text-[#64748B] max-w-3xl">
               Background state auditor continuously comparing source-of-truth orchestrator intent against live subsystem infrastructure state (OMS, Inventory, HLR, OCS).
             </p>
           </div>
@@ -366,7 +366,7 @@ export default function ReconcilerPage() {
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={handleExportAudit}
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-white text-on-surface border border-[#E2E8F0] rounded-lg font-body-md text-body-md hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] rounded-lg font-body-md text-body-md hover:bg-[#F8FAFC] transition-all shadow-xs cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px] text-[#64748B]">download</span>
               <span>Export Audit (.json)</span>
@@ -374,7 +374,7 @@ export default function ReconcilerPage() {
             <button
               onClick={handleRunSweep}
               disabled={isSweeping}
-              className="inline-flex items-center gap-2 h-9 px-4 bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-lg font-body-md text-body-md font-medium transition-all shadow-xs group cursor-pointer disabled:opacity-75"
+              className="inline-flex items-center gap-2 h-9 px-4 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg font-body-md text-body-md font-medium transition-all shadow-xs group cursor-pointer disabled:opacity-75"
             >
               <span className={`material-symbols-outlined text-[18px] transition-transform duration-500 ${isSweeping ? "animate-spin" : "group-hover:rotate-180"}`}>
                 sync
@@ -388,10 +388,10 @@ export default function ReconcilerPage() {
         <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 flex flex-wrap items-center justify-between gap-4 shadow-xs">
           <div className="flex flex-wrap items-center gap-4 text-body-md">
             {/* Last Sweep Info */}
-            <div className="flex items-center gap-2 text-on-surface-variant">
+            <div className="flex items-center gap-2 text-[#64748B]">
               <span className="material-symbols-outlined text-[18px] text-[#94A3B8]">schedule</span>
               <span>Last Sweep:</span>
-              <span className="font-label-md text-label-md text-on-surface font-semibold font-mono">
+              <span className="font-label-md text-label-md text-[#0A1B2E] font-semibold font-mono">
                 2026-07-12 14:28:45 UTC
               </span>
               <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#64748B]">
@@ -402,12 +402,12 @@ export default function ReconcilerPage() {
 
             {/* Sweep Interval Dropdown */}
             <div className="flex items-center gap-2">
-              <span className="text-on-surface-variant font-body-md text-body-md">Sweep Interval:</span>
+              <span className="text-[#64748B] font-body-md text-body-md">Sweep Interval:</span>
               <div className="relative inline-block">
                 <select
                   value={sweepInterval}
                   onChange={(e) => setSweepInterval(e.target.value)}
-                  className="h-8 pl-2.5 pr-8 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md font-label-md text-label-md text-on-surface focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] appearance-none cursor-pointer"
+                  className="h-8 pl-2.5 pr-8 bg-[#F8FAFC] border border-[#CBD5E1] rounded-md font-label-md text-label-md text-[#0A1B2E] focus:outline-none focus:border-[#0A1B2E] focus:ring-1 focus:ring-[#0A1B2E] appearance-none cursor-pointer"
                 >
                   <option value="1m">Every 1m</option>
                   <option value="5m">Every 5m</option>
@@ -423,9 +423,9 @@ export default function ReconcilerPage() {
 
             {/* Consensus Target */}
             <div className="flex items-center gap-1.5 font-label-sm text-label-sm text-[#475569]">
-              <span className="material-symbols-outlined text-[16px] text-[#10B981]">verified</span>
+              <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">verified</span>
               <span>
-                Target Consensus: <strong className="text-on-surface font-mono font-semibold">100.0%</strong>
+                Target Consensus: <strong className="text-[#0A1B2E] font-mono font-semibold">100.0%</strong>
               </span>
             </div>
           </div>
@@ -440,11 +440,11 @@ export default function ReconcilerPage() {
                   onChange={(e) => setAutoRepair(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-10 h-5.5 bg-[#CBD5E1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#CBD5E1] after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#4F46E5]"></div>
+                <div className="w-10 h-5.5 bg-[#CBD5E1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#CBD5E1] after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#0A1B2E]"></div>
               </div>
-              <span className="font-body-md text-body-md font-medium text-on-surface">Auto-Repair Enabled</span>
+              <span className="font-body-md text-body-md font-medium text-[#0A1B2E]">Auto-Repair Enabled</span>
             </label>
-            <span className="font-label-sm text-label-sm font-semibold px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE]">
+            <span className="font-label-sm text-label-sm font-semibold px-2 py-0.5 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1]">
               Safe Invariants Only
             </span>
           </div>
@@ -454,93 +454,90 @@ export default function ReconcilerPage() {
       {/* TOP SUMMARY KPI CARDS (4 CARDS) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Card 1: Resources Scanned */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs flex flex-col justify-between space-y-3">
+        <div className="bg-white rounded-xl border border-[#CBD5E1] p-5 shadow-2xs flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-body-md text-body-md font-medium text-on-surface-variant">Resources Scanned</span>
-            <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] flex items-center justify-center text-[#475569]">
+            <span className="font-body-md text-body-md font-medium text-[#475569]">Resources Scanned</span>
+            <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center text-[#0A1B2E]">
               <span className="material-symbols-outlined text-[20px]">manage_search</span>
             </div>
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-on-surface leading-tight font-mono">14,280</span>
-              <span className="font-label-sm text-label-sm font-semibold text-[#16A34A] bg-[#DCFCE7] px-1.5 py-0.5 rounded border border-[#BBF7D0]">
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">14,280</span>
+              <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
                 4 Subsystems
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-[#64748B] mt-1">OMS, Inventory, HLR, OCS active states</p>
           </div>
           <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#4F46E5] h-full rounded-full" style={{ width: "100%" }}></div>
+            <div className="bg-[#0A1B2E] h-full rounded-full" style={{ width: "100%" }}></div>
           </div>
         </div>
 
         {/* Card 2: Drift Detected */}
-        <div className="bg-white rounded-xl border border-[#FED7AA] p-5 shadow-xs flex flex-col justify-between space-y-3 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#FFF7ED] rounded-full blur-xl pointer-events-none"></div>
-          <div className="flex items-center justify-between relative">
-            <span className="font-body-md text-body-md font-medium text-[#C2410C]">Drift Detected</span>
-            <div className="w-8 h-8 rounded-lg bg-[#FFEDD5] flex items-center justify-center text-[#EA580C]">
+        <div className="bg-white rounded-xl border border-[#CBD5E1] p-5 shadow-2xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-body-md text-body-md font-medium text-[#475569]">Drift Detected</span>
+            <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center text-[#0A1B2E]">
               <span className="material-symbols-outlined text-[20px]">difference</span>
             </div>
           </div>
-          <div className="relative">
+          <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#9A3412] leading-tight font-mono">7</span>
-              <span className="font-label-sm text-label-sm font-semibold text-[#EA580C] bg-[#FFEDD5] px-1.5 py-0.5 rounded border border-[#FDBA74]">
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">7</span>
+              <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
                 0.049% Drift Rate
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-[#9A3412] mt-1">State divergences requiring intervention</p>
+            <p className="font-body-sm text-body-sm text-[#64748B] mt-1">State divergences requiring intervention</p>
           </div>
-          <div className="w-full bg-[#FED7AA] h-1.5 rounded-full overflow-hidden relative">
-            <div className="bg-[#EA580C] h-full rounded-full" style={{ width: "7%" }}></div>
+          <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
+            <div className="bg-[#475569] h-full rounded-full" style={{ width: "7%" }}></div>
           </div>
         </div>
 
         {/* Card 3: Auto-Repaired */}
-        <div className="bg-white rounded-xl border border-[#BBF7D0] p-5 shadow-xs flex flex-col justify-between space-y-3 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#F0FDF4] rounded-full blur-xl pointer-events-none"></div>
-          <div className="flex items-center justify-between relative">
-            <span className="font-body-md text-body-md font-medium text-[#15803D]">Auto-Repaired</span>
-            <div className="w-8 h-8 rounded-lg bg-[#DCFCE7] flex items-center justify-center text-[#16A34A]">
+        <div className="bg-white rounded-xl border border-[#CBD5E1] p-5 shadow-2xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-body-md text-body-md font-medium text-[#475569]">Auto-Repaired</span>
+            <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center text-[#0A1B2E]">
               <span className="material-symbols-outlined text-[20px]">auto_fix_high</span>
             </div>
           </div>
-          <div className="relative">
+          <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#166534] leading-tight font-mono">5</span>
-              <span className="font-label-sm text-label-sm font-semibold text-[#16A34A] bg-[#DCFCE7] px-1.5 py-0.5 rounded border border-[#86EFAC]">
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">5</span>
+              <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
                 100% Compensated
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-[#166534] mt-1">Self-healed via deterministic sagas</p>
+            <p className="font-body-sm text-body-sm text-[#64748B] mt-1">Self-healed via deterministic sagas</p>
           </div>
-          <div className="w-full bg-[#DCFCE7] h-1.5 rounded-full overflow-hidden relative">
-            <div className="bg-[#16A34A] h-full rounded-full" style={{ width: "71.4%" }}></div>
+          <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
+            <div className="bg-[#0A1B2E] h-full rounded-full" style={{ width: "71.4%" }}></div>
           </div>
         </div>
 
         {/* Card 4: Escalated to Fallout */}
-        <div className="bg-white rounded-xl border border-[#FECACA] p-5 shadow-xs flex flex-col justify-between space-y-3 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#FEF2F2] rounded-full blur-xl pointer-events-none"></div>
-          <div className="flex items-center justify-between relative">
-            <span className="font-body-md text-body-md font-medium text-[#B91C1C]">Escalated to Fallout</span>
-            <div className="w-8 h-8 rounded-lg bg-[#FEE2E2] flex items-center justify-center text-[#DC2626]">
+        <div className="bg-white rounded-xl border border-[#CBD5E1] p-5 shadow-2xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-body-md text-body-md font-medium text-[#475569]">Escalated to Fallout</span>
+            <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center text-[#0A1B2E]">
               <span className="material-symbols-outlined text-[20px]">report</span>
             </div>
           </div>
-          <div className="relative">
+          <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#991B1B] leading-tight font-mono">2</span>
-              <span className="font-label-sm text-label-sm font-semibold text-[#B91C1C] bg-[#FEE2E2] px-1.5 py-0.5 rounded border border-[#FCA5A5]">
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">2</span>
+              <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
                 Needs Manual Review
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-[#991B1B] mt-1">Safety circuit-breaker halted compensation</p>
+            <p className="font-body-sm text-body-sm text-[#64748B] mt-1">Safety circuit-breaker halted compensation</p>
           </div>
-          <div className="w-full bg-[#FEE2E2] h-1.5 rounded-full overflow-hidden relative">
-            <div className="bg-[#DC2626] h-full rounded-full" style={{ width: "28.6%" }}></div>
+          <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
+            <div className="bg-[#94A3B8] h-full rounded-full" style={{ width: "28.6%" }}></div>
           </div>
         </div>
       </div>
@@ -552,17 +549,17 @@ export default function ReconcilerPage() {
           <div className="px-6 py-4 border-b border-[#EDF0F5] flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#4F46E5] text-[22px]">compare_arrows</span>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                <span className="material-symbols-outlined text-[#0A1B2E] text-[22px]">compare_arrows</span>
+                <h2 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold">
                   Detected State Divergences &amp; Remediation History
                 </h2>
               </div>
-              <span className="font-label-sm text-label-sm font-mono px-2 py-0.5 rounded bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0]">
+              <span className="font-label-sm text-label-sm font-mono px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
                 Sweep Epoch #8,941 Complete
               </span>
             </div>
             <div className="flex items-center gap-2 text-label-sm font-mono text-[#64748B]">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#10B981]"></span>
+              <span className="inline-block w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
               <span>Next Audit: in 2m 46s</span>
             </div>
           </div>
@@ -576,7 +573,7 @@ export default function ReconcilerPage() {
               <input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-8.5 pl-9 pr-3 bg-white border border-[#E2E8F0] rounded-lg font-body-md text-body-md text-on-surface placeholder:text-[#94A3B8] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-all"
+                className="w-full h-8.5 pl-9 pr-3 bg-white border border-[#CBD5E1] rounded-lg font-body-md text-body-md text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#0A1B2E] focus:ring-1 focus:ring-[#0A1B2E] transition-all"
                 placeholder="Filter by Resource ID, MSISDN, Order ID..."
                 type="text"
               />
@@ -586,7 +583,7 @@ export default function ReconcilerPage() {
               <select
                 value={subsystemFilter}
                 onChange={(e) => setSubsystemFilter(e.target.value)}
-                className="h-8.5 px-3 bg-white border border-[#E2E8F0] rounded-lg font-body-sm text-body-sm text-[#475569] focus:outline-none focus:border-[#4F46E5] cursor-pointer"
+                className="h-8.5 px-3 bg-white border border-[#CBD5E1] rounded-lg font-body-sm text-body-sm text-[#0A1B2E] focus:outline-none focus:border-[#0A1B2E] cursor-pointer"
               >
                 <option value="all">All Subsystems (4)</option>
                 <option value="hlr">HLR/HSS Gateway</option>
@@ -596,15 +593,15 @@ export default function ReconcilerPage() {
               </select>
 
               {/* Drift Type Filter */}
-              <div className="inline-flex rounded-lg border border-[#E2E8F0] bg-white p-0.5">
+              <div className="inline-flex rounded-lg border border-[#CBD5E1] bg-white p-0.5">
                 {(["All", "Orphan", "Mismatch", "Missing"] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setDriftTypeFilter(type)}
                     className={`px-2.5 py-1 text-label-sm font-medium rounded-md transition-colors cursor-pointer ${
                       driftTypeFilter === type
-                        ? "bg-[#EEF2FF] text-[#4F46E5]"
-                        : "text-[#64748B] hover:text-[#0F172A]"
+                        ? "bg-[#0A1B2E] text-white font-semibold"
+                        : "text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC]"
                     }`}
                   >
                     {type}
@@ -647,20 +644,20 @@ export default function ReconcilerPage() {
                       }}
                       className={`transition-colors cursor-pointer group ${
                         isSelected
-                          ? "bg-[#EEF2FF] border-l-4 border-l-[#4F46E5] hover:bg-[#E8EDFF]"
+                          ? "bg-[#F8FAFC] border-l-4 border-l-[#0A1B2E]"
                           : "hover:bg-[#F8FAFC]"
                       }`}
                     >
-                      <td className={`py-3 px-4 font-mono font-medium ${isSelected ? "text-[#1E1B4B]" : "text-on-surface"}`}>
+                      <td className={`py-3 px-4 font-mono font-medium ${isSelected ? "text-[#0A1B2E]" : "text-[#0A1B2E]"}`}>
                         <div className="flex items-center gap-1.5">
-                          {isSelected && <span className="w-2 h-2 rounded-full bg-[#4F46E5]"></span>}
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>}
                           <span>{item.resourceId}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-on-surface">{item.subsystem}</span>
-                          <span className="font-label-sm text-label-sm font-mono text-[#64748B] bg-white px-1.5 py-0.5 rounded border border-[#E2E8F0]">
+                          <span className="font-medium text-[#0A1B2E]">{item.subsystem}</span>
+                          <span className="font-label-sm text-label-sm font-mono text-[#64748B] bg-white px-1.5 py-0.5 rounded border border-[#CBD5E1]">
                             {item.port}
                           </span>
                         </div>
@@ -671,37 +668,13 @@ export default function ReconcilerPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span
-                          className={`font-mono text-label-sm px-2 py-0.5 rounded border ${
-                            item.driftType === "Orphan"
-                              ? "text-[#DC2626] bg-[#FEE2E2] border-[#FECACA]"
-                              : item.driftType === "Mismatch"
-                              ? "text-[#D97706] bg-[#FEF3C7] border-[#FDE68A]"
-                              : "text-[#DC2626] bg-[#FEE2E2] border-[#FECACA]"
-                          }`}
-                        >
+                        <span className="font-mono text-label-sm px-2 py-0.5 rounded border text-[#0A1B2E] bg-white border-[#CBD5E1]">
                           {item.actualState}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-sm font-medium border ${
-                            item.driftType === "Orphan"
-                              ? "bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]"
-                              : item.driftType === "Mismatch"
-                              ? "bg-[#FEF3C7] text-[#D97706] border-[#FDE68A]"
-                              : "bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]"
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              item.driftType === "Orphan"
-                                ? "bg-[#64748B]"
-                                : item.driftType === "Mismatch"
-                                ? "bg-[#D97706]"
-                                : "bg-[#DC2626]"
-                            }`}
-                          ></span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-sm font-medium border bg-[#F1F5F9] text-[#0A1B2E] border-[#CBD5E1]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E]"></span>
                           {item.driftType}
                         </span>
                       </td>
@@ -709,21 +682,15 @@ export default function ReconcilerPage() {
                         <Link
                           href={`/orders/${item.linkedOrder}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="font-mono text-[#4F46E5] hover:underline inline-flex items-center gap-1"
+                          className="font-mono text-[#0A1B2E] hover:underline inline-flex items-center gap-1 font-medium"
                         >
                           {item.linkedOrder}
                           <span className="material-symbols-outlined text-[13px]">open_in_new</span>
                         </Link>
                       </td>
                       <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-sm font-medium border ${
-                            item.remediationStatus === "success"
-                              ? "bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]"
-                              : "bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]"
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-[14px]">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-label-sm font-medium border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
+                          <span className="material-symbols-outlined text-[14px] text-[#0A1B2E]">
                             {item.remediationStatus === "success" ? "check_circle" : "warning"}
                           </span>
                           {item.remediationAction}
@@ -732,12 +699,12 @@ export default function ReconcilerPage() {
                       <td className="py-3 px-4 font-mono text-[#64748B] text-label-sm">{item.timestamp}</td>
                       <td className="py-3 px-4 text-right">
                         {isSelected ? (
-                          <button className="inline-flex items-center gap-1 px-2.5 py-1 text-label-sm font-medium rounded-md bg-[#4F46E5] text-white shadow-2xs hover:bg-[#4338CA]">
+                          <button className="inline-flex items-center gap-1 px-2.5 py-1 text-label-sm font-medium rounded-md bg-[#0A1B2E] text-white shadow-2xs hover:bg-[#14263b]">
                             <span>Diff</span>
                             <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                           </button>
                         ) : (
-                          <button className="inline-flex items-center gap-1 px-2 py-1 text-label-sm text-[#4F46E5] hover:bg-[#EEF2FF] rounded">
+                          <button className="inline-flex items-center gap-1 px-2 py-1 text-label-sm text-[#0A1B2E] hover:bg-[#F8FAFC] rounded">
                             Inspect Diff →
                           </button>
                         )}
@@ -777,19 +744,19 @@ export default function ReconcilerPage() {
             <div className="p-5 border-b border-[#E2E8F0] flex items-start justify-between bg-white shrink-0">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C]"></span>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#0A1B2E]"></span>
+                  <h3 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold">
                     Drift Inspection: {selectedDrift.subsystem}
                   </h3>
                 </div>
                 <div className="flex items-center gap-2 text-label-sm font-mono text-[#64748B]">
-                  <span className="font-semibold text-on-surface">Resource ID:</span>
-                  <span className="bg-[#F1F5F9] px-2 py-0.5 rounded text-on-surface select-all">
+                  <span className="font-semibold text-[#0A1B2E]">Resource ID:</span>
+                  <span className="bg-[#F1F5F9] px-2 py-0.5 rounded text-[#0A1B2E] border border-[#CBD5E1] select-all">
                     {selectedDrift.resourceId}
                   </span>
                   <button
                     onClick={() => copyResourceId(selectedDrift.resourceId)}
-                    className="p-0.5 hover:text-[#4F46E5] text-[#94A3B8] cursor-pointer"
+                    className="p-0.5 hover:text-[#0A1B2E] text-[#94A3B8] cursor-pointer"
                     title="Copy Resource ID"
                   >
                     <span className="material-symbols-outlined text-[15px]">
@@ -809,12 +776,12 @@ export default function ReconcilerPage() {
             {/* Drawer Content Scrollable */}
             <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-[#FAFCFF]">
               {/* Meta Details Box */}
-              <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] space-y-2.5 text-body-sm shadow-xs">
+              <div className="bg-white p-4 rounded-xl border border-[#CBD5E1] space-y-2.5 text-body-sm shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-[#64748B]">Linked Orchestration Order:</span>
                   <Link
                     href={`/orders/${selectedDrift.linkedOrder}`}
-                    className="font-mono text-label-sm text-[#4F46E5] font-semibold hover:underline inline-flex items-center gap-1"
+                    className="font-mono text-label-sm text-[#0A1B2E] font-semibold hover:underline inline-flex items-center gap-1"
                   >
                     {selectedDrift.linkedOrder}
                     <span className="material-symbols-outlined text-[13px]">open_in_new</span>
@@ -822,13 +789,13 @@ export default function ReconcilerPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[#64748B]">Drift Classification:</span>
-                  <span className="font-semibold text-[#DC2626] font-mono text-label-sm">
+                  <span className="font-semibold text-[#0A1B2E] font-mono text-label-sm">
                     {selectedDrift.driftType === "Orphan" ? "Orphaned Slice" : selectedDrift.driftType}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[#64748B]">Root Cause Hypothesis:</span>
-                  <span className="text-on-surface text-right max-w-xs text-body-sm">
+                  <span className="text-[#0A1B2E] text-right max-w-xs text-body-sm">
                     {selectedDrift.diffDetails.hypothesis}
                   </span>
                 </div>
@@ -841,39 +808,21 @@ export default function ReconcilerPage() {
               </div>
 
               {/* Remediation Status Banner */}
-              <div
-                className={`border rounded-xl p-4 flex items-start gap-3 ${
-                  selectedDrift.remediationStatus === "success"
-                    ? "bg-[#F0FDF4] border-[#BBF7D0]"
-                    : "bg-[#FEF2F2] border-[#FECACA]"
-                }`}
-              >
-                <span
-                  className={`material-symbols-outlined text-[20px] shrink-0 mt-0.5 ${
-                    selectedDrift.remediationStatus === "success" ? "text-[#16A34A]" : "text-[#DC2626]"
-                  }`}
-                >
+              <div className="border border-[#CBD5E1] rounded-xl p-4 flex items-start gap-3 bg-white shadow-2xs">
+                <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5 text-[#0A1B2E]">
                   {selectedDrift.remediationStatus === "success" ? "verified_user" : "error"}
                 </span>
                 <div className="space-y-1">
-                  <p
-                    className={`font-body-md text-body-md font-semibold ${
-                      selectedDrift.remediationStatus === "success" ? "text-[#166534]" : "text-[#991B1B]"
-                    }`}
-                  >
+                  <p className="font-body-md text-body-md font-semibold text-[#0A1B2E]">
                     {selectedDrift.remediationStatus === "success"
                       ? "Action Taken: Auto-Compensated via Saga Tombstone"
                       : "Escalated to Operator: Human In-The-Loop Required"}
                   </p>
-                  <p
-                    className={`font-body-sm text-body-sm leading-relaxed ${
-                      selectedDrift.remediationStatus === "success" ? "text-[#15803D]" : "text-[#B91C1C]"
-                    }`}
-                  >
+                  <p className="font-body-sm text-body-sm leading-relaxed text-[#64748B]">
                     {selectedDrift.remediationStatus === "success" ? (
                       <>
                         Formal TLA+ Invariant{" "}
-                        <code className="font-mono bg-[#DCFCE7] px-1 py-0.5 rounded text-label-sm">
+                        <code className="font-mono bg-[#F1F5F9] text-[#0A1B2E] px-1 py-0.5 rounded text-label-sm border border-[#CBD5E1]">
                           INV-01 (No Orphan Slices)
                         </code>{" "}
                         successfully restored. Deprovision tombstone pushed to {selectedDrift.subsystem} with inverse transaction hash.
@@ -890,19 +839,19 @@ export default function ReconcilerPage() {
               {/* Visual Before / After Code Diff Panel */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  <h4 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold">
                     State Payload Reconciliation Diff
                   </h4>
                   <span className="font-label-sm text-label-sm text-[#64748B] font-mono">Format: YAML (Canonical)</span>
                 </div>
-                <div className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden text-label-sm font-mono shadow-xs">
+                <div className="bg-white rounded-xl border border-[#CBD5E1] overflow-hidden text-label-sm font-mono shadow-xs">
                   {/* Diff Headers */}
-                  <div className="grid grid-cols-2 bg-[#F8FAFC] border-b border-[#E2E8F0] py-2 px-3 text-[#475569] font-medium text-center">
+                  <div className="grid grid-cols-2 bg-[#F8FAFC] border-b border-[#CBD5E1] py-2 px-3 text-[#0A1B2E] font-medium text-center">
                     <div>Actual Subsystem (Observed)</div>
                     <div>Reconciled Intent (Target)</div>
                   </div>
                   {/* Diff Content View */}
-                  <div className="p-3 text-[12px] leading-5 font-mono overflow-x-auto space-y-0.5 bg-[#FAF8FF]">
+                  <div className="p-3 text-[12px] leading-5 font-mono overflow-x-auto space-y-0.5 bg-white">
                     <div className="text-[#64748B]">1  resource_id: &quot;{selectedDrift.resourceId}&quot;</div>
                     <div className="text-[#64748B]">2  subsystem_node: &quot;{selectedDrift.diffDetails.subsystemNode || "us-east-core"}&quot;</div>
                     {selectedDrift.diffDetails.msisdn && (
@@ -912,18 +861,18 @@ export default function ReconcilerPage() {
                       <div className="text-[#64748B]">4  imsi: &quot;{selectedDrift.diffDetails.imsi}&quot;</div>
                     )}
 
-                    {/* Removed / Actual Leaked Lines (Red background) */}
+                    {/* Removed / Actual Leaked Lines (Neutral Slate background) */}
                     {selectedDrift.diffDetails.actualLines.map((line, idx) => (
-                      <div key={`act-${idx}`} className="bg-[#FEE2E2] text-[#991B1B] px-1.5 py-0.5 rounded-sm flex items-center">
-                        <span className="w-5 select-none text-[#F87171] font-semibold">{5 + idx} -</span>
+                      <div key={`act-${idx}`} className="bg-[#F8FAFC] text-[#0A1B2E] border border-[#E2E8F0] px-1.5 py-0.5 rounded-sm flex items-center">
+                        <span className="w-5 select-none text-[#64748B] font-semibold">{5 + idx} -</span>
                         <span>{line}</span>
                       </div>
                     ))}
 
-                    {/* Added / Expected Lines (Green background) */}
+                    {/* Added / Expected Lines (White with Navy text) */}
                     {selectedDrift.diffDetails.expectedLines.map((line, idx) => (
-                      <div key={`exp-${idx}`} className="bg-[#DCFCE7] text-[#14532D] px-1.5 py-0.5 rounded-sm flex items-center">
-                        <span className="w-5 select-none text-[#4ADE80] font-semibold">
+                      <div key={`exp-${idx}`} className="bg-white text-[#0A1B2E] border border-[#CBD5E1] px-1.5 py-0.5 rounded-sm flex items-center">
+                        <span className="w-5 select-none text-[#0A1B2E] font-semibold">
                           {5 + selectedDrift.diffDetails.actualLines.length + idx} +
                         </span>
                         <span>{line}</span>
@@ -941,12 +890,12 @@ export default function ReconcilerPage() {
               </div>
 
               {/* Telemetry Trace Summary Card */}
-              <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] space-y-2.5 shadow-xs">
+              <div className="bg-white p-4 rounded-xl border border-[#CBD5E1] space-y-2.5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                  <span className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold">
                     Execution Audit Trace
                   </span>
-                  <span className="font-label-sm text-label-sm font-mono text-[#16A34A] bg-[#DCFCE7] px-2 py-0.5 rounded font-medium">
+                  <span className="font-label-sm text-label-sm font-mono text-[#0A1B2E] bg-white border border-[#CBD5E1] px-2 py-0.5 rounded font-medium shadow-2xs">
                     PASSED VERIFICATION
                   </span>
                 </div>
@@ -954,17 +903,7 @@ export default function ReconcilerPage() {
                   {selectedDrift.diffDetails.traces.map((trace, idx) => (
                     <div key={idx} className="flex items-center justify-between text-[#64748B]">
                       <span>{trace.time}</span>
-                      <span
-                        className={`text-right ${
-                          trace.status === "error"
-                            ? "text-[#DC2626] font-medium"
-                            : trace.status === "info"
-                            ? "text-[#4F46E5] font-medium"
-                            : trace.status === "success"
-                            ? "text-[#16A34A] font-semibold"
-                            : "text-on-surface"
-                        }`}
-                      >
+                      <span className="text-right text-[#0A1B2E] font-medium">
                         {trace.text}
                       </span>
                     </div>
@@ -977,7 +916,7 @@ export default function ReconcilerPage() {
             <div className="p-4 bg-white border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2 shrink-0">
               <button
                 onClick={() => alert(`Re-verifying state with ${selectedDrift.subsystem} (${selectedDrift.port})...`)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-on-surface bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-[#0A1B2E] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] rounded-lg transition-colors cursor-pointer shadow-2xs"
               >
                 <span className="material-symbols-outlined text-[16px]">refresh</span>
                 <span>Re-verify with Subsystem</span>
@@ -985,14 +924,14 @@ export default function ReconcilerPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => alert(`Dry-run compensation simulated for ${selectedDrift.resourceId}. Invariant checked: 0 side-effects.`)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-[#4F46E5] bg-[#EEF2FF] border border-[#C7D2FE] hover:bg-[#E0E7FF] rounded-lg transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-[#0A1B2E] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] rounded-lg transition-colors cursor-pointer shadow-2xs"
                 >
                   <span className="material-symbols-outlined text-[16px]">play_arrow</span>
                   <span>Dry-Run Compensation</span>
                 </button>
                 <Link
                   href={`/orders/${selectedDrift.linkedOrder}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-white bg-[#4F46E5] hover:bg-[#4338CA] rounded-lg shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-white bg-[#0A1B2E] hover:bg-[#14263b] rounded-lg shadow-xs transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">timeline</span>
                   <span>View Trace</span>
@@ -1004,32 +943,32 @@ export default function ReconcilerPage() {
       </div>
 
       {/* ZERO-DRIFT EMPTY STATE / PERIODIC AUDIT MILESTONE SHOWCASE */}
-      <div className="bg-gradient-to-r from-[#F0FDF4] to-[#F8FAFC] rounded-xl border border-[#BBF7D0] p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#CBD5E1] p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-full bg-[#DCFCE7] flex items-center justify-center text-[#16A34A] shrink-0 border border-[#86EFAC]">
+          <div className="w-10 h-10 rounded-full bg-[#F8FAFC] flex items-center justify-center text-[#0A1B2E] shrink-0 border border-[#CBD5E1]">
             <span className="material-symbols-outlined text-[24px]">verified</span>
           </div>
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <h3 className="font-headline-sm text-headline-sm text-[#14532D] font-semibold">
+              <h3 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold">
                 Audit Milestone: Periodic Zero-Drift Seal
               </h3>
-              <span className="font-label-sm text-label-sm font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] px-2 py-0.5 rounded-full">
+              <span className="font-label-sm text-label-sm font-semibold bg-white text-[#0A1B2E] border border-[#CBD5E1] px-2 py-0.5 rounded-full shadow-2xs">
                 FORMAL PROOF VERIFIED
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-[#166534]">
+            <p className="font-body-sm text-body-sm text-[#64748B]">
               No orphan or uncompensated drift detected in previous run — all 14,273 invariants fully satisfied across OMS, SIM Inventory, HLR, and OCS at sweep epoch #8,940.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <div className="font-mono text-label-sm text-[#15803D] bg-white px-3 py-1.5 rounded-lg border border-[#BBF7D0] shadow-2xs">
-            Invariant Check: <strong className="text-[#14532D]">0 FAILURES</strong>
+          <div className="font-mono text-label-sm text-[#0A1B2E] bg-white px-3 py-1.5 rounded-lg border border-[#CBD5E1] shadow-2xs">
+            Invariant Check: <strong className="text-[#0A1B2E]">0 FAILURES</strong>
           </div>
           <Link
             href="/proof/certificates"
-            className="inline-flex items-center gap-1 text-label-md text-[#166534] hover:text-[#14532D] font-medium bg-white px-3 py-1.5 rounded-lg border border-[#BBF7D0] hover:bg-[#F0FDF4] transition-colors"
+            className="inline-flex items-center gap-1 text-label-md text-white bg-[#0A1B2E] hover:bg-[#14263b] font-medium px-3.5 py-1.5 rounded-lg transition-colors shadow-xs"
           >
             <span>Proof Certificate</span>
             <span className="material-symbols-outlined text-[16px]">verified</span>

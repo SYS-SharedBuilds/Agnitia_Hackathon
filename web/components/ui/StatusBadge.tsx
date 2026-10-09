@@ -24,16 +24,16 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
   const norm = status.toUpperCase().replace(/\s+/g, "_");
 
   let content: React.ReactNode = norm;
-  let style = "bg-surface-container text-tertiary border-outline-variant";
+  let style = "bg-white text-[#0A1B2E] border-[#CBD5E1]";
 
   switch (norm) {
     case "PENDING":
     case "DRAFT":
     case "DRAFT_/_PENDING":
-      style = "bg-surface-container text-tertiary border-[#CBD5E1]";
+      style = "bg-white text-[#64748B] border-[#E2E8F0]";
       content = (
         <>
-          <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8]"></span>
           <span>{status}</span>
         </>
       );
@@ -41,12 +41,12 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "RUNNING":
     case "IN_PROGRESS":
-      style = "bg-secondary-fixed text-secondary border-[#B4C5FF]";
+      style = "bg-white text-[#0A1B2E] border-[#0A1B2E]";
       content = (
         <>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
           </span>
           <span className="font-semibold tracking-wide">RUNNING</span>
         </>
@@ -55,57 +55,57 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "SUCCEEDED":
     case "COMPLETED":
-      style = "bg-surface-container-high text-on-primary-fixed-variant border-[#C7D2FE]";
+      style = "bg-white text-[#0A1B2E] border-[#CBD5E1]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-primary">check_circle</span>
+          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E]">check_circle</span>
           <span className="font-semibold">SUCCEEDED</span>
         </>
       );
       break;
 
     case "FAILED":
-      style = "bg-error-container text-error border-[#FFDAD6]";
+      style = "bg-[#0A1B2E] text-white border-[#0A1B2E]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-error">cancel</span>
-          <span className="font-semibold">FAILED</span>
+          <span className="material-symbols-outlined text-[13px] text-white">cancel</span>
+          <span className="font-semibold text-white">FAILED</span>
         </>
       );
       break;
 
     case "NEEDS_ATTENTION":
-      style = "bg-amber-100 text-amber-900 border-amber-300";
+      style = "bg-white text-[#0A1B2E] border-[#0A1B2E] font-bold";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-amber-700">warning</span>
-          <span className="font-semibold">NEEDS ATTENTION</span>
+          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E]">priority_high</span>
+          <span className="font-semibold text-[#0A1B2E]">NEEDS ATTENTION</span>
         </>
       );
       break;
 
     case "COMPENSATING":
-      style = "bg-tertiary-fixed text-tertiary border-[#B7C8E1]";
+      style = "bg-white text-[#0A1B2E] border-[#CBD5E1]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-tertiary animate-spin">sync</span>
+          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E] animate-spin">sync</span>
           <span className="font-semibold">COMPENSATING</span>
         </>
       );
       break;
 
     case "COMPENSATED":
-      style = "bg-primary-fixed text-on-primary-fixed-variant border-[#E2DFFF]";
+      style = "bg-white text-[#64748B] border-[#CBD5E1]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px]">undo</span>
+          <span className="material-symbols-outlined text-[13px] text-[#64748B]">undo</span>
           <span className="font-semibold">COMPENSATED</span>
         </>
       );
       break;
 
     case "CANCELLED":
-      style = "bg-surface-container text-outline border-[#CBD5E1]";
+      style = "bg-white text-[#94A3B8] border-[#E2E8F0]";
       content = <span className="line-through">{status}</span>;
       break;
 
@@ -118,7 +118,7 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-mono border shadow-2xs select-none ${sizeCls} ${style} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full font-mono border shadow-2xs select-none ${sizeCls} ${style} ${pulse ? "animate-pulse" : ""} ${className}`}
     >
       {content}
     </span>

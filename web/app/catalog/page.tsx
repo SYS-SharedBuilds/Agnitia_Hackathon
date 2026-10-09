@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 
 interface CatalogTask {
   id: string;
@@ -437,19 +436,19 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="flex flex-col w-full -m-6">
-      {/* Top Context Header Bar */}
-      <div className="px-6 py-4 bg-surface-container-lowest flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-sm border-b border-[#E3E8F0]">
+    <div className="flex flex-col w-full space-y-6">
+      {/* Top Context Header Card */}
+      <div className="bg-white rounded-xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xs border border-[#CBD5E1]">
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
+            <span className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E] flex items-center justify-center">
               <span className="material-symbols-outlined text-[20px]">account_tree</span>
             </span>
-            <h1 className="font-headline-md text-headline-md text-on-surface tracking-tight font-semibold truncate">
+            <h1 className="font-headline-md text-headline-md text-[#0A1B2E] tracking-tight font-bold truncate">
               Service Catalog &amp; DAG Orchestration
             </h1>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+          <p className="font-body-sm text-body-sm text-[#64748B] max-w-3xl">
             Formal saga workflow definitions, dependency DAGs, and compensation guarantees across telecommunication subsystems.
           </p>
         </div>
@@ -458,7 +457,7 @@ export default function CatalogPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => alert("Upload YAML specification dialog opened.")}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface border border-[#E2E8F0] hover:bg-surface-container-low rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] hover:bg-[#F8FAFC] rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[16px] text-[#64748B]">file_upload</span>
@@ -466,7 +465,7 @@ export default function CatalogPage() {
           </button>
           <button
             onClick={handleExportPackage}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface border border-[#E2E8F0] hover:bg-surface-container-low rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] hover:bg-[#F8FAFC] rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[16px] text-[#64748B]">download</span>
@@ -474,7 +473,7 @@ export default function CatalogPage() {
           </button>
           <button
             onClick={() => alert("Initiate new service specification builder wizard.")}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-container hover:bg-primary text-white rounded-lg transition-colors font-body-sm text-body-sm font-semibold shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg transition-colors font-body-sm text-body-sm font-semibold shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
@@ -484,7 +483,7 @@ export default function CatalogPage() {
       </div>
 
       {/* Main Multi-Column Console Area */}
-      <div className="p-6 flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* LEFT SIDEBAR: Service Specifications List (w-80 / 320px) */}
         <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4">
           <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 flex flex-col gap-3 border border-[#E3E8F0]">
@@ -1140,7 +1139,7 @@ export default function CatalogPage() {
                   Cluster Deployment Verification Checklist
                 </h3>
               </div>
-              <span className="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold font-mono border border-[#C7D2FE]">
+              <span className="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold font-mono border border-[#CBD5E1]">
                 ALL GATES CLEARED
               </span>
             </div>

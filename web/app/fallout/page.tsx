@@ -101,21 +101,21 @@ export default function FalloutQueuePage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">
+              <h1 className="font-headline-lg text-headline-lg text-[#0A1B2E] tracking-tight font-bold">
                 Fallout Queue
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold border border-error/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-error animate-pulse"></span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0A1B2E] text-white font-label-sm text-label-sm font-semibold shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
                 {incidents.length} Active Incidents
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FFFBEB] text-[#B45309] font-label-sm text-label-sm font-medium border border-[#FDE68A]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white text-[#0A1B2E] font-label-sm text-label-sm font-medium border border-[#CBD5E1] shadow-2xs">
                 <span className="material-symbols-outlined text-[14px]">warning</span>
                 SLA Risk: Moderate
               </span>
             </div>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+            <p className="font-body-md text-body-md text-[#475569] max-w-3xl">
               Orders needing manual intervention (
-              <span className="font-label-sm text-label-sm text-[#EA580C] bg-[#FFF7ED] px-1 py-0.5 rounded font-mono font-semibold">
+              <span className="font-label-sm text-label-sm text-[#0A1B2E] bg-white border border-[#CBD5E1] px-1 py-0.5 rounded font-mono font-semibold">
                 NEEDS_ATTENTION
               </span>
               ) — automated saga rollback halted or circuit-breaker tripped
@@ -187,17 +187,17 @@ export default function FalloutQueuePage() {
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-3">
           {/* Tab Header & Quick Count Ribbon */}
           <div className="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-3">
-            <div className="flex items-center justify-between p-1 bg-surface-container-low rounded-lg border border-outline-variant/20">
+            <div className="flex items-center justify-between p-1 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
               <button
                 onClick={() => setActiveTab("active")}
                 className={`flex-1 py-1.5 px-3 rounded-md font-headline-sm text-headline-sm shadow-xs flex items-center justify-center gap-1.5 transition-all ${
                   activeTab === "active"
-                    ? "bg-surface-container-lowest text-primary font-semibold shadow-xs"
-                    : "text-on-surface-variant hover:text-on-surface font-normal"
+                    ? "bg-[#0A1B2E] text-white font-semibold shadow-xs"
+                    : "text-[#64748B] hover:text-[#0A1B2E] font-normal"
                 }`}
               >
                 <span>Active Fallout</span>
-                <span className="px-1.5 py-0.5 bg-[#FEE2E2] text-[#B91C1C] rounded-full font-label-sm text-label-sm font-bold">
+                <span className="px-1.5 py-0.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] rounded-full font-label-sm text-label-sm font-bold">
                   {incidents.length}
                 </span>
               </button>
@@ -205,12 +205,12 @@ export default function FalloutQueuePage() {
                 onClick={() => setActiveTab("resolved")}
                 className={`flex-1 py-1.5 px-3 rounded-md font-body-sm text-body-sm flex items-center justify-center gap-1.5 transition-all ${
                   activeTab === "resolved"
-                    ? "bg-surface-container-lowest text-primary font-semibold shadow-xs"
-                    : "text-on-surface-variant hover:text-on-surface font-normal"
+                    ? "bg-[#0A1B2E] text-white font-semibold shadow-xs"
+                    : "text-[#64748B] hover:text-[#0A1B2E] font-normal"
                 }`}
               >
                 <span>Resolved</span>
-                <span className="px-1.5 py-0.5 bg-surface-container-highest text-on-surface-variant rounded-full font-label-sm text-label-sm">
+                <span className="px-1.5 py-0.5 bg-white text-[#64748B] border border-[#E2E8F0] rounded-full font-label-sm text-label-sm">
                   14
                 </span>
               </button>
@@ -218,35 +218,35 @@ export default function FalloutQueuePage() {
 
             {/* Search Input */}
             <div className="relative flex items-center">
-              <span className="material-symbols-outlined absolute left-3 text-outline text-[18px]">
+              <span className="material-symbols-outlined absolute left-3 text-[#94A3B8] text-[18px]">
                 filter_list
               </span>
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-9 pr-3 text-body-sm font-body-sm bg-surface-container-low rounded-lg text-on-surface placeholder:text-outline border border-outline-variant/20 focus:outline-none focus:ring-1 focus:ring-primary-container"
+                className="w-full h-8 pl-9 pr-3 text-body-sm font-body-sm bg-white rounded-lg text-[#0A1B2E] placeholder:text-[#94A3B8] border border-[#CBD5E1] focus:outline-none focus:ring-1 focus:ring-[#0A1B2E]"
                 placeholder="Filter fallout items..."
                 type="text"
               />
             </div>
 
             {/* SLA Risk Counter Ribbon */}
-            <div className="grid grid-cols-4 gap-1 pt-1 bg-surface-container-low/60 p-2 rounded-lg text-center font-label-sm text-label-sm border border-outline-variant/20">
+            <div className="grid grid-cols-4 gap-1 pt-1 bg-[#F8FAFC] p-2 rounded-lg text-center font-label-sm text-label-sm border border-[#E2E8F0]">
               <div className="flex flex-col">
-                <span className="text-outline font-normal">Total</span>
-                <span className="font-bold text-on-surface">{incidents.length}</span>
+                <span className="text-[#64748B] font-normal">Total</span>
+                <span className="font-bold text-[#0A1B2E]">{incidents.length}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-outline font-normal">&gt;1h Risk</span>
-                <span className="font-bold text-error">1</span>
+                <span className="text-[#64748B] font-normal">&gt;1h Risk</span>
+                <span className="font-bold text-[#0A1B2E]">1</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-outline font-normal">&lt;1h Risk</span>
-                <span className="font-bold text-[#D97706]">1</span>
+                <span className="text-[#64748B] font-normal">&lt;1h Risk</span>
+                <span className="font-bold text-[#0A1B2E]">1</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-outline font-normal">&lt;15m</span>
-                <span className="font-bold text-outline">0</span>
+                <span className="text-[#64748B] font-normal">&lt;15m</span>
+                <span className="font-bold text-[#64748B]">0</span>
               </div>
             </div>
           </div>
@@ -261,63 +261,47 @@ export default function FalloutQueuePage() {
                   onClick={() => setSelectedId(inc.id)}
                   className={`relative rounded-xl p-4 shadow-sm transition-all cursor-pointer border ${
                     isSelected
-                      ? "bg-[#EEF2FF] border-[#C7D2FE] ring-2 ring-primary-container"
-                      : "bg-surface-container-lowest hover:bg-surface-container-low/40 border-outline-variant/30"
+                      ? "bg-[#F8FAFC] border-[#0A1B2E] ring-2 ring-[#0A1B2E]"
+                      : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-1.5">
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          inc.slaSeverity === "high" ? "bg-error animate-ping" : "bg-[#D97706]"
-                        }`}
-                      ></span>
-                      <span className="font-label-md text-label-md font-bold text-primary tracking-wide">
+                      <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
+                      <span className="font-label-md text-label-md font-bold text-[#0A1B2E] tracking-wide">
                         {inc.id}
                       </span>
                     </div>
                     {/* SLA Pill */}
-                    <span
-                      className={`font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border ${
-                        inc.slaSeverity === "high"
-                          ? "bg-[#FEE2E2] text-error border-error/20"
-                          : "bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]"
-                      }`}
-                    >
+                    <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
                       <span className="material-symbols-outlined text-[12px]">timer</span>
                       {inc.slaElapsed}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className={`px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium ${
-                        inc.subsystem === "HLR/HSS Gateway"
-                          ? "bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]"
-                          : "bg-[#FFE4E6] text-[#BE123C] border border-[#FECDD3]"
-                      }`}
-                    >
+                    <span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
                       {inc.subsystem}
                     </span>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    <span className="font-body-sm text-body-sm text-[#64748B] truncate">
                       {inc.customer} ({inc.msisdn})
                     </span>
                   </div>
 
-                  <p className="font-body-sm text-body-sm text-on-surface font-medium line-clamp-2 mb-3 bg-surface-container-lowest/80 p-2 rounded-lg border border-outline-variant/20">
+                  <p className="font-body-sm text-body-sm text-[#0A1B2E] font-medium line-clamp-2 mb-3 bg-white p-2 rounded-lg border border-[#E2E8F0]">
                     &quot;{inc.summary}&quot;
                   </p>
 
-                  <div className="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant pt-2 border-t border-outline-variant/20">
+                  <div className="flex items-center justify-between font-label-sm text-label-sm text-[#64748B] pt-2 border-t border-[#F1F5F9]">
                     <div className="flex items-center gap-1 truncate max-w-[170px]" title={`RFC-7807 urn:telecom:${inc.errorCode}`}>
-                      <span className="material-symbols-outlined text-[14px] text-outline">fingerprint</span>
+                      <span className="material-symbols-outlined text-[14px]">fingerprint</span>
                       <span className="truncate">{inc.errorCode}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-outline">Assigned:</span>
+                      <span>Assigned:</span>
                       {inc.assignedTo ? (
-                        <span className="font-medium text-on-surface flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
+                        <span className="font-medium text-[#0A1B2E] flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                           {inc.assignedTo}
                         </span>
                       ) : (
@@ -326,7 +310,7 @@ export default function FalloutQueuePage() {
                             e.stopPropagation();
                             handleClaim(inc.id);
                           }}
-                          className="text-primary hover:text-secondary font-semibold hover:underline"
+                          className="text-[#0A1B2E] hover:text-[#14263b] font-semibold hover:underline"
                         >
                           + Claim
                         </button>
@@ -338,8 +322,8 @@ export default function FalloutQueuePage() {
             })}
 
             {/* Sample Collapsed Archive Note */}
-            <div className="p-3 bg-surface-container-low rounded-xl text-center border border-outline-variant/20">
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
+            <div className="p-3 bg-white rounded-xl text-center border border-[#CBD5E1] shadow-2xs">
+              <span className="font-body-sm text-body-sm text-[#64748B]">
                 Showing all active items. 14 resolved today in compliance with SLA.
               </span>
             </div>
@@ -350,15 +334,15 @@ export default function FalloutQueuePage() {
         {selectedIncident && (
           <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
             {/* 1. Incident Master Header Box */}
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-4">
+            <div className="bg-white rounded-xl p-5 shadow-2xs border border-[#CBD5E1] flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-headline-md text-headline-md font-bold text-on-surface font-label-md">
+                    <span className="font-headline-md text-headline-md font-bold text-[#0A1B2E] font-label-md">
                       {selectedIncident.id}
                     </span>
                     <button
-                      className="p-1 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container-high transition-colors"
+                      className="p-1 text-[#64748B] hover:text-[#0A1B2E] rounded hover:bg-[#F8FAFC] transition-colors"
                       onClick={() => {
                         navigator.clipboard.writeText(selectedIncident.id);
                         alert(`Copied ${selectedIncident.id} to clipboard!`);
@@ -367,14 +351,14 @@ export default function FalloutQueuePage() {
                     >
                       <span className="material-symbols-outlined text-[18px]">content_copy</span>
                     </button>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF7ED] text-[#C2410C] font-label-sm text-label-sm font-semibold border border-[#FFEDD5]">
-                      <span className="h-2 w-2 rounded-full bg-[#EA580C]"></span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1B2E] text-white font-label-sm text-label-sm font-bold shadow-2xs">
+                      <span className="h-2 w-2 rounded-full bg-white"></span>
                       {selectedIncident.status}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-body-sm font-body-sm text-on-surface-variant">
+                  <div className="flex items-center gap-2 text-body-sm font-body-sm text-[#64748B]">
                     <span>
-                      Customer: <strong className="text-on-surface font-medium">{selectedIncident.customer}</strong>
+                      Customer: <strong className="text-[#0A1B2E] font-medium">{selectedIncident.customer}</strong>
                     </span>
                     <span>·</span>
                     <span>Plan: {selectedIncident.plan}</span>
@@ -386,15 +370,15 @@ export default function FalloutQueuePage() {
                 {/* Quick Navigation Links */}
                 <div className="flex items-center gap-3 shrink-0">
                   <Link
-                    className="inline-flex items-center gap-1 text-primary hover:text-secondary font-label-sm text-label-sm font-medium"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:text-[#14263b] font-label-sm text-label-sm font-semibold hover:underline"
                     href={`/orders/${selectedIncident.id}`}
                   >
                     <span>Full Order Detail</span>
                     <span className="material-symbols-outlined text-[14px]">north_east</span>
                   </Link>
-                  <span className="text-outline-variant">|</span>
+                  <span className="text-[#CBD5E1]">|</span>
                   <a
-                    className="inline-flex items-center gap-1 text-primary hover:text-secondary font-label-sm text-label-sm font-medium"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:text-[#14263b] font-label-sm text-label-sm font-semibold hover:underline"
                     href="http://localhost:8233"
                     target="_blank"
                     rel="noreferrer"
@@ -406,26 +390,26 @@ export default function FalloutQueuePage() {
               </div>
 
               {/* SLA Warning Bar + Action Controls */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 bg-surface-container-low/60 p-3 rounded-lg border border-outline-variant/20">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
                 <div className="flex items-center gap-2 font-label-sm text-label-sm">
-                  <span className="material-symbols-outlined text-error text-[18px]">alarm</span>
-                  <span className="text-on-surface font-semibold">SLA Deadline:</span>
-                  <span className="text-error font-bold">In 16 mins</span>
-                  <span className="text-on-surface-variant">(Elapsed: {selectedIncident.slaElapsed} / 90m Threshold)</span>
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">alarm</span>
+                  <span className="text-[#0A1B2E] font-semibold">SLA Deadline:</span>
+                  <span className="text-[#0A1B2E] font-bold">In 16 mins</span>
+                  <span className="text-[#64748B]">(Elapsed: {selectedIncident.slaElapsed} / 90m Threshold)</span>
                 </div>
 
                 {/* Buttons */}
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleClaim(selectedIncident.id)}
-                    className="h-8 px-3 rounded-md bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium shadow-xs border border-outline-variant/30 flex items-center gap-1.5 transition-colors"
+                    className="h-8 px-3 rounded-md bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] font-body-sm text-body-sm font-medium shadow-2xs border border-[#CBD5E1] flex items-center gap-1.5 transition-colors"
                   >
                     <span className="material-symbols-outlined text-[16px]">person_add</span>
                     <span>{selectedIncident.assignedTo ? "Assigned to You" : "Assign to me"}</span>
                   </button>
                   <button
                     onClick={() => setShowManualModal(true)}
-                    className="h-8 px-3 rounded-md bg-[#FFF7ED] hover:bg-[#FFEDD5] text-[#C2410C] border border-[#FFEDD5] font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-colors"
+                    className="h-8 px-3 rounded-md bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] border border-[#CBD5E1] font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-colors shadow-2xs"
                   >
                     <span className="material-symbols-outlined text-[16px]">handyman</span>
                     <span>Resolve Manually…</span>
@@ -433,7 +417,7 @@ export default function FalloutQueuePage() {
                   <button
                     onClick={() => handleRetryCompensation(selectedIncident.id)}
                     disabled={isResolving}
-                    className="h-8 px-3 rounded-md bg-primary hover:bg-primary-container text-on-primary font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all shadow-sm"
+                    className="h-8 px-3 rounded-md bg-[#0A1B2E] hover:bg-[#14263b] text-white font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all shadow-xs"
                   >
                     <span className={`material-symbols-outlined text-[16px] ${isResolving ? "animate-spin" : ""}`}>
                       replay
@@ -462,7 +446,7 @@ export default function FalloutQueuePage() {
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-surface-container-low/70 border border-outline-variant/20">
                   <div className="mt-0.5">
                     <span
-                      className="material-symbols-outlined text-[#16A34A] text-[20px]"
+                      className="material-symbols-outlined text-[#0A1B2E] text-[20px]"
                       style={{ fontVariationSettings: "'FILL' 1" }}
                     >
                       check_circle
@@ -473,7 +457,7 @@ export default function FalloutQueuePage() {
                       <span className="font-body-sm text-body-sm font-medium text-on-surface line-through decoration-outline">
                         1. Inspect HLR/HSS subsystem telemetry &amp; confirm subscriber profile lock status
                       </span>
-                      <span className="font-label-sm text-label-sm text-[#16A34A] font-semibold">PASSED</span>
+                      <span className="font-label-sm text-label-sm text-[#0A1B2E] font-bold font-mono">PASSED</span>
                     </div>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
                       Auto-checked by agent: 1 orphaned profile lock detected on active slice{" "}
@@ -486,7 +470,7 @@ export default function FalloutQueuePage() {
                 </div>
 
                 {/* Step 2: CURRENT ACTIVE STEP */}
-                <div className="flex items-start gap-3 p-3.5 rounded-lg bg-[#EEF2FF] shadow-xs border border-[#C7D2FE]">
+                <div className="flex items-start gap-3 p-3.5 rounded-lg bg-[#F8FAFC] shadow-xs border border-[#CBD5E1]">
                   <div className="mt-0.5">
                     <span className="material-symbols-outlined text-primary text-[20px]">radio_button_checked</span>
                   </div>
@@ -558,19 +542,19 @@ export default function FalloutQueuePage() {
                 {/* Legend */}
                 <div className="flex flex-wrap items-center gap-3 font-label-sm text-label-sm">
                   <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-[#16A34A]"></span>
+                    <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
                     <span className="text-on-surface-variant">Succeeded</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-error"></span>
+                    <span className="h-2 w-2 rounded-full bg-[#64748B]"></span>
                     <span className="text-on-surface-variant">Failed</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-[#EA580C]"></span>
+                    <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
                     <span className="text-on-surface-variant">Comp. Failed</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-outline"></span>
+                    <span className="h-2 w-2 rounded-full bg-[#CBD5E1]"></span>
                     <span className="text-on-surface-variant">Stalled</span>
                   </div>
                 </div>
@@ -592,7 +576,7 @@ export default function FalloutQueuePage() {
                     </span>
                     {/* Node 1: Validate */}
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check_circle</span>
+                      <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
                       <div className="flex flex-col">
                         <span className="font-label-sm text-label-sm font-semibold">Validate Order</span>
                         <span className="font-label-sm text-label-sm text-outline">220ms</span>
@@ -602,54 +586,54 @@ export default function FalloutQueuePage() {
                     {/* Parallel Split Nodes */}
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check_circle</span>
+                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
                         <span className="font-label-sm text-label-sm font-semibold">Reserve Inventory</span>
                       </div>
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check_circle</span>
+                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
                         <span className="font-label-sm text-label-sm font-semibold">Create Billing</span>
                       </div>
                     </div>
                     <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
                     {/* Node 3: Provision Network */}
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check_circle</span>
+                      <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
                       <span className="font-label-sm text-label-sm font-semibold">Provision Network</span>
                     </div>
                     <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
                     {/* Node 4: Start Charging (FAILED) */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FEE2E2] shadow-xs text-error font-medium border border-error/20">
-                      <span className="material-symbols-outlined text-[16px] text-error">cancel</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F1F5F9] shadow-xs text-[#0A1B2E] font-medium border border-[#CBD5E1]">
+                      <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">cancel</span>
                       <div className="flex flex-col">
                         <span className="font-label-sm text-label-sm font-bold">Start Charging</span>
-                        <span className="font-label-sm text-label-sm text-error/80">Err: Rating Engine 500</span>
+                        <span className="font-label-sm text-label-sm text-[#64748B]">Err: Rating Engine 500</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Reverse Compensation Flow Ribbon */}
                   <div className="flex items-center gap-2 pl-6">
-                    <div className="flex items-center text-[#EA580C] gap-1 font-label-sm text-label-sm font-bold w-16 shrink-0 font-mono">
+                    <div className="flex items-center text-[#0A1B2E] gap-1 font-label-sm text-label-sm font-bold w-16 shrink-0 font-mono">
                       <span className="material-symbols-outlined text-[18px]">subdirectory_arrow_right</span>
                       <span>Rollback</span>
                     </div>
                     {/* Compensation Node 1: Deprovision Network (HALTED) */}
-                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#FFF7ED] text-[#EA580C] shadow-sm border border-[#FFEDD5]">
-                      <span className="material-symbols-outlined text-[18px] text-[#EA580C] animate-pulse">error</span>
+                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#0A1B2E] text-white shadow-2xs border border-[#0A1B2E]">
+                      <span className="material-symbols-outlined text-[18px] text-white animate-pulse">error</span>
                       <div className="flex flex-col">
                         <span className="font-label-sm text-label-sm font-bold">Deprovision Network</span>
-                        <span className="font-label-sm text-label-sm text-[#C2410C]">COMPENSATION_FAILED (5/5 Retries)</span>
+                        <span className="font-label-sm text-label-sm text-[#CBD5E1]">COMPENSATION_FAILED (5/5 Retries)</span>
                       </div>
                     </div>
-                    <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[#64748B] text-[18px]">arrow_forward</span>
                     {/* Compensation Node 2: Release Inventory (STALLED) */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high/60 text-outline border border-outline-variant/20">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F8FAFC] text-[#64748B] border border-[#CBD5E1]">
                       <span className="material-symbols-outlined text-[16px]">pause_circle</span>
                       <span className="font-label-sm text-label-sm font-medium">Release Inventory</span>
                     </div>
-                    <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[#64748B] text-[18px]">arrow_forward</span>
                     {/* Compensation Node 3: Void Billing (STALLED) */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high/60 text-outline border border-outline-variant/20">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F8FAFC] text-[#64748B] border border-[#CBD5E1]">
                       <span className="material-symbols-outlined text-[16px]">pause_circle</span>
                       <span className="font-label-sm text-label-sm font-medium">Void Billing Acct</span>
                     </div>
@@ -737,7 +721,7 @@ export default function FalloutQueuePage() {
                   </span>
                   <p className="text-on-surface">
                     Circuit-breaker triggered. Transitioned order to{" "}
-                    <span className="font-label-sm text-label-sm text-[#EA580C] font-semibold">NEEDS_ATTENTION</span>,
+                    <span className="font-label-sm text-label-sm text-[#0A1B2E] font-bold font-mono">NEEDS_ATTENTION</span>,
                     pushed payload to Fallout Queue.
                   </p>
                 </div>
@@ -754,11 +738,11 @@ export default function FalloutQueuePage() {
                 {/* Item 4 */}
                 <div className="flex items-start gap-3 text-body-sm font-body-sm">
                   <span className="font-label-sm text-label-sm text-outline shrink-0 w-24 font-mono">16:10:04 UTC</span>
-                  <span className="px-1.5 py-0.5 rounded bg-[#FFFBEB] text-[#B45309] font-label-sm text-label-sm shrink-0">
+                  <span className="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm shrink-0 font-mono">
                     SLA Monitor
                   </span>
                   <p className="text-on-surface">
-                    <span className="text-error font-medium">Warning:</span> Approaching 1h SLA tier breach. 16 minutes remaining until customer escalation.
+                    <span className="text-[#0A1B2E] font-bold">Warning:</span> Approaching 1h SLA tier breach. 16 minutes remaining until customer escalation.
                   </p>
                 </div>
               </div>
@@ -786,7 +770,7 @@ export default function FalloutQueuePage() {
           </summary>
           {/* Drawer Content: Pristine Clean Zero State */}
           <div className="p-8 flex flex-col items-center justify-center text-center bg-surface-container-low/40">
-            <div className="h-16 w-16 rounded-full bg-[#ECFDF5] flex items-center justify-center text-[#16A34A] mb-4 shadow-sm border border-[#A7F3D0]">
+            <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center text-[#0A1B2E] mb-4 shadow-sm border border-[#CBD5E1]">
               <span
                 className="material-symbols-outlined text-[36px]"
                 style={{ fontVariationSettings: "'FILL' 1" }}
@@ -801,8 +785,8 @@ export default function FalloutQueuePage() {
               0 orders require operator intervention. All active provisioning workflows and saga compensations are operating smoothly.
             </p>
             <div className="flex items-center gap-3">
-              <span className="font-label-sm text-label-sm px-3 py-1 rounded-full bg-[#ECFDF5] text-[#16A34A] font-semibold flex items-center gap-1.5 border border-[#A7F3D0]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
+              <span className="font-label-sm text-label-sm px-3 py-1 rounded-full bg-white text-[#0A1B2E] font-semibold flex items-center gap-1.5 border border-[#CBD5E1] shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                 100% Consistency Rate maintained
               </span>
               <span className="font-label-sm text-label-sm text-outline">Temporal Cluster: 0 Halts</span>
@@ -813,31 +797,31 @@ export default function FalloutQueuePage() {
 
       {/* Manual Resolution Modal Dialog */}
       {showManualModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#E3E8F0]">
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A1B2E]/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-[#CBD5E1]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#EA580C]">handyman</span>
-                <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                <span className="material-symbols-outlined text-[#0A1B2E]">handyman</span>
+                <h3 className="font-headline-sm text-headline-sm font-semibold text-[#0A1B2E]">
                   Manually Resolve Fallout Incident
                 </h3>
               </div>
               <button
                 onClick={() => setShowManualModal(false)}
-                className="text-[#64748B] hover:text-[#0F172A] p-1 rounded-md"
+                className="text-[#64748B] hover:text-[#0A1B2E] p-1 rounded-md"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             <form onSubmit={handleManualResolveSubmit} className="mt-4 space-y-4">
-              <div className="bg-[#FFF7ED] border border-[#FFEDD5] p-3 rounded-lg text-[13px] text-[#C2410C]">
+              <div className="bg-[#F8FAFC] border border-[#CBD5E1] p-3 rounded-lg text-[13px] text-[#0A1B2E]">
                 <strong>Warning:</strong> Manual intervention bypasses automated saga rollback. Ensure upstream locks
-                on <code className="font-mono font-semibold">hlr-east-01</code> have been verified clean before proceeding.
+                on <code className="font-mono font-semibold text-[#0A1B2E]">hlr-east-01</code> have been verified clean before proceeding.
               </div>
 
               <div>
-                <label className="block font-label-sm text-label-sm font-medium text-on-surface mb-1">
+                <label className="block font-label-sm text-label-sm font-medium text-[#0A1B2E] mb-1">
                   Incident / JIRA Ticket Reference *
                 </label>
                 <input
@@ -846,12 +830,12 @@ export default function FalloutQueuePage() {
                   value={resolutionTicket}
                   onChange={(e) => setResolutionTicket(e.target.value)}
                   placeholder="e.g. INC-94821 or NOC-4029"
-                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A1B2E] focus:border-[#0A1B2E] font-mono text-sm bg-white text-[#0A1B2E]"
                 />
               </div>
 
               <div>
-                <label className="block font-label-sm text-label-sm font-medium text-on-surface mb-1">
+                <label className="block font-label-sm text-label-sm font-medium text-[#0A1B2E] mb-1">
                   Resolution Notes &amp; Verification Evidence *
                 </label>
                 <textarea
@@ -860,21 +844,21 @@ export default function FalloutQueuePage() {
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="e.g. Cleared orphaned profile lock on hlr-east-01 manually via vendor CLI. Billing ledger checked."
-                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A1B2E] focus:border-[#0A1B2E] text-sm bg-white text-[#0A1B2E]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#F1F5F9]">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#E2E8F0]">
                 <button
                   type="button"
                   onClick={() => setShowManualModal(false)}
-                  className="px-4 py-2 text-body-md text-[#64748B] hover:text-[#0F172A] font-medium rounded-lg"
+                  className="px-4 py-2 text-body-md text-[#64748B] hover:text-[#0A1B2E] font-medium rounded-lg hover:bg-[#F8FAFC] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-body-md bg-[#EA580C] hover:bg-[#C2410C] text-white font-medium rounded-lg shadow-sm"
+                  className="px-4 py-2 text-body-md bg-[#0A1B2E] hover:bg-[#14263b] text-white font-medium rounded-lg shadow-xs transition-colors"
                 >
                   Mark as Resolved &amp; Close
                 </button>

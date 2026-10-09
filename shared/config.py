@@ -1,3 +1,4 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +14,7 @@ class Settings(BaseSettings):
     TASK_QUEUE: str = "switchon-activation-queue"
     REDIS_URL: str = "redis://localhost:6379/0"
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/switchon"
+    NEON_CONNECTION_STRING: str | None = None
 
     # Mock Services
     OMS_MOCK_URL: str = "http://localhost:8101"
@@ -23,5 +25,19 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    @model_validator(mode="after")
+    def resolve_database_url(self) -> "Settings":
+        if self.NEON_CONNECTION_STRING and (
+            not self.DATABASE_URL or "localhost" in self.DATABASE_URL
+        ):
+            raw = self.NEON_CONNECTION_STRING.split("?")[0]
+            if raw.startswith("postgres://"):
+                raw = "postgresql+asyncpg://" + raw[len("postgres://") :]
+            elif raw.startswith("postgresql://"):
+                raw = "postgresql+asyncpg://" + raw[len("postgresql://") :]
+            self.DATABASE_URL = f"{raw}?ssl=require"
+        return self
+
 
 settings = Settings()
+

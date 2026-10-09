@@ -479,7 +479,7 @@ export default function OrderReplayPage() {
                   {/* Event 27: Current Replay Head PINNED */}
                   <div className="relative pl-3">
                     <span className="absolute -left-4 top-1 h-3 w-3 rounded-full bg-primary ring-4 ring-primary-fixed"></span>
-                    <div className="bg-[#EEF2FF] rounded-md p-3 shadow-xs border border-[#C7D2FE]">
+                    <div className="bg-[#F8FAFC] rounded-md p-3 shadow-xs border border-[#CBD5E1]">
                       <div className="flex items-center justify-between font-label-sm">
                         <span className="font-mono text-primary font-bold flex items-center gap-1">
                           <span className="material-symbols-outlined text-[13px]">push_pin</span>
@@ -619,7 +619,7 @@ export default function OrderReplayPage() {
               onClick={() => setCurrentSeq(42)}
               className="inline-flex items-center gap-1 h-8 px-2.5 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-md font-label-sm font-medium transition-colors cursor-pointer"
             >
-              <span className="h-2 w-2 rounded-full bg-[#16A34A]"></span>
+              <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
               <span>Live Tail (Seq 42)</span>
             </button>
           </div>
@@ -674,25 +674,25 @@ export default function OrderReplayPage() {
             }}
             className="relative h-7 bg-surface-container-low rounded-lg p-1 flex items-center select-none cursor-pointer border border-[#E2E8F0]"
           >
-            {/* Colored Event Ranges */}
-            <div className="absolute inset-y-1.5 left-1 w-[55%] bg-[#DCFCE7]/70 rounded-l" title="Forward Execution (Seq 1-24)"></div>
-            <div className="absolute inset-y-1.5 left-[55%] w-[4%] bg-[#FEE2E2]" title="OCS Failure (Seq 25)"></div>
-            <div className="absolute inset-y-1.5 left-[59%] w-[32%] bg-[#EEF2FF]" title="Saga Compensation (Seq 26-38)"></div>
+            {/* Neutral Event Ranges */}
+            <div className="absolute inset-y-1.5 left-1 w-[55%] bg-[#F1F5F9] rounded-l" title="Forward Execution (Seq 1-24)"></div>
+            <div className="absolute inset-y-1.5 left-[55%] w-[4%] bg-[#0A1B2E]" title="OCS Failure (Seq 25)"></div>
+            <div className="absolute inset-y-1.5 left-[59%] w-[32%] bg-[#E2E8F0]" title="Saga Compensation (Seq 26-38)"></div>
             <div className="absolute inset-y-1.5 left-[91%] right-1 bg-surface-container/80 rounded-r" title="Audit & Complete (Seq 39-42)"></div>
 
             {/* Tick marks (SVG) */}
             <div className="absolute inset-x-2 inset-y-0 flex items-center justify-between pointer-events-none opacity-40">
-              <span className="w-0.5 h-3 bg-[#15803D]"></span>
-              <span className="w-0.5 h-2 bg-[#15803D]"></span>
-              <span className="w-0.5 h-3 bg-[#15803D]"></span>
-              <span className="w-0.5 h-2 bg-[#15803D]"></span>
-              <span className="w-0.5 h-3 bg-[#15803D]"></span>
-              <span className="w-0.5 h-2 bg-[#15803D]"></span>
-              <span className="w-0.5 h-3 bg-[#15803D]"></span>
-              <span className="w-0.5 h-2 bg-[#15803D]"></span>
-              <span className="w-0.5 h-3 bg-[#15803D]"></span>
-              <span className="w-0.5 h-2 bg-[#15803D]"></span>
-              <span className="w-0.5 h-4 bg-[#B91C1C]"></span>
+              <span className="w-0.5 h-3 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-2 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-3 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-2 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-3 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-2 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-3 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-2 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-3 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-2 bg-[#0A1B2E]"></span>
+              <span className="w-0.5 h-4 bg-[#0A1B2E]"></span>
               <span className="w-0.5 h-2 bg-primary"></span>
               <span className="w-0.5 h-3 bg-primary"></span>
               <span className="w-0.5 h-2 bg-primary"></span>
@@ -706,11 +706,11 @@ export default function OrderReplayPage() {
               style={{ left: `${(currentSeq / 42) * 100}%` }}
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 group"
             >
-              <div className="w-5 h-8 bg-primary rounded shadow-md flex items-center justify-center text-on-primary cursor-grab active:cursor-grabbing">
+              <div className="w-5 h-8 bg-[#0A1B2E] rounded shadow-md flex items-center justify-center text-white cursor-grab active:cursor-grabbing">
                 <span className="material-symbols-outlined text-[14px]">drag_handle</span>
               </div>
               {/* Tooltip Callout */}
-              <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface font-mono text-[10px] px-2 py-0.5 rounded shadow-md whitespace-nowrap">
+              <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-[#0A1B2E] text-white font-mono text-[10px] px-2 py-0.5 rounded shadow-md whitespace-nowrap">
                 Seq {currentSeq} · hlr-worker-east
               </div>
             </div>
@@ -721,7 +721,7 @@ export default function OrderReplayPage() {
             <span>0.00s (Validate)</span>
             <span>1.20s (Parallel Fork)</span>
             <span>2.98s (Verify Service)</span>
-            <span className="text-[#B91C1C] font-semibold">3.62s (OCS Fail)</span>
+            <span className="text-[#0A1B2E] font-semibold">3.62s (OCS Fail)</span>
             <span className="text-primary font-bold">3.82s [HEAD]</span>
             <span>4.82s (Compensated)</span>
           </div>
@@ -730,7 +730,7 @@ export default function OrderReplayPage() {
         {/* Scrubber Footer Sync Status */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-tertiary font-label-sm">
           <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[15px] text-[#16A34A]">sync_saved_locally</span>
+            <span className="material-symbols-outlined text-[15px] text-[#0A1B2E]">sync_saved_locally</span>
             <span>
               Replay buffer synchronized from Temporal event history log (42 events). Memory snapshot:{" "}
               <strong className="text-on-surface">100% deterministic</strong>.
