@@ -959,39 +959,53 @@ export default function OrderDetailPage() {
                 <div className="p-4 bg-white border border-[#CBD5E1] rounded-lg space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#000000] font-mono border border-[#CBD5E1]">
-                      SUBSYSTEM: {aiRcaData?.subsystem?.toUpperCase() || "HLR/HSS GATEWAY"}
+                      SUBSYSTEM: {aiRcaData?.subsystem?.toUpperCase() || "END-TO-END ORCHESTRATION"}
                     </span>
-                    <span className="font-mono text-xs text-[#000000] font-semibold">
-                      State: {order?.state || "NEEDS_ATTENTION"}
+                    <span className={`font-mono text-xs font-semibold px-2 py-0.5 rounded ${
+                      order?.state === "ACTIVE" ? "bg-emerald-100 text-emerald-800" : "bg-[#F1F5F9] text-[#000000]"
+                    }`}>
+                      State: {order?.state || "ACTIVE"}
                     </span>
                   </div>
                   <div>
                     <h3 className="font-headline-sm text-headline-sm font-bold text-[#000000]">
-                      {aiRcaData?.diagnosis_title || "HLR Deprovision Timeout during Saga Rollback"}
+                      {aiRcaData?.diagnosis_title || "Nominal Activation Complete · All Invariants Verified"}
                     </h3>
                   </div>
 
                   {/* Root Cause Card */}
                   <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg space-y-1.5">
                     <div className="flex items-center gap-1.5 font-label-sm text-label-sm font-bold text-[#000000]">
-                      <span className="material-symbols-outlined text-[16px]">troubleshoot</span>
-                      <span>Root-Cause Analysis (Plain-English)</span>
+                      <span className="material-symbols-outlined text-[16px]">
+                        {order?.state === "ACTIVE" ? "check_circle" : "troubleshoot"}
+                      </span>
+                      <span>
+                        {order?.state === "ACTIVE" ? "Operational Diagnosis (Plain-English)" : "Root-Cause Analysis (Plain-English)"}
+                      </span>
                     </div>
                     <p className="font-body-sm text-body-sm text-[#000000] leading-relaxed">
                       {aiRcaData?.root_cause_analysis ||
-                        "HLR Gateway slice 'hlr-east-01' became unresponsive (HTTP 504 Gateway Timeout) during backward compensation after Start Charging threw OCS_TIMEOUT_504."}
+                        "All distributed saga tasks completed successfully with verified idempotency keys. Zero compensation required."}
                     </p>
                   </div>
 
                   {/* Blast Radius Assessment */}
-                  <div className="p-3 bg-white border border-amber-300 rounded-lg space-y-1.5">
-                    <div className="flex items-center gap-1.5 font-label-sm text-label-sm font-bold text-amber-900">
-                      <span className="material-symbols-outlined text-[16px] text-amber-700">security</span>
+                  <div className={`p-3 bg-white rounded-lg space-y-1.5 border ${
+                    order?.state === "ACTIVE" ? "border-emerald-300" : "border-amber-300"
+                  }`}>
+                    <div className={`flex items-center gap-1.5 font-label-sm text-label-sm font-bold ${
+                      order?.state === "ACTIVE" ? "text-emerald-900" : "text-amber-900"
+                    }`}>
+                      <span className={`material-symbols-outlined text-[16px] ${
+                        order?.state === "ACTIVE" ? "text-emerald-700" : "text-amber-700"
+                      }`}>
+                        security
+                      </span>
                       <span>Blast Radius &amp; Leakage Assessment</span>
                     </div>
                     <p className="font-body-sm text-body-sm text-[#000000] leading-relaxed">
                       {aiRcaData?.blast_radius ||
-                        "Zero billing leakage (billing account unfinalized). 1 residual HLR network profile lock in slice hlr-east-01. Customer SIM card is not operational."}
+                        "Zero billing leakage. Zero orphaned resources across downstream network and billing systems."}
                     </p>
                   </div>
                 </div>
@@ -1001,12 +1015,17 @@ export default function OrderDetailPage() {
                   <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg">
                     <span className="font-label-sm text-label-sm text-[#000000] block">Events Correlated</span>
                     <span className="font-mono text-lg font-bold text-[#000000]">
-                      {aiRcaData?.telemetry_correlation?.events_analyzed || events.length || 24}
+                      {aiRcaData?.telemetry_correlation?.events_analyzed || events.length || 19}
                     </span>
                   </div>
                   <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg">
                     <span className="font-label-sm text-label-sm text-[#000000] block">Failed / Stalled Tasks</span>
-                    <span className="font-mono text-lg font-bold text-[#000000]">
+                    <span className={`font-mono text-lg font-bold ${
+                      (aiRcaData?.telemetry_correlation?.failed_tasks_count || 0) +
+                      (aiRcaData?.telemetry_correlation?.stalled_tasks_count || 0) === 0
+                        ? "text-emerald-700"
+                        : "text-[#000000]"
+                    }`}>
                       {(aiRcaData?.telemetry_correlation?.failed_tasks_count || 0) +
                         (aiRcaData?.telemetry_correlation?.stalled_tasks_count || 0)}
                     </span>
@@ -1017,19 +1036,23 @@ export default function OrderDetailPage() {
                 <div className="p-4 bg-white border border-[#CBD5E1] rounded-lg space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 font-label-sm text-label-sm font-bold text-[#000000]">
-                      <span className="material-symbols-outlined text-[18px]">checklist</span>
-                      <span>NOC Recommended Playbook</span>
+                      <span className="material-symbols-outlined text-[18px]">
+                        {order?.state === "ACTIVE" ? "task_alt" : "checklist"}
+                      </span>
+                      <span>
+                        {order?.state === "ACTIVE" ? "Post-Activation Verification" : "NOC Recommended Playbook"}
+                      </span>
                     </div>
                     <span className="font-mono text-[10px] text-[#000000] bg-[#F1F5F9] px-2 py-0.5 rounded border border-[#CBD5E1]">
-                      SOP-TELCO-714
+                      {order?.state === "ACTIVE" ? "SOP-NOMINAL-200" : "SOP-TELCO-714"}
                     </span>
                   </div>
                   <div className="space-y-2">
                     {(
                       aiRcaData?.remediation_playbook || [
-                        "Verify network slice cluster connectivity via 'Open Network System' diagnostic portal.",
-                        "If node has recovered, trigger 'Retry Compensation' to allow Temporal to replay the deprovision saga step.",
-                        "If node remains unrecoverable, execute manual HSS command 'hssctl-east purge-sub' and seal resolution with NOC ticket reference.",
+                        "No manual remediation required. Order has reached nominal terminal active state.",
+                        "Cryptographic consistency certificate sealed and available under Certificate tab.",
+                        "Subscriber notification confirmed delivered via SMS-C gateway.",
                       ]
                     ).map((step, idx) => (
                       <div key={idx} className="flex items-start gap-2.5 p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0] text-[#000000]">

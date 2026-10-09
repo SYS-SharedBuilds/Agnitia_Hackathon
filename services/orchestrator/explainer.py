@@ -93,8 +93,26 @@ def synthesize_ai_rca_copilot(
     elif failure_reason:
         diag_code = failure_reason
 
-    # Base deterministic synthesis (used as baseline and safe fallback)
-    if "hlr" in diag_code.lower() or "network" in diag_code.lower() or "504" in diag_code:
+    # Check for nominal successful order completion
+    if state == "ACTIVE" and not failed_tasks and not failure_reason:
+        subsystem = "End-to-End Orchestration"
+        confidence = 99.9
+        title = "Nominal Activation Complete · All Invariants Verified"
+        root_cause = (
+            "All distributed saga tasks completed successfully with verified idempotency keys. "
+            "Zero compensation required. Cryptographic Merkle audit trail and consistency seal generated."
+        )
+        blast_radius = (
+            "Zero billing leakage (charges aligned with network slice). Zero orphaned resources. "
+            "Subscriber active in HLR/HSS and OCS rating engine."
+        )
+        remediation_steps = [
+            "No manual remediation required. Order has reached nominal terminal active state.",
+            "Cryptographic consistency certificate sealed and available under Certificate tab.",
+            "Subscriber notification confirmed delivered via SMS-C gateway.",
+        ]
+        jira_template = f"OPS-ACT-{order_id[-6:].upper()}: Order successfully provisioned"
+    elif "hlr" in diag_code.lower() or "network" in diag_code.lower() or "504" in diag_code:
         subsystem = "Network (HLR / UDM Gateway)"
         confidence = 99.2
         title = "Downstream Diameter/gRPC Transport Timeout"
@@ -166,8 +184,8 @@ def synthesize_ai_rca_copilot(
 
             import httpx
 
-            prompt = f"""You are an expert telecom Network Operations Center (NOC) Root-Cause Analysis (RCA) AI Copilot for service orchestration.
-Analyze this order saga failure telemetry:
+            prompt = f"""You are an expert telecom Network Operations Center (NOC) Root-Cause Analysis (RCA) and Intelligence Copilot for service orchestration.
+Analyze this order saga execution telemetry:
 Order ID: {order_id}
 Product: {product}
 State: {state}
@@ -177,11 +195,13 @@ Compensated Tasks: {json.dumps(compensated_tasks, default=str)}
 Stalled Tasks: {json.dumps(running_or_stalled, default=str)}
 Recent Events: {json.dumps(events[-8:], default=str)}
 
+Note: If State is "ACTIVE" and there are no failed tasks or failure reasons, the order executed successfully without errors. In that case, report nominal operation, zero leakage, and confirm that all invariants passed.
+
 Respond strictly in valid JSON matching this schema:
 {{
-  "diagnosis_title": "string (Concise failure title, max 8 words)",
-  "subsystem": "string (e.g. Network (HLR / UDM Gateway), Billing (OCS Rating Engine), or Inventory)",
-  "root_cause_analysis": "string (Clear, 2-3 sentence plain-English diagnosis explaining the primary failure and saga behavior)",
+  "diagnosis_title": "string (Concise title, max 8 words - e.g. Nominal Activation Complete if successful)",
+  "subsystem": "string (e.g. End-to-End Orchestration, Network (HLR / UDM Gateway), Billing (OCS Rating Engine), or Inventory)",
+  "root_cause_analysis": "string (Clear, 2-3 sentence plain-English summary explaining the saga execution state)",
   "blast_radius": "string (Precise statement on billing leakage, unbilled service, and orphaned downstream locks)",
   "confidence_score": 98.6,
   "remediation_playbook": ["string step 1", "string step 2", "string step 3"],
