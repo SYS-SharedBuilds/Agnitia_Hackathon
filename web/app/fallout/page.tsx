@@ -224,7 +224,7 @@ export default function FalloutQueuePage() {
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-9 pr-3 text-body-sm font-body-sm bg-white rounded-lg text-[#0A1B2E] placeholder:text-[#94A3B8] border border-[#CBD5E1] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                className="w-full h-8 pl-9 pr-3 text-body-sm font-body-sm bg-white rounded-lg text-[#0A1B2E] placeholder:text-[#94A3B8] border border-[#CBD5E1] focus:outline-none focus:ring-1 focus:ring-[#0A1B2E]"
                 placeholder="Filter fallout items..."
                 type="text"
               />
@@ -310,7 +310,7 @@ export default function FalloutQueuePage() {
                             e.stopPropagation();
                             handleClaim(inc.id);
                           }}
-                          className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold hover:underline"
+                          className="text-[#0A1B2E] hover:text-[#14263b] font-semibold hover:underline"
                         >
                           + Claim
                         </button>
@@ -370,7 +370,7 @@ export default function FalloutQueuePage() {
                 {/* Quick Navigation Links */}
                 <div className="flex items-center gap-3 shrink-0">
                   <Link
-                    className="inline-flex items-center gap-1 text-[#2563EB] hover:text-[#1D4ED8] font-label-sm text-label-sm font-semibold hover:underline"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:text-[#14263b] font-label-sm text-label-sm font-semibold hover:underline"
                     href={`/orders/${selectedIncident.id}`}
                   >
                     <span>Full Order Detail</span>
@@ -378,7 +378,7 @@ export default function FalloutQueuePage() {
                   </Link>
                   <span className="text-[#CBD5E1]">|</span>
                   <a
-                    className="inline-flex items-center gap-1 text-[#2563EB] hover:text-[#1D4ED8] font-label-sm text-label-sm font-semibold hover:underline"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:text-[#14263b] font-label-sm text-label-sm font-semibold hover:underline"
                     href="http://localhost:8233"
                     target="_blank"
                     rel="noreferrer"
@@ -417,7 +417,7 @@ export default function FalloutQueuePage() {
                   <button
                     onClick={() => handleRetryCompensation(selectedIncident.id)}
                     disabled={isResolving}
-                    className="h-8 px-3 rounded-md bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all shadow-xs"
+                    className="h-8 px-3 rounded-md bg-[#0A1B2E] hover:bg-[#14263b] text-white font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all shadow-xs"
                   >
                     <span className={`material-symbols-outlined text-[16px] ${isResolving ? "animate-spin" : ""}`}>
                       replay
@@ -470,7 +470,7 @@ export default function FalloutQueuePage() {
                 </div>
 
                 {/* Step 2: CURRENT ACTIVE STEP */}
-                <div className="flex items-start gap-3 p-3.5 rounded-lg bg-[#EEF2FF] shadow-xs border border-[#C7D2FE]">
+                <div className="flex items-start gap-3 p-3.5 rounded-lg bg-[#F8FAFC] shadow-xs border border-[#CBD5E1]">
                   <div className="mt-0.5">
                     <span className="material-symbols-outlined text-primary text-[20px]">radio_button_checked</span>
                   </div>
@@ -830,7 +830,7 @@ export default function FalloutQueuePage() {
                   value={resolutionTicket}
                   onChange={(e) => setResolutionTicket(e.target.value)}
                   placeholder="e.g. INC-94821 or NOC-4029"
-                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:border-[#2563EB] font-mono text-sm bg-white text-[#0A1B2E]"
+                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A1B2E] focus:border-[#0A1B2E] font-mono text-sm bg-white text-[#0A1B2E]"
                 />
               </div>
 
@@ -844,7 +844,7 @@ export default function FalloutQueuePage() {
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="e.g. Cleared orphaned profile lock on hlr-east-01 manually via vendor CLI. Billing ledger checked."
-                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:border-[#2563EB] text-sm bg-white text-[#0A1B2E]"
+                  className="w-full px-3 py-2 text-body-md border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A1B2E] focus:border-[#0A1B2E] text-sm bg-white text-[#0A1B2E]"
                 />
               </div>
 
@@ -858,7 +858,7 @@ export default function FalloutQueuePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-body-md bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium rounded-lg shadow-xs transition-colors"
+                  className="px-4 py-2 text-body-md bg-[#0A1B2E] hover:bg-[#14263b] text-white font-medium rounded-lg shadow-xs transition-colors"
                 >
                   Mark as Resolved &amp; Close
                 </button>

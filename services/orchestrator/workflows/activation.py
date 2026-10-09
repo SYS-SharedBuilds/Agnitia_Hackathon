@@ -231,6 +231,15 @@ class ServiceActivationWorkflow:
                 start_to_close_timeout=timedelta(seconds=5),
             )
 
+            if self.state == OrderState.NEEDS_ATTENTION:
+                # Await manual resolution from operator (via resolve_manually signal)
+                await workflow.wait_condition(lambda: self.state != OrderState.NEEDS_ATTENTION)
+                await workflow.execute_activity(
+                    publish_order_event_activity,
+                    args=[self.order_id, "order.rolled_back", self._next_seq(), {"reason": self.failure_reason}],
+                    start_to_close_timeout=timedelta(seconds=5),
+                )
+
         else:
             self.state = OrderState.ACTIVE
             await workflow.execute_activity(

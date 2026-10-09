@@ -288,7 +288,7 @@ export default function ABProofPage() {
         {/* RIGHT CARD: SwitchOn Engine */}
         <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">
           {/* Card Banner */}
-          <div className="bg-secondary-fixed/20 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#C7D2FE]">
+          <div className="bg-secondary-fixed/20 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#CBD5E1]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[22px]">verified</span>

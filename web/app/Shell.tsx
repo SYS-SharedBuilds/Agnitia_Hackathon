@@ -10,7 +10,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     { name: "Overview", href: "/", pathKey: "overview", icon: "grid_view" },
     { name: "Orders", href: "/orders", pathKey: "orders", icon: "receipt_long" },
     { name: "New Order", href: "/new", pathKey: "new-order", icon: "add_circle" },
-    { name: "Fallout Queue", href: "/fallout", pathKey: "fallout-queue", icon: "report_problem", badge: "14", badgeColor: "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]" },
+    { name: "Fallout Queue", href: "/fallout", pathKey: "fallout-queue", icon: "report_problem", badge: "14", badgeColor: "bg-[#eef3f9] text-[#0A1B2E] border-[#0A1B2E]" },
     { name: "Metrics", href: "/metrics", pathKey: "metrics", icon: "monitoring" },
     { name: "Scenarios & Proof", href: "/proof", pathKey: "scenarios-proof", icon: "verified" },
     { name: "Reconciler", href: "/reconciler", pathKey: "reconciler", icon: "sync_alt" },
@@ -32,14 +32,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           {/* Logo & Version */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-[#E2E8F0] shrink-0 bg-white">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:bg-[#1D4ED8] transition-colors">
+              <div className="h-8 w-8 rounded-lg bg-[#0A1B2E] text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:bg-[#14263b] transition-colors">
                 ⚡
               </div>
               <span className="font-headline-sm text-headline-sm text-[#0A1B2E] tracking-tight font-bold">
                 SwitchOn
               </span>
             </Link>
-            <span className="font-label-sm text-label-sm bg-[#EFF6FF] text-[#2563EB] px-1.5 py-0.5 rounded font-mono font-semibold border border-[#BFDBFE]">
+            <span className="font-label-sm text-label-sm bg-white text-[#0A1B2E] px-1.5 py-0.5 rounded font-mono font-semibold border border-[#CBD5E1]">
               v2.4
             </span>
           </div>
@@ -54,12 +54,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
                     active
-                      ? "bg-[#EFF6FF] text-[#2563EB] font-semibold border-l-4 border-[#2563EB] shadow-2xs"
-                      : "text-body-md font-body-md text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0A1B2E]"
+                      ? "bg-[#F8FAFC] text-[#0A1B2E] font-semibold border-l-4 border-[#0A1B2E] shadow-2xs"
+                      : "text-body-md font-body-md text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0A1B2E]"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={`material-symbols-outlined text-[19px] ${active ? "text-[#2563EB]" : "text-[#64748B]"}`}>
+                    <span className={`material-symbols-outlined text-[19px] ${active ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                       {item.icon}
                     </span>
                     <span>{item.name}</span>
@@ -80,19 +80,19 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         {/* Sidebar Footer */}
         <div className="p-3 border-t border-[#E2E8F0] space-y-3 shrink-0 bg-white">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm font-semibold bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] px-2 py-0.5 rounded-full">
+            <span className="font-label-sm text-label-sm font-semibold bg-white text-[#0A1B2E] border border-[#CBD5E1] px-2 py-0.5 rounded-full">
               DEMO MODE
             </span>
             <div className="flex items-center gap-1.5 text-body-sm font-body-sm text-[#64748B]">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
               </span>
               <span className="font-label-sm text-label-sm">Live · SSE</span>
             </div>
           </div>
           <div className="flex items-center gap-2.5 pt-1 border-t border-[#F1F5F9]">
-            <div className="w-8 h-8 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold text-xs shrink-0">
+            <div className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#0A1B2E] flex items-center justify-center font-bold text-xs shrink-0">
               AS
             </div>
             <div className="flex flex-col min-w-0">
@@ -131,7 +131,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 search
               </span>
               <input
-                className="w-full h-9 pl-9 pr-3 text-body-sm font-body-md bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all"
+                className="w-full h-9 pl-9 pr-3 text-body-sm font-body-md bg-white border border-[#CBD5E1] rounded-lg text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:bg-white focus:border-[#0A1B2E] focus:ring-1 focus:ring-[#0A1B2E] transition-all"
                 placeholder="Search order ID, customer, MSISDN… ⌘K"
                 type="text"
               />
@@ -139,12 +139,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <div className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#0A1B2E] border border-[#E2E8F0] px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]"></span>
+            <div className="inline-flex items-center gap-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
               <span>us-east-core: HEALTHY</span>
             </div>
             <a
-              className="inline-flex items-center gap-1 text-label-sm font-label-sm text-[#2563EB] hover:text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] hover:bg-[#DBEAFE] px-2.5 py-1 rounded-lg transition-colors font-medium shadow-2xs"
+              className="inline-flex items-center gap-1 text-label-sm font-label-sm text-[#0A1B2E] hover:text-[#14263b] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] px-2.5 py-1 rounded-lg transition-colors font-medium shadow-2xs"
               href="http://localhost:8233"
               target="_blank"
               rel="noreferrer"
@@ -152,9 +152,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <span>Temporal UI</span>
               <span className="material-symbols-outlined text-[14px]">north_east</span>
             </a>
-            <button className="relative p-1.5 text-[#64748B] hover:text-[#0A1B2E] rounded-lg hover:bg-[#F1F5F9] transition-colors">
+            <button className="relative p-1.5 text-[#64748B] hover:text-[#0A1B2E] rounded-lg hover:bg-[#F8FAFC] transition-colors">
               <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#2563EB] border border-white"></span>
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#0A1B2E] border border-white"></span>
             </button>
           </div>
         </header>

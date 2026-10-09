@@ -122,7 +122,7 @@ export default function NewOrderPage() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link
-                className="inline-flex items-center gap-1 text-white bg-[#2563EB] hover:bg-[#1D4ED8] px-3 py-1.5 rounded-lg text-body-sm font-body-sm shadow-xs transition-colors font-medium"
+                className="inline-flex items-center gap-1 text-white bg-[#0A1B2E] hover:bg-[#14263b] px-3 py-1.5 rounded-lg text-body-sm font-body-sm shadow-xs transition-colors font-medium"
                 href="/orders/ORD-20260712-004218"
               >
                 <span>Open live view</span>
@@ -274,7 +274,7 @@ export default function NewOrderPage() {
                         <input
                           checked={productType === "fiber"}
                           onChange={() => setProductType("fiber")}
-                          className="w-4 h-4 text-[#2563EB] focus:ring-0 focus:outline-none"
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
@@ -302,7 +302,7 @@ export default function NewOrderPage() {
                         <input
                           checked={productType === "5g"}
                           onChange={() => setProductType("5g")}
-                          className="w-4 h-4 text-[#2563EB] focus:ring-0 focus:outline-none"
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
@@ -330,7 +330,7 @@ export default function NewOrderPage() {
                         <input
                           checked={productType === "esim"}
                           onChange={() => setProductType("esim")}
-                          className="w-4 h-4 text-[#2563EB] focus:ring-0 focus:outline-none"
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
@@ -599,7 +599,7 @@ export default function NewOrderPage() {
                   </button>
                   <button
                     disabled={submitting}
-                    className="h-9 px-5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                    className="h-9 px-5 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                     type="submit"
                   >
                     <span>{submitting ? "Submitting..." : "Submit Order"}</span>

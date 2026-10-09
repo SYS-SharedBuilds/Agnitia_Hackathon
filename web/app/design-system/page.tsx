@@ -210,7 +210,7 @@ export default function DesignSystemReferenceBoardPage() {
                 <span className="px-2.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-semibold flex items-center gap-1 font-mono border border-[#E2E8F0]">
                   <span className="material-symbols-outlined text-[14px]">security</span>NITRO_EAL4+
                 </span>
-                <span className="px-2.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-semibold flex items-center gap-1 font-mono border border-[#C7D2FE]">
+                <span className="px-2.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-semibold flex items-center gap-1 font-mono border border-[#CBD5E1]">
                   <span className="material-symbols-outlined text-[14px]">account_tree</span>ACID_SAGA_L3
                 </span>
               </div>
@@ -718,7 +718,7 @@ export default function DesignSystemReferenceBoardPage() {
               </div>
 
               {/* Banner 2: Formal Invariant PASS */}
-              <div className="p-4 rounded-lg bg-surface-container-high flex items-center justify-between md:col-span-2 border border-[#C7D2FE]">
+              <div className="p-4 rounded-lg bg-surface-container-high flex items-center justify-between md:col-span-2 border border-[#CBD5E1]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[18px]">verified</span>

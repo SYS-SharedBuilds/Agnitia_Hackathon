@@ -221,10 +221,10 @@ export default function OrdersPage() {
     switch (status) {
       case "RUNNING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#2563EB] border border-[#2563EB] font-label-sm text-label-sm font-semibold shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#0A1B2E] border border-[#0A1B2E] font-label-sm text-label-sm font-semibold shadow-2xs">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
             </span>
             RUNNING
           </span>
@@ -322,7 +322,7 @@ export default function OrdersPage() {
           </button>
           <Link
             href="/new"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors font-body-md text-body-md font-medium shadow-xs"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-[#0A1B2E] text-white hover:bg-[#14263b] transition-colors font-body-md text-body-md font-medium shadow-xs"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>New Order</span>
@@ -338,13 +338,13 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("all")}
             className={`relative py-3.5 font-body-md text-body-md flex items-center gap-2 shrink-0 transition-colors ${
               activeTab === "all"
-                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                ? "font-semibold text-[#0A1B2E] border-b-2 border-[#0A1B2E]"
                 : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
           >
             <span>All Orchestrations</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB] font-semibold border border-[#BFDBFE]">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-[#F8FAFC] text-[#0A1B2E] font-semibold border border-[#CBD5E1]">
               1,284
             </span>
           </button>
@@ -354,7 +354,7 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("failed")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "failed"
-                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                ? "font-semibold text-[#0A1B2E] border-b-2 border-[#0A1B2E]"
                 : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
@@ -370,7 +370,7 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("slow")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "slow"
-                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                ? "font-semibold text-[#0A1B2E] border-b-2 border-[#0A1B2E]"
                 : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
@@ -386,7 +386,7 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("attention")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "attention"
-                ? "font-semibold text-[#2563EB] border-b-2 border-[#2563EB]"
+                ? "font-semibold text-[#0A1B2E] border-b-2 border-[#0A1B2E]"
                 : "font-medium text-[#64748B] hover:text-[#0A1B2E]"
             }`}
             type="button"
@@ -401,7 +401,7 @@ export default function OrdersPage() {
         {/* Auxiliary view selector */}
         <div className="hidden lg:flex items-center gap-3 font-label-sm text-label-sm text-[#64748B]">
           <span className="flex items-center gap-1 font-mono">
-            <span className="w-2 h-2 rounded-full bg-[#2563EB]"></span>SLA 99.98%
+            <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>SLA 99.98%
           </span>
           <span>•</span>
           <span className="font-mono">Latency p95: 4.8s</span>
@@ -420,7 +420,7 @@ export default function OrdersPage() {
                 search
               </span>
               <input
-                className="w-full h-8 pl-8 pr-7 bg-[#F8FAFC] rounded font-body-sm text-body-sm text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#2563EB] border border-[#CBD5E1]"
+                className="w-full h-8 pl-8 pr-7 bg-[#F8FAFC] rounded font-body-sm text-body-sm text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#0A1B2E] border border-[#CBD5E1]"
                 placeholder="Filter Order ID, Client Ref, MSISDN… ⌘F"
                 type="text"
                 value={searchQuery}
@@ -523,7 +523,7 @@ export default function OrdersPage() {
                   <input
                     checked={filteredOrders.length > 0 && selectedIds.length === filteredOrders.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded bg-white text-[#2563EB] focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    className="w-4 h-4 rounded bg-white text-[#0A1B2E] focus:ring-0 focus:ring-offset-0 cursor-pointer"
                     type="checkbox"
                   />
                 </th>
@@ -547,7 +547,7 @@ export default function OrdersPage() {
                     key={ord.id}
                     className={`h-12 transition-colors ${
                       isSelected
-                        ? "bg-[#EFF6FF] hover:bg-[#DBEAFE]/70"
+                        ? "bg-[#F8FAFC] hover:bg-[#F1F5F9]/70"
                         : "bg-white hover:bg-[#F8FAFC]"
                     }`}
                   >
@@ -602,7 +602,7 @@ export default function OrdersPage() {
                                 ? "bg-[#0A1B2E]"
                                 : ord.status === "COMPENSATING" || ord.status === "COMPENSATED"
                                 ? "bg-[#475569]"
-                                : "bg-[#2563EB]";
+                                : "bg-[#0A1B2E]";
                             return (
                               <div
                                 key={tIdx}
@@ -681,7 +681,7 @@ export default function OrdersPage() {
             <button className="px-2.5 h-7 rounded text-[#94A3B8] hover:bg-[#F8FAFC] disabled:opacity-40 font-medium font-body-sm" disabled type="button">
               Previous
             </button>
-            <button className="w-7 h-7 rounded bg-[#2563EB] text-white font-medium font-label-sm text-label-sm flex items-center justify-center shadow-2xs" type="button">
+            <button className="w-7 h-7 rounded bg-[#0A1B2E] text-white font-medium font-label-sm text-label-sm flex items-center justify-center shadow-2xs" type="button">
               1
             </button>
             <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">

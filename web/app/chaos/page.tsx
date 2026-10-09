@@ -231,7 +231,7 @@ export default function SystemsChaosPage() {
                 Simulation Environment — Chaos Injection Mode
               </h2>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white text-[#0A1B2E] font-label-sm text-label-sm font-mono font-medium border border-[#CBD5E1] shadow-2xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] animate-pulse"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E] animate-pulse"></span>
                 ChaosMesh v2.4.1 · PRNG Seed Synced
               </span>
             </div>
@@ -247,7 +247,7 @@ export default function SystemsChaosPage() {
         <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
           <button
             onClick={handleResetAllChaos}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-body-md text-body-md font-medium shadow-xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white font-body-md text-body-md font-medium shadow-xs transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">restart_alt</span>
             <span>Clear All Active Chaos ({systems.length} Services)</span>
@@ -317,7 +317,7 @@ export default function SystemsChaosPage() {
                   {activeFaultsCount} Faults
                 </span>
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm font-semibold shadow-2xs">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] animate-ping"></span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E] animate-ping"></span>
                   Live
                 </span>
               </div>
@@ -415,7 +415,7 @@ export default function SystemsChaosPage() {
                       <span
                         className={`h-3 w-3 rounded-full mt-1.5 shrink-0 ${
                           isDegraded
-                            ? "bg-[#2563EB] animate-pulse"
+                            ? "bg-[#0A1B2E] animate-pulse"
                             : "bg-[#0A1B2E]"
                         }`}
                       ></span>
@@ -441,7 +441,7 @@ export default function SystemsChaosPage() {
                       <span className="px-2.5 py-1 rounded-full font-label-sm text-label-sm font-mono font-bold flex items-center gap-1.5 border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            isDegraded ? "bg-[#2563EB]" : "bg-[#0A1B2E]"
+                            isDegraded ? "bg-[#0A1B2E]" : "bg-[#0A1B2E]"
                           }`}
                         ></span>
                         {sys.statusText}
@@ -645,7 +645,7 @@ export default function SystemsChaosPage() {
             {/* Tag Strip of Impacted Nodes */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white text-[#0A1B2E] font-label-sm text-label-sm font-mono font-medium border border-[#CBD5E1] shadow-2xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                 Network:8103 (Jitter+504)
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white text-[#0A1B2E] font-label-sm text-label-sm font-mono font-medium border border-[#CBD5E1] shadow-2xs">
@@ -657,7 +657,7 @@ export default function SystemsChaosPage() {
             {/* Explanatory Guard Banner */}
             <div className="bg-[#F8FAFC] p-3 rounded-lg text-[#64748B] font-body-sm text-body-sm leading-relaxed border border-[#E2E8F0]">
               <div className="flex items-center gap-1.5 text-[#0A1B2E] font-semibold mb-1">
-                <span className="material-symbols-outlined text-[16px] text-[#2563EB]">verified_user</span>
+                <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">verified_user</span>
                 Automated Saga Interception Active
               </div>
               Orders currently executing sagas that touch degraded downstream providers. SwitchOn circuit breakers and rollback compensations are actively safeguarding order state.
@@ -681,7 +681,7 @@ export default function SystemsChaosPage() {
                   <span>
                     Customer: <strong className="text-[#0A1B2E] font-medium">Marcus Vance</strong>
                   </span>
-                  <span className="font-mono text-[#2563EB]">Fiber 500</span>
+                  <span className="font-mono text-[#0A1B2E]">Fiber 500</span>
                 </div>
                 <div className="text-[#64748B] font-body-sm text-body-sm">
                   <span className="font-medium text-[#0A1B2E]">Step 4/8:</span> HLR Network Slice Provisioning
@@ -695,7 +695,7 @@ export default function SystemsChaosPage() {
                 </div>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-[#2563EB] hover:underline font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004217"
                   >
                     Inspect Order Trace
@@ -718,7 +718,7 @@ export default function SystemsChaosPage() {
                   <span>
                     Customer: <strong className="text-[#0A1B2E] font-medium">Acme Telecom Corp</strong>
                   </span>
-                  <span className="font-mono text-[#2563EB]">10x 5G eSIM</span>
+                  <span className="font-mono text-[#0A1B2E]">10x 5G eSIM</span>
                 </div>
                 <div className="text-[#64748B] font-body-sm text-body-sm">
                   <span className="font-medium text-[#0A1B2E]">Step 5/8:</span> OCS Billing Profile Binding
@@ -728,7 +728,7 @@ export default function SystemsChaosPage() {
                 </p>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-[#2563EB] hover:underline font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004219"
                   >
                     Inspect Order Trace
@@ -751,7 +751,7 @@ export default function SystemsChaosPage() {
                   <span>
                     Customer: <strong className="text-[#0A1B2E] font-medium">Elena Rostova</strong>
                   </span>
-                  <span className="font-mono text-[#2563EB]">Fiber 1000</span>
+                  <span className="font-mono text-[#0A1B2E]">Fiber 1000</span>
                 </div>
                 <div className="text-[#64748B] font-body-sm text-body-sm">
                   <span className="font-medium text-[#0A1B2E]">Step 3/8:</span> Port Allocation (Queued for HLR)
@@ -761,7 +761,7 @@ export default function SystemsChaosPage() {
                 </p>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-[#2563EB] hover:underline font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004222"
                   >
                     Inspect Order Trace
@@ -784,7 +784,7 @@ export default function SystemsChaosPage() {
                   <span>
                     Customer: <strong className="text-[#0A1B2E] font-medium">Devon Park</strong>
                   </span>
-                  <span className="font-mono text-[#2563EB]">eSIM Roaming</span>
+                  <span className="font-mono text-[#0A1B2E]">eSIM Roaming</span>
                 </div>
                 <div className="text-[#64748B] font-body-sm text-body-sm">
                   <span className="font-medium text-[#0A1B2E]">Step 4/8:</span> HLR QoS Rule Apply
@@ -794,7 +794,7 @@ export default function SystemsChaosPage() {
                 </p>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-[#2563EB] hover:underline font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004225"
                   >
                     Inspect Order Trace

@@ -473,7 +473,7 @@ export default function CatalogPage() {
           </button>
           <button
             onClick={() => alert("Initiate new service specification builder wizard.")}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg transition-colors font-body-sm text-body-sm font-semibold shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg transition-colors font-body-sm text-body-sm font-semibold shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
@@ -1139,7 +1139,7 @@ export default function CatalogPage() {
                   Cluster Deployment Verification Checklist
                 </h3>
               </div>
-              <span className="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold font-mono border border-[#C7D2FE]">
+              <span className="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold font-mono border border-[#CBD5E1]">
                 ALL GATES CLEARED
               </span>
             </div>
