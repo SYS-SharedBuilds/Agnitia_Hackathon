@@ -203,7 +203,7 @@ export default function CertificatesProofPage() {
           <button
             className="px-4 py-1.5 rounded-lg font-headline-sm text-headline-sm text-on-primary bg-primary shadow-sm flex items-center gap-2"
           >
-            <span className="material-symbols-[#000000]d text-[18px]">verified</span>
+            <span className="material-symbols-outlined text-[18px]">verified</span>
             <span>Certificates</span>
           </button>
         </div>

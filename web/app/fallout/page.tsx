@@ -99,6 +99,7 @@ const RESOLVED_INCIDENTS_SEED: FalloutIncident[] = [
 
 export default function FalloutQueuePage() {
   const [incidents, setIncidents] = useState<FalloutIncident[]>(INITIAL_INCIDENTS);
+  const [resolvedIncidents, setResolvedIncidents] = useState<FalloutIncident[]>(RESOLVED_INCIDENTS_SEED);
   const [resolvedIds, setResolvedIds] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<string>("ORD-20260712-004217");
   const [activeTab, setActiveTab] = useState<"active" | "resolved">("active");
@@ -112,8 +113,9 @@ export default function FalloutQueuePage() {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [activeDagNode, setActiveDagNode] = useState<string>("rollback-deprovision");
 
-  const isCurrentResolved = resolvedIds.includes(selectedId);
-  const selectedIncident = incidents.find((i) => i.id === selectedId) || incidents[0];
+  const activeDataSet: FalloutIncident[] = activeTab === "active" ? incidents : resolvedIncidents;
+  const selectedIncident = activeDataSet.find((i: FalloutIncident) => i.id === selectedId) || activeDataSet[0];
+  const isCurrentResolved = resolvedIds.includes(selectedId) || (selectedIncident ? !!selectedIncident.isResolved : false);
 
   const handleClaim = (id: string) => {
     setIncidents((prev) =>
@@ -132,17 +134,31 @@ export default function FalloutQueuePage() {
 
   const handleManualResolveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const resolving = incidents.find((i) => i.id === selectedId);
+    if (resolving) {
+      const now = new Date();
+      const timeStr = `${String(now.getUTCHours()).padStart(2, "0")}:${String(now.getUTCMinutes()).padStart(2, "0")}:${String(now.getUTCSeconds()).padStart(2, "0")} UTC`;
+      const newlyResolved: FalloutIncident = {
+        ...resolving,
+        isResolved: true,
+        resolvedAt: timeStr,
+        remediation: resolutionNotes || "Manually reconciled via NOC console ticket.",
+        resolutionTicket,
+      };
+      setIncidents((prev) => prev.filter((i) => i.id !== selectedId));
+      setResolvedIncidents((prev) => [newlyResolved, ...prev]);
+    }
     setResolvedIds((prev) => Array.from(new Set([...prev, selectedId])));
     setShowManualModal(false);
     alert(`Incident ${selectedId} marked RESOLVED with reference ${resolutionTicket}. Guided checklist now completed.`);
   };
 
   // Base list depending on active tab
-  const listToFilter = activeTab === "active" ? incidents : resolvedIncidents;
+  const listToFilter: FalloutIncident[] = activeTab === "active" ? incidents : resolvedIncidents;
 
   // Filter and Sort Pipeline
   const filteredIncidents = listToFilter
-    .filter((inc) => {
+    .filter((inc: FalloutIncident) => {
       if (subsystemFilter !== "All Subsystems" && inc.subsystem !== subsystemFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -155,7 +171,7 @@ export default function FalloutQueuePage() {
       }
       return true;
     })
-    .sort((a, b) => {
+    .sort((a: FalloutIncident, b: FalloutIncident) => {
       if (ageSortFilter === "Age (Oldest first)") {
         return (b.ageMinutes || 0) - (a.ageMinutes || 0);
       }
@@ -163,7 +179,7 @@ export default function FalloutQueuePage() {
         return (a.ageMinutes || 0) - (b.ageMinutes || 0);
       }
       if (ageSortFilter === "SLA Severity") {
-        const order = { high: 3, medium: 2, low: 1 };
+        const order: Record<"high" | "medium" | "low", number> = { high: 3, medium: 2, low: 1 };
         return order[b.slaSeverity] - order[a.slaSeverity];
       }
       return 0;
@@ -171,9 +187,9 @@ export default function FalloutQueuePage() {
 
   // Calculate dynamic SLA Risk counts based on the active dataset
   const countTotal = activeDataSet.length;
-  const countHighRisk = activeDataSet.filter((i) => i.ageMinutes >= 60).length;
-  const countMedRisk = activeDataSet.filter((i) => i.ageMinutes >= 15 && i.ageMinutes < 60).length;
-  const countLowRisk = activeDataSet.filter((i) => i.ageMinutes < 15).length;
+  const countHighRisk = activeDataSet.filter((i: FalloutIncident) => i.ageMinutes >= 60).length;
+  const countMedRisk = activeDataSet.filter((i: FalloutIncident) => i.ageMinutes >= 15 && i.ageMinutes < 60).length;
+  const countLowRisk = activeDataSet.filter((i: FalloutIncident) => i.ageMinutes < 15).length;
 
   return (
     <div className="flex flex-col w-full space-y-4">
@@ -351,7 +367,7 @@ export default function FalloutQueuePage() {
                 <p className="font-label-sm text-label-sm text-[#64748B] mt-0.5">Try resetting search or filters.</p>
               </div>
             ) : (
-              filteredIncidents.map((inc) => {
+              filteredIncidents.map((inc: FalloutIncident) => {
                 const isSelected = inc.id === selectedId;
                 return (
                   <div
