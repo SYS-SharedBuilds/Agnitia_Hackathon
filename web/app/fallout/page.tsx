@@ -12,9 +12,15 @@ interface FalloutIncident {
   summary: string;
   errorCode: string;
   slaElapsed: string;
+  ageMinutes: number;
   slaSeverity: "high" | "medium" | "low";
+  createdAt: string;
   assignedTo?: string;
   status: "NEEDS_ATTENTION · COMPENSATION_FAILED" | "NEEDS_ATTENTION · LEASE_CONFLICT";
+  isResolved?: boolean;
+  resolvedAt?: string;
+  remediation?: string;
+  resolutionTicket?: string;
 }
 
 const INITIAL_INCIDENTS: FalloutIncident[] = [
@@ -27,7 +33,9 @@ const INITIAL_INCIDENTS: FalloutIncident[] = [
     summary: "HLR deprovision HTTP 504 Gateway Timeout after 5 retries",
     errorCode: "hlr:timeout-exhausted",
     slaElapsed: "1h 14m",
+    ageMinutes: 74,
     slaSeverity: "high",
+    createdAt: "2026-07-12T14:22:00Z",
     status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
   },
   {
@@ -39,17 +47,62 @@ const INITIAL_INCIDENTS: FalloutIncident[] = [
     summary: "OCS Void Billing Account rejected: invalid lease state (Err 409)",
     errorCode: "ocs:lease-state-409",
     slaElapsed: "38m",
+    ageMinutes: 38,
     slaSeverity: "medium",
+    createdAt: "2026-07-12T14:58:00Z",
     assignedTo: "Aarav S.",
     status: "NEEDS_ATTENTION · LEASE_CONFLICT",
   },
 ];
 
+const RESOLVED_INCIDENTS_SEED: FalloutIncident[] = [
+  {
+    id: "ORD-20260712-004208",
+    customer: "AeroTech Solutions",
+    msisdn: "+1 555 230-1099",
+    plan: "5G Postpaid Unlimited",
+    subsystem: "HLR/HSS Gateway",
+    summary: "HLR connection timeout cleared after automated node failover",
+    errorCode: "hlr:transient-503",
+    slaElapsed: "18m",
+    ageMinutes: 18,
+    slaSeverity: "low",
+    createdAt: "2026-07-12T13:10:00Z",
+    assignedTo: "Aarav Sharma",
+    status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
+    isResolved: true,
+    resolvedAt: "13:28:14 UTC",
+    remediation: "Triggered HLR Gateway re-probe and compensation replay; tombstone recorded.",
+    resolutionTicket: "INC-94802",
+  },
+  {
+    id: "ORD-20260712-004205",
+    customer: "Elena Rostova",
+    msisdn: "+1 555 892-3341",
+    plan: "eSIM Roaming Global",
+    subsystem: "SIM/eSIM Provisioner",
+    summary: "SM-DP+ profile download lock resolved following operator reset",
+    errorCode: "sim:eid-lease-timeout",
+    slaElapsed: "24m",
+    ageMinutes: 24,
+    slaSeverity: "low",
+    createdAt: "2026-07-12T12:45:00Z",
+    assignedTo: "Ops Team",
+    status: "NEEDS_ATTENTION · LEASE_CONFLICT",
+    isResolved: true,
+    resolvedAt: "13:09:45 UTC",
+    remediation: "Manually unlocked EID profile allocation in inventory database.",
+    resolutionTicket: "INC-94798",
+  },
+];
+
 export default function FalloutQueuePage() {
   const [incidents, setIncidents] = useState<FalloutIncident[]>(INITIAL_INCIDENTS);
+  const [resolvedIncidents, setResolvedIncidents] = useState<FalloutIncident[]>(RESOLVED_INCIDENTS_SEED);
   const [selectedId, setSelectedId] = useState<string>("ORD-20260712-004217");
   const [activeTab, setActiveTab] = useState<"active" | "resolved">("active");
   const [subsystemFilter, setSubsystemFilter] = useState("All Subsystems");
+  const [ageSortFilter, setAgeSortFilter] = useState<string>("Age (Oldest first)");
   const [searchQuery, setSearchQuery] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [isResolving, setIsResolving] = useState(false);
@@ -58,7 +111,8 @@ export default function FalloutQueuePage() {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [activeDagNode, setActiveDagNode] = useState<string>("rollback-deprovision");
 
-  const selectedIncident = incidents.find((i) => i.id === selectedId) || incidents[0];
+  const activeDataSet = activeTab === "active" ? incidents : resolvedIncidents;
+  const selectedIncident = activeDataSet.find((i) => i.id === selectedId) || activeDataSet[0];
 
   const handleClaim = (id: string) => {
     setIncidents((prev) =>
@@ -76,29 +130,66 @@ export default function FalloutQueuePage() {
 
   const handleManualResolveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIncidents((prev) => prev.filter((i) => i.id !== selectedId));
+    const resolving = incidents.find((i) => i.id === selectedId);
+    if (resolving) {
+      const now = new Date();
+      const timeStr = `${String(now.getUTCHours()).padStart(2, "0")}:${String(now.getUTCMinutes()).padStart(2, "0")}:${String(now.getUTCSeconds()).padStart(2, "0")} UTC`;
+      const newlyResolved: FalloutIncident = {
+        ...resolving,
+        isResolved: true,
+        resolvedAt: timeStr,
+        remediation: resolutionNotes || "Manually reconciled via NOC console ticket.",
+        resolutionTicket,
+      };
+      setIncidents((prev) => prev.filter((i) => i.id !== selectedId));
+      setResolvedIncidents((prev) => [newlyResolved, ...prev]);
+    }
     setShowManualModal(false);
     alert(`Incident ${selectedId} marked RESOLVED with reference ${resolutionTicket}.`);
   };
 
-  const filteredIncidents = incidents.filter((inc) => {
-    if (subsystemFilter !== "All Subsystems" && inc.subsystem !== subsystemFilter) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        inc.id.toLowerCase().includes(q) ||
-        inc.customer.toLowerCase().includes(q) ||
-        inc.msisdn.toLowerCase().includes(q) ||
-        inc.summary.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+  // Base list depending on active tab
+  const listToFilter = activeTab === "active" ? incidents : resolvedIncidents;
+
+  // Filter and Sort Pipeline
+  const filteredIncidents = listToFilter
+    .filter((inc) => {
+      if (subsystemFilter !== "All Subsystems" && inc.subsystem !== subsystemFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          inc.id.toLowerCase().includes(q) ||
+          inc.customer.toLowerCase().includes(q) ||
+          inc.msisdn.toLowerCase().includes(q) ||
+          inc.summary.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (ageSortFilter === "Age (Oldest first)") {
+        return (b.ageMinutes || 0) - (a.ageMinutes || 0);
+      }
+      if (ageSortFilter === "Age (Newest first)") {
+        return (a.ageMinutes || 0) - (b.ageMinutes || 0);
+      }
+      if (ageSortFilter === "SLA Severity") {
+        const order = { high: 3, medium: 2, low: 1 };
+        return order[b.slaSeverity] - order[a.slaSeverity];
+      }
+      return 0;
+    });
+
+  // Calculate dynamic SLA Risk counts based on the active dataset
+  const countTotal = activeDataSet.length;
+  const countHighRisk = activeDataSet.filter((i) => i.ageMinutes >= 60).length;
+  const countMedRisk = activeDataSet.filter((i) => i.ageMinutes >= 15 && i.ageMinutes < 60).length;
+  const countLowRisk = activeDataSet.filter((i) => i.ageMinutes < 15).length;
 
   return (
-    <div className="flex flex-col w-full space-y-6">
+    <div className="flex flex-col w-full space-y-4">
       {/* Top Command Banner / Metadata & Controls */}
-      <section className="flex flex-col gap-4">
+      <section className="flex flex-col gap-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <div className="flex flex-wrap items-center gap-3">
@@ -134,7 +225,7 @@ export default function FalloutQueuePage() {
               >
                 <option>All Subsystems</option>
                 <option>HLR/HSS Gateway</option>
-                <option>OCS Billing</option>
+                <option>OCS Rating</option>
                 <option>SIM/eSIM Provisioner</option>
               </select>
               <span className="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-[18px]">
@@ -142,12 +233,16 @@ export default function FalloutQueuePage() {
               </span>
             </div>
 
-            {/* Sort Select */}
+            {/* Sort / Age Select */}
             <div className="relative">
-              <select className="h-9 px-3 pr-8 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg shadow-sm border border-outline-variant/30 focus:outline-none focus:ring-2 focus:ring-primary-container appearance-none cursor-pointer">
-                <option>Age (Oldest first)</option>
-                <option>Age (Newest first)</option>
-                <option>SLA Severity</option>
+              <select
+                value={ageSortFilter}
+                onChange={(e) => setAgeSortFilter(e.target.value)}
+                className="h-9 px-3 pr-8 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg shadow-sm border border-outline-variant/30 focus:outline-none focus:ring-2 focus:ring-primary-container appearance-none cursor-pointer"
+              >
+                <option value="Age (Oldest first)">Age (Oldest first)</option>
+                <option value="Age (Newest first)">Age (Newest first)</option>
+                <option value="SLA Severity">SLA Severity</option>
               </select>
               <span className="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-[18px]">
                 sort
@@ -157,7 +252,7 @@ export default function FalloutQueuePage() {
             {/* Auto-Refresh Toggle */}
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className="h-9 px-3 flex items-center gap-1.5 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface rounded-lg shadow-sm border border-outline-variant/30 transition-colors font-label-sm text-label-sm"
+              className="h-9 px-3 flex items-center gap-1.5 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface rounded-lg shadow-sm border border-outline-variant/30 transition-colors font-label-sm text-label-sm cursor-pointer"
             >
               <span
                 className={`material-symbols-outlined text-[16px] text-primary ${
@@ -173,7 +268,7 @@ export default function FalloutQueuePage() {
             {/* Export Action */}
             <button
               onClick={() => alert("Exporting Fallout Incident Triage report...")}
-              className="h-9 px-3.5 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg shadow-sm border border-outline-variant/30 transition-colors"
+              className="h-9 px-3.5 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg shadow-sm border border-outline-variant/30 transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">file_download</span>
               <span>Export Triage Report</span>
@@ -183,15 +278,18 @@ export default function FalloutQueuePage() {
       </section>
 
       {/* Two-Column Master / Detail Grid */}
-      <div className="grid grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-12 gap-5 items-start">
         {/* LEFT COLUMN (4 Cols) - Incident Cards Queue */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-3">
           {/* Tab Header & Quick Count Ribbon */}
           <div className="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-3">
             <div className="flex items-center justify-between p-1 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
               <button
-                onClick={() => setActiveTab("active")}
-                className={`flex-1 py-1.5 px-3 rounded-md font-headline-sm text-headline-sm shadow-xs flex items-center justify-center gap-1.5 transition-all ${
+                onClick={() => {
+                  setActiveTab("active");
+                  if (incidents.length > 0) setSelectedId(incidents[0].id);
+                }}
+                className={`flex-1 py-1.5 px-3 rounded-md font-headline-sm text-headline-sm shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === "active"
                     ? "bg-[#0A1B2E] text-white font-semibold shadow-xs"
                     : "text-[#64748B] hover:text-[#0A1B2E] font-normal"
@@ -203,8 +301,11 @@ export default function FalloutQueuePage() {
                 </span>
               </button>
               <button
-                onClick={() => setActiveTab("resolved")}
-                className={`flex-1 py-1.5 px-3 rounded-md font-body-sm text-body-sm flex items-center justify-center gap-1.5 transition-all ${
+                onClick={() => {
+                  setActiveTab("resolved");
+                  if (resolvedIncidents.length > 0) setSelectedId(resolvedIncidents[0].id);
+                }}
+                className={`flex-1 py-1.5 px-3 rounded-md font-body-sm text-body-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === "resolved"
                     ? "bg-[#0A1B2E] text-white font-semibold shadow-xs"
                     : "text-[#64748B] hover:text-[#0A1B2E] font-normal"
@@ -212,7 +313,7 @@ export default function FalloutQueuePage() {
               >
                 <span>Resolved</span>
                 <span className="px-1.5 py-0.5 bg-white text-[#64748B] border border-[#E2E8F0] rounded-full font-label-sm text-label-sm">
-                  14
+                  {resolvedIncidents.length}
                 </span>
               </button>
             </div>
@@ -226,7 +327,7 @@ export default function FalloutQueuePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-8 pl-9 pr-3 text-body-sm font-body-sm bg-white rounded-lg text-[#0A1B2E] placeholder:text-[#94A3B8] border border-[#CBD5E1] focus:outline-none focus:ring-1 focus:ring-[#0A1B2E]"
-                placeholder="Filter fallout items..."
+                placeholder={activeTab === "active" ? "Filter fallout items..." : "Filter resolved items..."}
                 type="text"
               />
             </div>
@@ -235,97 +336,116 @@ export default function FalloutQueuePage() {
             <div className="grid grid-cols-4 gap-1 pt-1 bg-[#F8FAFC] p-2 rounded-lg text-center font-label-sm text-label-sm border border-[#E2E8F0]">
               <div className="flex flex-col">
                 <span className="text-[#64748B] font-normal">Total</span>
-                <span className="font-bold text-[#0A1B2E]">{incidents.length}</span>
+                <span className="font-bold text-[#0A1B2E]">{countTotal}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[#64748B] font-normal">&gt;1h Risk</span>
-                <span className="font-bold text-[#0A1B2E]">1</span>
+                <span className="font-bold text-[#0A1B2E]">{countHighRisk}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[#64748B] font-normal">&lt;1h Risk</span>
-                <span className="font-bold text-[#0A1B2E]">1</span>
+                <span className="font-bold text-[#0A1B2E]">{countMedRisk}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[#64748B] font-normal">&lt;15m</span>
-                <span className="font-bold text-[#64748B]">0</span>
+                <span className="font-bold text-[#64748B]">{countLowRisk}</span>
               </div>
             </div>
           </div>
 
           {/* Fallout Incident List Cards */}
           <div className="flex flex-col gap-3">
-            {filteredIncidents.map((inc) => {
-              const isSelected = inc.id === selectedId;
-              return (
-                <div
-                  key={inc.id}
-                  onClick={() => setSelectedId(inc.id)}
-                  className={`relative rounded-xl p-4 shadow-sm transition-all cursor-pointer border ${
-                    isSelected
-                      ? "bg-[#F8FAFC] border-[#0A1B2E] ring-2 ring-[#0A1B2E]"
-                      : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
-                      <span className="font-label-md text-label-md font-bold text-[#0A1B2E] tracking-wide">
-                        {inc.id}
-                      </span>
-                    </div>
-                    {/* SLA Pill */}
-                    <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
-                      <span className="material-symbols-outlined text-[12px]">timer</span>
-                      {inc.slaElapsed}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
-                      {inc.subsystem}
-                    </span>
-                    <span className="font-body-sm text-body-sm text-[#64748B] truncate">
-                      {inc.customer} ({inc.msisdn})
-                    </span>
-                  </div>
-
-                  <p className="font-body-sm text-body-sm text-[#0A1B2E] font-medium line-clamp-2 mb-3 bg-white p-2 rounded-lg border border-[#E2E8F0]">
-                    &quot;{inc.summary}&quot;
-                  </p>
-
-                  <div className="flex items-center justify-between font-label-sm text-label-sm text-[#64748B] pt-2 border-t border-[#F1F5F9]">
-                    <div className="flex items-center gap-1 truncate max-w-[170px]" title={`RFC-7807 urn:telecom:${inc.errorCode}`}>
-                      <span className="material-symbols-outlined text-[14px]">fingerprint</span>
-                      <span className="truncate">{inc.errorCode}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span>Assigned:</span>
-                      {inc.assignedTo ? (
-                        <span className="font-medium text-[#0A1B2E] flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
-                          {inc.assignedTo}
+            {filteredIncidents.length === 0 ? (
+              <div className="p-8 bg-white rounded-xl text-center border border-[#CBD5E1] shadow-2xs">
+                <span className="material-symbols-outlined text-[32px] text-[#94A3B8] mb-1">inbox</span>
+                <p className="font-body-sm text-body-sm text-[#0A1B2E] font-medium">No incidents match your filter.</p>
+                <p className="font-label-sm text-label-sm text-[#64748B] mt-0.5">Try resetting search or filters.</p>
+              </div>
+            ) : (
+              filteredIncidents.map((inc) => {
+                const isSelected = inc.id === selectedId;
+                return (
+                  <div
+                    key={inc.id}
+                    onClick={() => setSelectedId(inc.id)}
+                    className={`relative rounded-xl p-4 shadow-sm transition-all cursor-pointer border ${
+                      isSelected
+                        ? "bg-[#F8FAFC] border-[#0A1B2E] ring-2 ring-[#0A1B2E]"
+                        : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`h-2 w-2 rounded-full ${inc.isResolved ? "bg-[#059669]" : "bg-[#0A1B2E]"}`}></span>
+                        <span className="font-label-md text-label-md font-bold text-[#0A1B2E] tracking-wide">
+                          {inc.id}
+                        </span>
+                      </div>
+                      {/* SLA / Resolved Pill */}
+                      {inc.isResolved ? (
+                        <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] shadow-2xs">
+                          <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                          RESOLVED
                         </span>
                       ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleClaim(inc.id);
-                          }}
-                          className="text-[#0A1B2E] hover:text-[#14263b] font-semibold hover:underline"
-                        >
-                          + Claim
-                        </button>
+                        <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
+                          <span className="material-symbols-outlined text-[12px]">timer</span>
+                          {inc.slaElapsed}
+                        </span>
                       )}
                     </div>
-                  </div>
-                </div>
-              );
-            })}
 
-            {/* Sample Collapsed Archive Note */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
+                        {inc.subsystem}
+                      </span>
+                      <span className="font-body-sm text-body-sm text-[#64748B] truncate">
+                        {inc.customer} ({inc.msisdn})
+                      </span>
+                    </div>
+
+                    <p className="font-body-sm text-body-sm text-[#0A1B2E] font-medium line-clamp-2 mb-3 bg-white p-2 rounded-lg border border-[#E2E8F0]">
+                      &quot;{inc.summary}&quot;
+                    </p>
+
+                    <div className="flex items-center justify-between font-label-sm text-label-sm text-[#64748B] pt-2 border-t border-[#F1F5F9]">
+                      <div className="flex items-center gap-1 truncate max-w-[170px]" title={`RFC-7807 urn:telecom:${inc.errorCode}`}>
+                        <span className="material-symbols-outlined text-[14px]">fingerprint</span>
+                        <span className="truncate">{inc.errorCode}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>{inc.isResolved ? "Resolved at:" : "Assigned:"}</span>
+                        {inc.isResolved ? (
+                          <span className="font-medium text-[#0A1B2E]">{inc.resolvedAt}</span>
+                        ) : inc.assignedTo ? (
+                          <span className="font-medium text-[#0A1B2E] flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
+                            {inc.assignedTo}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleClaim(inc.id);
+                            }}
+                            className="text-[#0A1B2E] hover:text-[#14263b] font-semibold hover:underline"
+                          >
+                            + Claim
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+            {/* Collapsed Archive Note */}
             <div className="p-3 bg-white rounded-xl text-center border border-[#CBD5E1] shadow-2xs">
               <span className="font-body-sm text-body-sm text-[#64748B]">
-                Showing all active items. 14 resolved today in compliance with SLA.
+                {activeTab === "active"
+                  ? `Showing ${filteredIncidents.length} active fallout items. ${resolvedIncidents.length} resolved in compliance with SLA.`
+                  : `Showing ${filteredIncidents.length} resolved incidents with full remediation audit records.`}
               </span>
             </div>
           </div>
@@ -333,7 +453,7 @@ export default function FalloutQueuePage() {
 
         {/* RIGHT COLUMN (8 Cols) - Detailed Fallout Triage & Resolution Workbench */}
         {selectedIncident && (
-          <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+          <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
             {/* 1. Incident Master Header Box */}
             <div className="bg-white rounded-xl p-5 shadow-2xs border border-[#CBD5E1] flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -577,13 +697,13 @@ export default function FalloutQueuePage() {
 
               {/* DAG Canvas Playground */}
               <div
-                className="w-full bg-[#F8FAFC] p-5 overflow-x-auto select-none border-b border-[#E2E8F0]"
+                className="w-full bg-[#F8FAFC] p-3.5 overflow-x-auto select-none border-b border-[#E2E8F0]"
                 style={{
                   backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
                   backgroundSize: "16px 16px",
                 }}
               >
-                <div className="min-w-[840px] flex flex-col gap-6 py-2">
+                <div className="min-w-[840px] flex flex-col gap-3 py-1">
                   {/* FORWARD WAVE */}
                   <div className="flex items-center gap-3">
                     <div className="w-24 shrink-0 flex items-center gap-1 font-mono text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
@@ -793,10 +913,10 @@ export default function FalloutQueuePage() {
               </div>
 
               {/* Interactive Inspector Panel for Clicked Node */}
-              <div className="p-4 bg-[#F8FAFC] border-t border-[#E2E8F0]">
+              <div className="p-3 bg-[#F8FAFC] border-t border-[#E2E8F0]">
                 {activeDagNode === "rollback-deprovision" && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[#0A1B2E] text-white">
                           TASK: HLR_DEPROVISION_SLICE
@@ -821,8 +941,8 @@ export default function FalloutQueuePage() {
                 )}
 
                 {activeDagNode === "forward-charging" && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
                           FORWARD TRIGGER: OCS_START_CHARGING
@@ -837,7 +957,7 @@ export default function FalloutQueuePage() {
                 )}
 
                 {activeDagNode === "forward-validate" && (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
                         TASK: OMS_VALIDATE_ORDER
@@ -851,7 +971,7 @@ export default function FalloutQueuePage() {
                 )}
 
                 {activeDagNode === "forward-inventory" && (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
                         TASK: SIM_LOCK_ICCID
@@ -865,7 +985,7 @@ export default function FalloutQueuePage() {
                 )}
 
                 {activeDagNode === "forward-billing" && (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
                         TASK: OCS_INSTANTIATE_ACCOUNT
@@ -879,7 +999,7 @@ export default function FalloutQueuePage() {
                 )}
 
                 {activeDagNode === "forward-network" && (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
                         TASK: HLR_PROVISION_SLICE
@@ -893,7 +1013,7 @@ export default function FalloutQueuePage() {
                 )}
 
                 {(activeDagNode === "rollback-inventory" || activeDagNode === "rollback-billing") && (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#64748B] border border-[#CBD5E1]">
                         COMPENSATION STATUS: STALLED
@@ -909,7 +1029,7 @@ export default function FalloutQueuePage() {
             </div>
 
             {/* 4. Root-Cause Explainer (3-Column Clean Card) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Cause */}
               <div className="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/30 flex flex-col gap-2">
                 <div className="flex items-center gap-1.5 text-error font-headline-sm text-headline-sm font-semibold">
@@ -944,7 +1064,7 @@ export default function FalloutQueuePage() {
                   Verify HLR cluster recovery via Network Admin Portal, or manually purge resource lock and click{" "}
                   <button
                     onClick={() => setShowManualModal(true)}
-                    className="font-body-sm text-body-sm font-semibold text-primary hover:underline"
+                    className="font-body-sm text-body-sm font-semibold text-primary hover:underline cursor-pointer"
                   >
                     &apos;Resolve Manually&apos;
                   </button>
@@ -954,7 +1074,7 @@ export default function FalloutQueuePage() {
             </div>
 
             {/* 5. Audit Trail & Incident Activity Log */}
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-3">
+            <div className="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/30 flex flex-col gap-2.5">
               <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[20px]">history</span>
@@ -964,7 +1084,7 @@ export default function FalloutQueuePage() {
                 </div>
                 <span className="font-label-sm text-label-sm text-on-surface-variant">4 events logged</span>
               </div>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {/* Item 1 */}
                 <div className="flex items-start gap-3 text-body-sm font-body-sm">
                   <span className="font-label-sm text-label-sm text-outline shrink-0 w-24 font-mono">15:36:21 UTC</span>
@@ -1018,9 +1138,9 @@ export default function FalloutQueuePage() {
       </div>
 
       {/* BOTTOM COLLAPSIBLE PREVIEW DRAWER (Empty State Preview) */}
-      <section className="mt-8 mb-4">
+      <section className="mt-2 mb-2">
         <details className="group bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 transition-all overflow-hidden">
-          <summary className="p-4 flex items-center justify-between cursor-pointer select-none hover:bg-surface-container-low transition-colors list-none">
+          <summary className="p-3.5 flex items-center justify-between cursor-pointer select-none hover:bg-surface-container-low transition-colors list-none">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-outline group-open:rotate-180 transition-transform">
                 expand_more

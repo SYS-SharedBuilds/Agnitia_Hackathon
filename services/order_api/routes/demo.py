@@ -63,3 +63,15 @@ async def check_invariants() -> dict[str, Any]:
         return res
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Invariant check failed: {exc}") from exc
+
+
+@router.post("/reset")
+async def trigger_reset() -> dict[str, Any]:
+    try:
+        from scripts.reset_data import reset_all
+
+        await reset_all()
+        return {"status": "SUCCESS", "message": "All mock databases and ops read models reset."}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Reset failed: {exc}") from exc
+
