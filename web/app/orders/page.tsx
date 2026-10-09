@@ -298,7 +298,7 @@ export default function OrdersPage() {
       {/* PAGE HEADER & PRIMARY ACTIONS */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Orders</h1>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium bg-surface-container text-on-surface-variant">
               1,284 total orders

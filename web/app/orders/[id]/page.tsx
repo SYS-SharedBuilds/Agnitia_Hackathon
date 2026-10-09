@@ -30,7 +30,13 @@ export default function OrderDetailPage() {
   const [isResolved, setIsResolved] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [dagZoom, setDagZoom] = useState(1);
+  const [dagGrid, setDagGrid] = useState(true);
+  const [dagMinimap, setDagMinimap] = useState(true);
 
+  const handleZoomIn = () => setDagZoom((z) => Math.min(1.8, Math.round((z + 0.15) * 100) / 100));
+  const handleZoomOut = () => setDagZoom((z) => Math.max(0.5, Math.round((z - 0.15) * 100) / 100));
+  const handleZoomReset = () => setDagZoom(1);
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 5000);
@@ -432,7 +438,7 @@ export default function OrderDetailPage() {
             <span className="inline-block w-2 h-2 rounded-full bg-secondary-container"></span>
             Workflow ID:{" "}
             <span className="font-mono text-on-surface font-semibold">
-              {order ? `wf-${order.order_id.toLowerCase()}` : "wf-fiber-saga-991024-aa7b"}
+              {order?.workflow_id || (orderId.startsWith("ord_") ? `wf-${orderId.toLowerCase()}` : "wf-fiber-saga-991024-aa7b")}
             </span>
           </div>
           <button
@@ -490,10 +496,13 @@ export default function OrderDetailPage() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors border border-[#CBD5E1] shadow-2xs">
+            <Link
+              href={`/orders/${orderId}/replay`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors border border-[#CBD5E1] shadow-2xs"
+            >
               <span className="material-symbols-outlined text-[16px]">history</span>
               <span>Replay Mode</span>
-            </button>
+            </Link>
             {/* Certificate Pending Badge */}
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-white border border-[#CBD5E1] text-[#0A1B2E] shadow-2xs"
@@ -504,7 +513,13 @@ export default function OrderDetailPage() {
             </div>
             <a
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium text-[#0A1B2E] bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] transition-colors shadow-2xs"
-              href="http://localhost:8233"
+              href={
+                order?.workflow_id
+                  ? `${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows/${order.workflow_id}`
+                  : orderId.startsWith("ord_")
+                  ? `${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows/wf-${orderId.toLowerCase()}`
+                  : `${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows`
+              }
               target="_blank"
               rel="noreferrer"
             >
@@ -682,31 +697,31 @@ export default function OrderDetailPage() {
         {/* REGION (A) - CENTER GRAPH CANVAS (8 cols) */}
         <div className="col-span-12 xl:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm flex flex-col h-[640px] relative overflow-hidden border border-[#E3E8F0]">
           {/* Canvas Header & Toolbar */}
-          <div className="h-12 px-4 flex items-center justify-between shrink-0 bg-surface-container-lowest border-b border-[#EDF0F5]">
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[18px] text-primary-container">account_tree</span>
-              <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                Order Orchestration: OMS → Inventory → Network → Verification → Billing → Notification
+          <div className="h-auto min-h-12 py-2 px-3 sm:px-4 flex flex-wrap items-center justify-between gap-2 shrink-0 bg-surface-container-lowest border-b border-[#EDF0F5]">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="material-symbols-outlined text-[18px] text-primary-container shrink-0">account_tree</span>
+              <span className="font-headline-sm text-sm sm:text-headline-sm text-on-surface font-semibold truncate">
+                Order Orchestration DAG
               </span>
-              <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-mono">
+              <span className="hidden sm:inline-block font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-mono shrink-0">
                 Temporal v1.18.4
               </span>
             </div>
             <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 border border-[#E2E8F0]">
-              <button className="p-1 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Zoom In">
+              <button onClick={handleZoomIn} className="p-1 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" title="Zoom In">
                 <span className="material-symbols-outlined text-[18px]">zoom_in</span>
               </button>
-              <button className="p-1 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Zoom Out">
+              <button onClick={handleZoomOut} className="p-1 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" title="Zoom Out">
                 <span className="material-symbols-outlined text-[18px]">zoom_out</span>
               </button>
-              <button className="p-1 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Fit to Screen">
-                <span className="material-symbols-outlined text-[18px]">fit_screen</span>
+              <button onClick={handleZoomReset} className="px-1.5 py-0.5 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors font-mono text-[11px] cursor-pointer" title="Reset Zoom">
+                {Math.round(dagZoom * 100)}%
               </button>
               <span className="text-outline-variant mx-1">|</span>
-              <button className="p-1 hover:bg-surface-container-lowest rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Toggle Grid">
+              <button onClick={() => setDagGrid((g) => !g)} className={`p-1 rounded transition-colors cursor-pointer ${dagGrid ? "text-[#0A1B2E] font-bold" : "text-[#94A3B8]"}`} title="Toggle Grid">
                 <span className="material-symbols-outlined text-[18px]">grid_4x4</span>
               </button>
-              <button className="p-1 bg-surface-container-lowest text-primary font-bold rounded shadow-xs" title="Minimap Toggle">
+              <button onClick={() => setDagMinimap((m) => !m)} className={`p-1 rounded shadow-xs cursor-pointer ${dagMinimap ? "bg-surface-container-lowest text-primary font-bold" : "text-[#94A3B8]"}`} title="Minimap Toggle">
                 <span className="material-symbols-outlined text-[18px]">map</span>
               </button>
             </div>
@@ -714,9 +729,9 @@ export default function OrderDetailPage() {
 
           {/* Canvas Body with Dot Grid Pattern */}
           <div
-            className="flex-1 relative overflow-auto p-6"
+            className="flex-1 relative overflow-auto p-4 sm:p-6"
             style={{
-              backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
+              backgroundImage: dagGrid ? "radial-gradient(#CBD5E1 1px, transparent 1px)" : "none",
               backgroundSize: "20px 20px",
               backgroundColor: "#FFFFFF",
             }}
@@ -750,7 +765,10 @@ export default function OrderDetailPage() {
             </svg>
 
             {/* GRAPH NODES CONTAINER */}
-            <div className="relative w-[1100px] h-[540px]">
+            <div
+              className="relative w-[1100px] h-[540px] origin-top-left transition-transform duration-150"
+              style={{ transform: `scale(${dagZoom})` }}
+            >
               {/* NODE 1: VALIDATE ORDER [OMS] */}
               <div className="absolute left-[10px] top-[145px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
                 <div className="flex items-center justify-between">
@@ -928,22 +946,24 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Mini-Map Preview Box (Bottom Right) */}
-            <div className="absolute bottom-4 right-4 w-44 h-28 bg-white/95 backdrop-blur-sm rounded-lg shadow-2xs border border-[#CBD5E1] p-1.5 flex flex-col justify-between pointer-events-none">
-              <div className="flex items-center justify-between font-label-sm text-label-sm text-[#0A1B2E]">
-                <span>Graph Minimap</span>
-                <span className="text-[10px] text-[#0A1B2E] font-bold">HALT</span>
+            {dagMinimap && (
+              <div className="absolute bottom-4 right-4 w-44 h-28 bg-white/95 backdrop-blur-sm rounded-lg shadow-2xs border border-[#CBD5E1] p-1.5 flex flex-col justify-between pointer-events-none hidden sm:flex">
+                <div className="flex items-center justify-between font-label-sm text-label-sm text-[#0A1B2E]">
+                  <span>Graph Minimap</span>
+                  <span className="text-[10px] text-[#0A1B2E] font-bold">HALT</span>
+                </div>
+                <div className="relative w-full h-20 bg-[#F8FAFC] rounded flex items-center justify-center overflow-hidden border border-[#E2E8F0]">
+                  <div className="absolute left-2 top-6 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
+                  <div className="absolute left-9 top-3 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
+                  <div className="absolute left-16 top-3 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
+                  <div className="absolute left-23 top-3 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
+                  <div className="absolute left-30 top-6 w-5 h-2 bg-[#475569] rounded-xs"></div>
+                  <div className="absolute left-16 top-11 w-5 h-2 bg-[#0A1B2E] rounded-xs animate-ping"></div>
+                  <div className="absolute left-9 top-11 w-5 h-2 bg-[#CBD5E1] rounded-xs"></div>
+                  <div className="absolute inset-1 rounded" style={{ boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.05)" }}></div>
+                </div>
               </div>
-              <div className="relative w-full h-20 bg-[#F8FAFC] rounded flex items-center justify-center overflow-hidden border border-[#E2E8F0]">
-                <div className="absolute left-2 top-6 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
-                <div className="absolute left-9 top-3 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
-                <div className="absolute left-16 top-3 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
-                <div className="absolute left-23 top-3 w-5 h-2 bg-[#0A1B2E] rounded-xs"></div>
-                <div className="absolute left-30 top-6 w-5 h-2 bg-[#475569] rounded-xs"></div>
-                <div className="absolute left-16 top-11 w-5 h-2 bg-[#0A1B2E] rounded-xs animate-ping"></div>
-                <div className="absolute left-9 top-11 w-5 h-2 bg-[#CBD5E1] rounded-xs"></div>
-                <div className="absolute inset-1 rounded" style={{ boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.05)" }}></div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

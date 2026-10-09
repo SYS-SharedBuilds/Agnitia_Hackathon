@@ -13,7 +13,11 @@ export default function OrderReplayPage() {
   const [playbackSpeed, setPlaybackSpeed] = useState<"0.5×" | "1.0×" | "2.0×" | "4.0×">("1.0×");
   const [activeInspectorTab, setActiveRightTab] = useState<"timeline" | "task" | "variables">("timeline");
   const [copiedId, setCopiedId] = useState(false);
+  const [replayZoom, setReplayZoom] = useState(1);
 
+  const handleZoomIn = () => setReplayZoom((z) => Math.min(1.8, Math.round((z + 0.15) * 100) / 100));
+  const handleZoomOut = () => setReplayZoom((z) => Math.max(0.5, Math.round((z - 0.15) * 100) / 100));
+  const handleZoomReset = () => setReplayZoom(1);
   const handleCopy = (text: string) => {
     navigator.clipboard?.writeText(text);
     setCopiedId(true);
@@ -139,7 +143,11 @@ export default function OrderReplayPage() {
             </button>
             <a
               className="inline-flex items-center gap-1.5 h-9 px-3 bg-surface-container text-primary font-body-md font-medium rounded-lg hover:bg-primary-fixed transition-colors"
-              href="http://localhost:8233"
+              href={
+                orderId.startsWith("ord_")
+                  ? `${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows/order-${orderId}`
+                  : `${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows`
+              }
               target="_blank"
               rel="noreferrer"
             >
@@ -224,26 +232,26 @@ export default function OrderReplayPage() {
                 <span className="text-primary font-mono font-medium">SAGA COMPENSATION RUNNER</span>
               </div>
               <div className="pointer-events-auto flex items-center gap-1 bg-surface-container-lowest/95 backdrop-blur p-1 rounded-lg shadow-sm text-on-surface-variant font-label-sm border border-[#E2E8F0]">
-                <button className="p-1 hover:text-primary hover:bg-surface-container-low rounded" title="Zoom in">
+                <button onClick={handleZoomIn} className="p-1 hover:text-primary hover:bg-surface-container-low rounded cursor-pointer" title="Zoom in">
                   <span className="material-symbols-outlined text-[18px]">zoom_in</span>
                 </button>
-                <button className="p-1 hover:text-primary hover:bg-surface-container-low rounded" title="Zoom out">
+                <button onClick={handleZoomOut} className="p-1 hover:text-primary hover:bg-surface-container-low rounded cursor-pointer" title="Zoom out">
                   <span className="material-symbols-outlined text-[18px]">zoom_out</span>
                 </button>
-                <button className="p-1 hover:text-primary hover:bg-surface-container-low rounded" title="Fit to screen">
+                <button onClick={handleZoomReset} className="p-1 hover:text-primary hover:bg-surface-container-low rounded cursor-pointer" title="Fit to screen">
                   <span className="material-symbols-outlined text-[18px]">crop_free</span>
                 </button>
                 <div className="w-px h-3.5 bg-outline-variant mx-1"></div>
-                <button className="px-1.5 py-0.5 hover:bg-surface-container-low rounded text-[11px] font-mono">100%</button>
-                <button className="p-1 hover:text-primary hover:bg-surface-container-low rounded" title="Toggle Minimap">
-                  <span className="material-symbols-outlined text-[18px]">map</span>
-                </button>
+                <button onClick={handleZoomReset} className="px-1.5 py-0.5 hover:bg-surface-container-low rounded text-[11px] font-mono cursor-pointer">{Math.round(replayZoom * 100)}%</button>
               </div>
             </div>
 
             {/* DAG Interactive Node Canvas Visualizer */}
             <div className="relative z-10 py-6 overflow-x-auto select-none">
-              <div className="min-w-[700px] flex flex-col space-y-10">
+              <div
+                className="min-w-[700px] flex flex-col space-y-10 origin-top-left transition-transform duration-150"
+                style={{ transform: `scale(${replayZoom})` }}
+              >
                 {/* Level 1: Normal Forward Path (Seq 1 to 24) */}
                 <div className="grid grid-cols-4 gap-4 relative">
                   {/* Connector line */}
