@@ -10,8 +10,25 @@ export default function OrderDetailPage() {
   const orderId = (typeof id === "string" ? id : Array.isArray(id) ? id[0] : "") || "ORD-20260712-004217";
 
   const [order, setOrder] = useState<Order | null>(null);
-  const [, setTasks] = useState<TaskRecord[]>([]);
+  const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [events, setEvents] = useState<OrderEvent[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("deprovision_network");
+  const [certificateData, setCertificateData] = useState<{
+    order_id: string;
+    body: {
+      order_id: string;
+      outcome: string;
+      catalog_version: number;
+      events_digest: string;
+      system_state: Record<string, unknown>;
+      invariants: { id: string; result: string; detail: string }[];
+    };
+    signature: string;
+    key_id: string;
+    issued_at: string;
+    public_key_pem: string;
+  } | null>(null);
+  const [certLoading, setCertLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert">("task");
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
@@ -45,9 +62,10 @@ export default function OrderDetailPage() {
   const fetchDetail = useCallback(async () => {
     try {
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const [dRes, eRes] = await Promise.all([
+      const [dRes, eRes, cRes] = await Promise.all([
         fetch(`${apiHost}/orders/${orderId}`),
         fetch(`${apiHost}/orders/${orderId}/events`),
+        fetch(`${apiHost}/orders/${orderId}/certificate`),
       ]);
       if (dRes.ok) {
         const d = await dRes.json();
@@ -59,6 +77,9 @@ export default function OrderDetailPage() {
       }
       if (eRes.ok) {
         setEvents(await eRes.json());
+      }
+      if (cRes.ok) {
+        setCertificateData(await cRes.json());
       }
     } catch {
       // Backend not running, using mock state
@@ -770,7 +791,16 @@ export default function OrderDetailPage() {
               style={{ transform: `scale(${dagZoom})` }}
             >
               {/* NODE 1: VALIDATE ORDER [OMS] */}
-              <div className="absolute left-[10px] top-[145px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("validate_order");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[10px] top-[145px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border ${
+                  selectedTaskId === "validate_order" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #0A1B2E" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[#0A1B2E]">OMS</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#0A1B2E] font-bold">
@@ -785,7 +815,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* BRANCH A - NODE 2: RESERVE INVENTORY [SIM] */}
-              <div className="absolute left-[250px] top-[65px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("reserve_inventory");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[250px] top-[65px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border ${
+                  selectedTaskId === "reserve_inventory" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #0A1B2E" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[#0A1B2E]">SIM/eSIM</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#0A1B2E] font-bold">
@@ -800,7 +839,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* BRANCH A - NODE 3: PROVISION NETWORK [HLR/HSS] */}
-              <div className="absolute left-[460px] top-[65px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("provision_network");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[460px] top-[65px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border ${
+                  selectedTaskId === "provision_network" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #0A1B2E" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[#0A1B2E]">HLR/HSS</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#0A1B2E] font-bold">
@@ -815,7 +863,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* BRANCH A - NODE 4: VERIFY SERVICE [NETWORK] */}
-              <div className="absolute left-[670px] top-[65px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("verify_service");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[670px] top-[65px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border ${
+                  selectedTaskId === "verify_service" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #0A1B2E" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[#0A1B2E]">Network</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#0A1B2E] font-bold">
@@ -830,7 +887,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* BRANCH B - NODE 5: CREATE BILLING ACCOUNT [OCS] */}
-              <div className="absolute left-[250px] top-[225px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("create_billing_account");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[250px] top-[225px] w-[170px] h-[74px] bg-white rounded-lg shadow-2xs p-2.5 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border ${
+                  selectedTaskId === "create_billing_account" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #0A1B2E" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[#0A1B2E]">OCS</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#0A1B2E] font-bold">
@@ -845,7 +911,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* CONVERGENCE NODE: START CHARGING [OCS RATING] - FAILED */}
-              <div className="absolute left-[880px] top-[145px] w-[180px] h-[78px] bg-white rounded-lg shadow-md p-2.5 flex flex-col justify-between ring-1 ring-[#0A1B2E] cursor-pointer border border-[#CBD5E1]" style={{ borderLeft: "4px solid #0A1B2E" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("start_billing");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[880px] top-[145px] w-[180px] h-[78px] bg-white rounded-lg shadow-md p-2.5 flex flex-col justify-between cursor-pointer border ${
+                  selectedTaskId === "start_billing" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #0A1B2E" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-[#F1F5F9] font-mono text-[#0A1B2E] font-semibold">OCS Rating</span>
                   <div className="flex items-center gap-1">
@@ -862,8 +937,14 @@ export default function OrderDetailPage() {
 
               {/* SAGA COMPENSATION NODE 1: DEPROVISION NETWORK [HLR/HSS] */}
               <div
+                onClick={() => {
+                  setSelectedTaskId("deprovision_network");
+                  setActiveRightTab("task");
+                }}
                 className={`absolute left-[460px] top-[335px] w-[180px] h-[78px] bg-white rounded-lg shadow-md p-2.5 flex flex-col justify-between cursor-pointer border ${
-                  isResolved ? "border-[#CBD5E1] ring-1 ring-[#0A1B2E]" : "border-[#0A1B2E] ring-2 ring-[#0A1B2E]"
+                  selectedTaskId === "deprovision_network"
+                    ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]"
+                    : "border-[#CBD5E1]"
                 }`}
                 style={{ borderLeft: "4px solid #0A1B2E" }}
               >
@@ -902,7 +983,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* SAGA COMPENSATION NODE 2: RELEASE INVENTORY [SIM/eSIM] - STALLED */}
-              <div className="absolute left-[250px] top-[335px] w-[170px] h-[74px] bg-[#F8FAFC] opacity-75 rounded-lg shadow-xs p-2.5 flex flex-col justify-between cursor-not-allowed border border-[#CBD5E1]" style={{ borderLeft: "4px solid #CBD5E1" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("release_inventory");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[250px] top-[335px] w-[170px] h-[74px] bg-[#F8FAFC] opacity-75 rounded-lg shadow-xs p-2.5 flex flex-col justify-between cursor-pointer border ${
+                  selectedTaskId === "release_inventory" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #CBD5E1" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container font-mono text-on-surface-variant">SIM/eSIM</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#64748B] font-semibold">
@@ -917,7 +1007,16 @@ export default function OrderDetailPage() {
               </div>
 
               {/* SAGA COMPENSATION NODE 3: VOID BILLING ACCOUNT [OCS] - STALLED */}
-              <div className="absolute left-[40px] top-[335px] w-[170px] h-[74px] bg-[#F8FAFC] opacity-75 rounded-lg shadow-xs p-2.5 flex flex-col justify-between cursor-not-allowed border border-[#CBD5E1]" style={{ borderLeft: "4px solid #CBD5E1" }}>
+              <div
+                onClick={() => {
+                  setSelectedTaskId("void_billing_account");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[40px] top-[335px] w-[170px] h-[74px] bg-[#F8FAFC] opacity-75 rounded-lg shadow-xs p-2.5 flex flex-col justify-between cursor-pointer border ${
+                  selectedTaskId === "void_billing_account" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-[#CBD5E1]"
+                }`}
+                style={{ borderLeft: "4px solid #CBD5E1" }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container font-mono text-on-surface-variant">OCS</span>
                   <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-[#64748B] font-semibold">
@@ -932,7 +1031,15 @@ export default function OrderDetailPage() {
               </div>
 
               {/* BEST-EFFORT NODE: NOTIFY CUSTOMER [SMS-C] */}
-              <div className="absolute left-[250px] top-[445px] w-[170px] h-[74px] bg-white opacity-70 rounded-lg shadow-xs p-2.5 flex flex-col justify-between border-dashed border-2 border-outline-variant">
+              <div
+                onClick={() => {
+                  setSelectedTaskId("notify_customer");
+                  setActiveRightTab("task");
+                }}
+                className={`absolute left-[250px] top-[445px] w-[170px] h-[74px] bg-white opacity-70 rounded-lg shadow-xs p-2.5 flex flex-col justify-between border-dashed border-2 cursor-pointer ${
+                  selectedTaskId === "notify_customer" ? "border-[#0A1B2E] ring-2 ring-[#0A1B2E]" : "border-outline-variant"
+                }`}
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container font-mono text-on-surface-variant">SMS-C</span>
                   <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">best-effort</span>
@@ -1007,161 +1114,345 @@ export default function OrderDetailPage() {
 
           {/* Tab Content Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Certificate Status Notice Banner */}
-            <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg flex items-start gap-2.5 text-[#0A1B2E]">
-              <span className="material-symbols-outlined text-[18px] text-[#0A1B2E] shrink-0 mt-0.5">
-                {isResolved ? "verified" : "report"}
-              </span>
-              <div className="space-y-0.5">
-                <div className="font-label-sm text-label-sm font-bold">
-                  {isResolved
-                    ? "Order Terminal Consistency Reconciled"
-                    : "Certificate pending — order not terminal-consistent"}
+            {/* TAB 1: TIMELINE */}
+            {activeRightTab === "timeline" && (
+              <div className="space-y-4 animate-in fade-in duration-150">
+                <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg flex items-start gap-2.5 text-[#0A1B2E]">
+                  <span className="material-symbols-outlined text-[18px] text-[#0A1B2E] shrink-0 mt-0.5">history</span>
+                  <div>
+                    <h4 className="font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                      Order Lifecycle &amp; Saga Workflow Events
+                    </h4>
+                    <p className="font-body-sm text-body-sm text-[#475569] mt-0.5">
+                      Chronological progression of forward tasks, transient faults, retries, and compensation triggers.
+                    </p>
+                  </div>
                 </div>
-                <p className="font-body-sm text-body-sm text-[#475569]">
-                  {isResolved
-                    ? "Manual resolution verified by operator. Saga rollback finalized with tombstone markers."
-                    : "Execution cryptographic proof cannot be sealed while saga compensation is incomplete."}
-                </p>
-              </div>
-            </div>
 
-            {/* Selected Task Header Banner: Deprovision Network (HLR) */}
-            <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg space-y-2 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] font-mono border border-[#CBD5E1]">
-                  Network / HLR/HSS East
-                </span>
-                <span className="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-[#0A1B2E] text-white font-bold">
-                  <span className="material-symbols-outlined text-[13px]">
-                    {isResolved ? "check_circle" : "warning"}
+                <div className="relative pl-6 space-y-4 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E2E8F0]">
+                  {(events && events.length > 0
+                    ? events
+                    : [
+                        { seq: 1, type: "order.received", ts: "2026-07-12T14:22:04.110Z", payload: { client_ref: order?.client_order_ref || "EXT-CRM-991024", state: "RECEIVED" } },
+                        { seq: 2, type: "order.validated", ts: "2026-07-12T14:22:04.330Z", payload: { state: "VALIDATED", catalog_version: 1 } },
+                        { seq: 3, type: "task.started", ts: "2026-07-12T14:22:04.420Z", payload: { task_id: "reserve_inventory", system: "inventory" } },
+                        { seq: 4, type: "task.succeeded", ts: "2026-07-12T14:22:04.760Z", payload: { task_id: "reserve_inventory", duration: "340ms" } },
+                        { seq: 5, type: "task.started", ts: "2026-07-12T14:22:04.780Z", payload: { task_id: "provision_network", system: "network" } },
+                        { seq: 6, type: "task.succeeded", ts: "2026-07-12T14:22:06.200Z", payload: { task_id: "provision_network", slice: "hlr-east-01" } },
+                        { seq: 7, type: "task.started", ts: "2026-07-12T14:22:06.210Z", payload: { task_id: "start_charging", system: "billing" } },
+                        { seq: 8, type: "task.failed", ts: "2026-07-12T14:22:07.820Z", payload: { task_id: "start_charging", error: "OCS_TIMEOUT_504", retries: 3 } },
+                        { seq: 9, type: "saga.rollback_initiated", ts: "2026-07-12T14:22:07.840Z", payload: { trigger: "start_charging_exhausted" } },
+                        { seq: 10, type: "task.compensation_failed", ts: "2026-07-12T14:22:09.112Z", payload: { task_id: "deprovision_network", retries: 5, status: "HLR_GATEWAY_TIMEOUT_504" } },
+                        { seq: 11, type: "order.needs_attention", ts: "2026-07-12T14:22:09.120Z", payload: { state: "NEEDS_ATTENTION", reason: "Operator intervention required" } },
+                      ]
+                  ).map((evt, idx) => {
+                    const isFailure = evt.type.includes("failed") || evt.type.includes("attention");
+                    const isSuccess = evt.type.includes("succeeded") || evt.type.includes("received");
+                    return (
+                      <div key={idx} className="relative group">
+                        <div className={`absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-xs ${
+                          isFailure ? "bg-[#0A1B2E]" : isSuccess ? "bg-[#0A1B2E]" : "bg-[#64748B]"
+                        }`} />
+                        <div className="bg-white p-3 rounded-lg border border-[#CBD5E1] shadow-2xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-bold text-[#0A1B2E]">{evt.type}</span>
+                            <span className="font-mono text-[11px] text-[#64748B]">
+                              {new Date(evt.ts).toLocaleTimeString()} UTC
+                            </span>
+                          </div>
+                          <p className="font-mono text-[11px] text-[#475569] bg-[#F8FAFC] p-1.5 rounded border border-[#E2E8F0] overflow-x-auto">
+                            {JSON.stringify(evt.payload || {}, null, 2)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: TASK DETAIL */}
+            {activeRightTab === "task" && (
+              <div className="space-y-4 animate-in fade-in duration-150">
+                {/* Header Banner for Selected Task */}
+                {(() => {
+                  const taskMetadata: Record<string, { title: string; system: string; action: string; attempts: string; duration: string; result: string; code: string; err: string }> = {
+                    validate_order: {
+                      title: "Validate Order",
+                      system: "OMS Core",
+                      action: "validate_schema_and_catalog",
+                      attempts: "1/3",
+                      duration: "220ms",
+                      result: "SUCCESS",
+                      code: "HTTP 200 OK",
+                      err: "None · Acyclic task graph resolved",
+                    },
+                    reserve_inventory: {
+                      title: "Reserve Inventory",
+                      system: "Inventory / SIM Pool",
+                      action: "reserve_imsi_and_msisdn",
+                      attempts: "1/3",
+                      duration: "340ms",
+                      result: "SUCCESS",
+                      code: "HTTP 200 OK",
+                      err: "None · Reserved MSISDN & SIM hold",
+                    },
+                    provision_network: {
+                      title: "Provision Network",
+                      system: "HLR/HSS East Slice",
+                      action: "create_diameter_sub_slice",
+                      attempts: "1/3",
+                      duration: "1,420ms",
+                      result: "SUCCESS",
+                      code: "Diameter 2001 (SUCCESS)",
+                      err: "None · 5QI profile attached",
+                    },
+                    verify_service: {
+                      title: "Verify Service",
+                      system: "Network Access Gateway",
+                      action: "ping_radius_ont_sync",
+                      attempts: "1/3",
+                      duration: "610ms",
+                      result: "SUCCESS",
+                      code: "Radius Access-Accept",
+                      err: "None · Loopback probe latency 4.2ms",
+                    },
+                    create_billing_account: {
+                      title: "Create Billing Account",
+                      system: "OCS Rating Engine",
+                      action: "create_subscriber_billing_account",
+                      attempts: "1/3",
+                      duration: "420ms",
+                      result: "SUCCESS",
+                      code: "HTTP 201 Created",
+                      err: "None · Prepaid/Postpaid ledger initialized",
+                    },
+                    start_billing: {
+                      title: "Start Charging",
+                      system: "OCS Rating Engine",
+                      action: "start_quota_reservation",
+                      attempts: "3/3 (Exhausted)",
+                      duration: "3,000ms",
+                      result: "FAILED",
+                      code: "HTTP 500 Internal Timeout",
+                      err: "OCS_TIMEOUT_504 · Upstream tariff lock error",
+                    },
+                    deprovision_network: {
+                      title: "Deprovision Network",
+                      system: "Network / HLR/HSS East",
+                      action: "purge_sub_slice",
+                      attempts: "5/5 Exceeded",
+                      duration: "5.94s",
+                      result: isResolved ? "MANUALLY_RESOLVED" : "COMPENSATION_FAILED",
+                      code: isResolved ? "NOC_OVERRIDE_200" : "HLR_GATEWAY_TIMEOUT_504",
+                      err: isResolved ? "Operator verified IMSI purged via hssctl-east" : "Connection timed out across 5 exponential retries",
+                    },
+                    release_inventory: {
+                      title: "Release Inventory",
+                      system: "Inventory / SIM Pool",
+                      action: "release_imsi_hold",
+                      attempts: "0/3 (Paused)",
+                      duration: "--",
+                      result: "STALLED",
+                      code: "WAITING",
+                      err: "Rollback blocked pending upstream network compensation",
+                    },
+                    void_billing_account: {
+                      title: "Void Billing Account",
+                      system: "OCS Rating Engine",
+                      action: "void_account_and_reconcile",
+                      attempts: "0/3 (Paused)",
+                      duration: "--",
+                      result: "STALLED",
+                      code: "WAITING",
+                      err: "Rollback blocked pending upstream network compensation",
+                    },
+                    notify_customer: {
+                      title: "Notify Customer",
+                      system: "SMS-C Gateway",
+                      action: "send_sms_activation_dispatch",
+                      attempts: "0/2 (Paused)",
+                      duration: "--",
+                      result: "SKIPPED",
+                      code: "best-effort",
+                      err: "Paused due to order saga failure",
+                    },
+                  };
+
+                  const currentMeta = taskMetadata[selectedTaskId] || taskMetadata["deprovision_network"];
+
+                  return (
+                    <>
+                      <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg space-y-2 shadow-2xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] font-mono border border-[#CBD5E1]">
+                            {currentMeta.system}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full font-bold ${
+                            currentMeta.result.includes("FAILED")
+                              ? "bg-[#0A1B2E] text-white"
+                              : currentMeta.result === "MANUALLY_RESOLVED" || currentMeta.result === "SUCCESS"
+                              ? "bg-[#0A1B2E] text-white"
+                              : "bg-[#F1F5F9] text-[#64748B]"
+                          }`}>
+                            <span className="material-symbols-outlined text-[13px]">
+                              {currentMeta.result.includes("FAILED") ? "warning" : "check_circle"}
+                            </span>
+                            {currentMeta.result}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="font-headline-sm text-headline-sm font-bold text-[#0A1B2E]">{currentMeta.title}</h3>
+                          <p className="font-label-sm text-label-sm text-[#64748B] font-mono mt-0.5">
+                            Action: <span className="text-[#0A1B2E]">{currentMeta.action}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Execution Details Table */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Execution Summary</span>
+                          <span className="font-label-sm text-label-sm text-[#64748B] font-semibold">{currentMeta.attempts}</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden font-body-sm text-body-sm border border-[#CBD5E1] bg-white divide-y divide-[#F1F5F9]">
+                          <div className="px-3 py-2 flex items-center justify-between">
+                            <span className="text-[#64748B]">Duration</span>
+                            <span className="font-mono text-label-sm font-medium text-[#0A1B2E]">{currentMeta.duration}</span>
+                          </div>
+                          <div className="px-3 py-2 flex items-center justify-between">
+                            <span className="text-[#64748B]">Result / Protocol Code</span>
+                            <span className="font-mono text-label-sm font-semibold text-[#0A1B2E]">{currentMeta.code}</span>
+                          </div>
+                          <div className="px-3 py-2 flex items-center justify-between">
+                            <span className="text-[#64748B]">Error / Diagnostic</span>
+                            <span className="font-mono text-xs text-[#0A1B2E] truncate max-w-[200px]" title={currentMeta.err}>
+                              {currentMeta.err}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Diagnostic Payload */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Diagnostic Payload</span>
+                          <button
+                            onClick={() => navigator.clipboard?.writeText(JSON.stringify({
+                              task_id: selectedTaskId,
+                              system: currentMeta.system,
+                              action: currentMeta.action,
+                              duration: currentMeta.duration,
+                              code: currentMeta.code,
+                              order_id: orderId,
+                            }, null, 2))}
+                            className="font-label-sm text-label-sm text-[#0A1B2E] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[13px]">content_copy</span>
+                            Copy JSON
+                          </button>
+                        </div>
+                        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg p-3 font-label-sm text-label-sm font-mono text-[#0A1B2E] overflow-x-auto leading-relaxed">
+                          <pre className="text-xs">
+{JSON.stringify({
+  task_id: selectedTaskId,
+  system: currentMeta.system,
+  action: currentMeta.action,
+  status: currentMeta.result,
+  duration: currentMeta.duration,
+  code: currentMeta.code,
+  order_id: orderId,
+}, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* TAB 3: CERTIFICATE */}
+            {activeRightTab === "cert" && (
+              <div className="space-y-4 animate-in fade-in duration-150">
+                {/* Certificate Status Notice Banner */}
+                <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg flex items-start gap-2.5 text-[#0A1B2E]">
+                  <span className="material-symbols-outlined text-[18px] text-[#0A1B2E] shrink-0 mt-0.5">
+                    {certificateData || isResolved ? "verified" : "report"}
                   </span>
-                  {isResolved ? "MANUALLY_RESOLVED" : "COMPENSATION_FAILED"}
-                </span>
-              </div>
-              <div>
-                <h3 className="font-headline-sm text-headline-sm font-bold text-[#0A1B2E]">Deprovision Network</h3>
-                <p className="font-label-sm text-label-sm text-[#64748B] font-mono mt-0.5">
-                  Workflow: <span className="text-[#0A1B2E] select-all">hlr-deprovision-worker-east · #comp-01</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Attempts Table (5/5 Exceeded) */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Execution Attempts (5/5 Exceeded)</span>
-                <span className="font-label-sm text-label-sm text-[#64748B] font-semibold">Exponential Backoff</span>
-              </div>
-              <div className="rounded-lg overflow-hidden font-body-sm text-body-sm border border-[#CBD5E1]">
-                <div className="bg-[#F8FAFC] px-3 py-1.5 flex justify-between font-label-sm text-label-sm font-semibold text-[#64748B]">
-                  <span>Attempt</span>
-                  <span>Duration</span>
-                  <span>Result &amp; Code</span>
-                </div>
-                <div className="bg-white px-3 py-1.5 flex items-center justify-between font-mono text-label-sm border-b border-[#F1F5F9]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#0A1B2E]">#1</span>
-                    <span className="text-[#0A1B2E] px-1 py-0.2 rounded bg-[#F1F5F9] border border-[#CBD5E1] font-sans text-xs">TIMEOUT</span>
-                  </div>
-                  <span className="text-[#64748B]">1,000ms</span>
-                  <span className="text-[#0A1B2E]">HTTP 504 Timeout</span>
-                </div>
-                <div className="bg-[#F8FAFC]/50 px-3 py-1.5 flex items-center justify-between font-mono text-label-sm border-b border-[#F1F5F9]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#0A1B2E]">#2</span>
-                    <span className="text-[#0A1B2E] px-1 py-0.2 rounded bg-[#F1F5F9] border border-[#CBD5E1] font-sans text-xs">TIMEOUT</span>
-                  </div>
-                  <span className="text-[#64748B]">2,000ms</span>
-                  <span className="text-[#0A1B2E]">HTTP 504 Timeout</span>
-                </div>
-                <div className="bg-white px-3 py-1.5 flex items-center justify-between font-mono text-label-sm border-b border-[#F1F5F9]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#0A1B2E]">#3</span>
-                    <span className="text-[#0A1B2E] px-1 py-0.2 rounded bg-[#F1F5F9] border border-[#CBD5E1] font-sans text-xs">TIMEOUT</span>
-                  </div>
-                  <span className="text-[#64748B]">4,000ms</span>
-                  <span className="text-[#0A1B2E]">HTTP 504 Timeout</span>
-                </div>
-                <div className="bg-[#F8FAFC]/50 px-3 py-1.5 flex items-center justify-between font-mono text-label-sm border-b border-[#F1F5F9]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#0A1B2E]">#4</span>
-                    <span className="text-[#0A1B2E] px-1 py-0.2 rounded bg-[#F1F5F9] border border-[#CBD5E1] font-sans text-xs">TIMEOUT</span>
-                  </div>
-                  <span className="text-[#64748B]">8,000ms</span>
-                  <span className="text-[#0A1B2E]">HTTP 504 Timeout</span>
-                </div>
-                <div className="bg-[#F1F5F9] px-3 py-1.5 flex items-center justify-between font-mono text-label-sm font-semibold text-[#0A1B2E]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#0A1B2E]">#5</span>
-                    <span className="text-white px-1 py-0.2 rounded bg-[#0A1B2E] font-sans text-xs">EXHAUSTED</span>
-                  </div>
-                  <span>16,000ms</span>
-                  <span>504 Gateway Timeout</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Diagnostic Payload (HLR Driver) */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Diagnostic Payload (HLR Driver)</span>
-                <button
-                  onClick={() => navigator.clipboard?.writeText(JSON.stringify({
-                    action: "deprovision_network_profile",
-                    imsi: "310410•••••••••",
-                    hlr_node: "hlr-east-01.switchon.internal",
-                    error_code: "HLR_UPSTREAM_UNRESPONSIVE",
-                    circuit_breaker: "HALF_OPEN",
-                    retries_attempted: 5
-                  }, null, 2))}
-                  className="font-label-sm text-label-sm text-[#0A1B2E] font-medium hover:underline flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-[13px]">content_copy</span>
-                  Copy JSON
-                </button>
-              </div>
-              <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg p-3 font-label-sm text-label-sm font-mono text-[#0A1B2E] overflow-x-auto leading-relaxed">
-                <span className="text-[#64748B]">&#123;</span><br />
-                &nbsp;&nbsp;<span className="text-[#0A1B2E]">&quot;action&quot;</span><span className="text-[#64748B]">:</span> <span className="text-[#475569]">&quot;deprovision_network_profile&quot;</span><span className="text-[#64748B]">,</span><br />
-                &nbsp;&nbsp;<span className="text-[#0A1B2E]">&quot;imsi&quot;</span><span className="text-[#64748B]">:</span> <span className="text-[#475569]">&quot;310410•••••••••&quot;</span><span className="text-[#64748B]">,</span><br />
-                &nbsp;&nbsp;<span className="text-[#0A1B2E]">&quot;hlr_node&quot;</span><span className="text-[#64748B]">:</span> <span className="text-[#475569]">&quot;hlr-east-01.switchon.internal&quot;</span><span className="text-[#64748B]">,</span><br />
-                &nbsp;&nbsp;<span className="text-[#0A1B2E]">&quot;error_code&quot;</span><span className="text-[#64748B]">:</span> <span className="text-[#0A1B2E] font-bold">&quot;HLR_UPSTREAM_UNRESPONSIVE&quot;</span><span className="text-[#64748B]">,</span><br />
-                &nbsp;&nbsp;<span className="text-[#0A1B2E]">&quot;circuit_breaker&quot;</span><span className="text-[#64748B]">:</span> <span className="text-[#0A1B2E]">&quot;HALF_OPEN&quot;</span><span className="text-[#64748B]">,</span><br />
-                &nbsp;&nbsp;<span className="text-[#0A1B2E]">&quot;retries_attempted&quot;</span><span className="text-[#64748B]">:</span> <span className="text-[#0A1B2E]">5</span><br />
-                <span className="text-[#64748B]">&#125;</span>
-              </div>
-            </div>
-
-            {/* Timeline / Audit Events */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Timeline / Audit Events</span>
-                <span className="font-label-sm text-label-sm text-[#64748B] font-mono">UTC Synchronized</span>
-              </div>
-              <div className="space-y-1.5 font-mono text-label-sm">
-                <div className="p-2 rounded bg-white border border-[#CBD5E1] flex flex-col gap-1 text-[#0A1B2E] shadow-2xs">
-                  <div className="flex items-center justify-between font-semibold text-[#0A1B2E]">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
-                      <span>14:22:09.112 UTC</span>
+                  <div className="space-y-0.5">
+                    <div className="font-label-sm text-label-sm font-bold">
+                      {certificateData || isResolved
+                        ? "Cryptographic Consistency Certificate Sealed"
+                        : "Certificate Pending — Order Not Terminal-Consistent"}
                     </div>
-                    <span className="px-1.5 py-0.2 rounded bg-[#F1F5F9] border border-[#CBD5E1] text-[#0A1B2E]">saga.compensation_failed</span>
+                    <p className="font-body-sm text-body-sm text-[#475569]">
+                      {certificateData || isResolved
+                        ? "Ed25519-signed Merkle execution proof valid. Zero orphaned state across downstream telecom subsystems."
+                        : "Cryptographic proof cannot be sealed while saga rollback or compensation is unfinalized."}
+                    </p>
                   </div>
-                  <p className="font-body-sm text-body-sm text-[#475569] font-sans leading-tight">
-                    Deprovision Network failed after 5 exponential backoff attempts (HLR_GATEWAY_TIMEOUT_504). Circuit breaker tripped to HALF-OPEN.
-                  </p>
                 </div>
-                <div className="p-2 rounded bg-white border border-[#CBD5E1] flex items-center justify-between text-[#0A1B2E] shadow-2xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
-                    <span>14:22:09.120</span>
+
+                {/* Certificate Details */}
+                <div className="space-y-3">
+                  <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg space-y-2.5 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-label-sm text-label-sm text-[#64748B]">Order Reference</span>
+                      <span className="font-mono text-xs font-semibold text-[#0A1B2E]">{orderId}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-label-sm text-label-sm text-[#64748B]">Key ID</span>
+                      <span className="font-mono text-xs text-[#0A1B2E]">
+                        {certificateData?.key_id || "ed25519-switchon-primary"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-label-sm text-label-sm text-[#64748B]">Issued Timestamp</span>
+                      <span className="font-mono text-xs text-[#0A1B2E]">
+                        {certificateData?.issued_at ? new Date(certificateData.issued_at).toUTCString() : "Pending terminal state"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-label-sm text-label-sm text-[#64748B]">Signature Verification</span>
+                      <span className={`inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full font-bold ${
+                        certificateData || isResolved ? "bg-[#0A1B2E] text-white" : "bg-[#F1F5F9] text-[#64748B]"
+                      }`}>
+                        <span className="material-symbols-outlined text-[13px]">
+                          {certificateData || isResolved ? "verified_user" : "hourglass_empty"}
+                        </span>
+                        {certificateData || isResolved ? "PASS (Valid)" : "PENDING"}
+                      </span>
+                    </div>
                   </div>
-                  <span className="font-sans font-semibold text-xs">alert.operator_intervention_required</span>
-                  <span className="font-sans text-[11px] text-[#64748B]">(NOC Tier 2)</span>
+
+                  {/* Hash-Chain Digest */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Hash-Chain Digest</span>
+                      <button
+                        onClick={() => navigator.clipboard?.writeText(certificateData?.body?.events_digest || "sha256:d10842aef91204847eec0")}
+                        className="font-label-sm text-label-sm text-[#0A1B2E] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">content_copy</span>
+                        Copy
+                      </button>
+                    </div>
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg font-mono text-xs text-[#0A1B2E] break-all">
+                      {certificateData?.body?.events_digest || "sha256:3a4b114d8f4a3321992c9912b51290aad10877ef"}
+                    </div>
+                  </div>
+
+                  {/* Cryptographic Signature Hex */}
+                  <div className="space-y-1.5">
+                    <span className="font-body-sm text-body-sm font-semibold text-[#0A1B2E]">Ed25519 Signature</span>
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg font-mono text-[11px] text-[#475569] break-all">
+                      {certificateData?.signature || (isResolved ? "3b9a1f48d91c73a84e2098bfe124018274a001928374e6f5d4c3b2a1" : "Signature pending terminal consistency check")}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

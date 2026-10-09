@@ -149,13 +149,36 @@ export default function OrdersPage() {
   const [onlySignedCert, setOnlySignedCert] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>(["ORD-20260712-004217", "ORD-20260712-004214"]);
   const [orders, setOrders] = useState<DisplayOrder[]>(INITIAL_ORDERS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  // Dropdown states
+  const [openDropdown, setOpenDropdown] = useState<"status" | "product" | "timerange" | "systems" | null>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+    "RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"
+  ]);
+  const [selectedProduct, setSelectedProduct] = useState<string>("All Plans");
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>("Last 24 Hours");
+  const [selectedSystem, setSelectedSystem] = useState<string>("All (OMS, HLR, OCS…)");
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".filter-dropdown-container")) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     // Optionally fetch dynamic orders from API
     const loadApiOrders = async () => {
       try {
         const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiHost}/orders?limit=50`);
+        const res = await fetch(`${apiHost}/orders?limit=100`);
         if (res.ok) {
           const apiData: Order[] = await res.json();
           if (apiData.length > 0) {
@@ -185,7 +208,12 @@ export default function OrdersPage() {
                 certStatus: stateStr === "ACTIVE" ? "verified" : "pending",
               };
             });
-            setOrders(mapped);
+            // Merge or set
+            setOrders((prev) => {
+              const existingIds = new Set(apiData.map(d => d.order_id));
+              const nonDuplicated = prev.filter(p => !existingIds.has(p.id));
+              return [...mapped, ...nonDuplicated];
+            });
           }
         }
       } catch {
@@ -195,6 +223,11 @@ export default function OrdersPage() {
     loadApiOrders();
   }, []);
 
+  // Reset page when any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab, onlySignedCert, selectedStatuses, selectedProduct, selectedTimeRange, selectedSystem, rowsPerPage]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -202,11 +235,29 @@ export default function OrdersPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filteredOrders.length) {
+    if (selectedIds.length === paginatedOrders.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredOrders.map((o) => o.id));
+      setSelectedIds(paginatedOrders.map((o) => o.id));
     }
+  };
+
+  const toggleStatusOption = (status: string) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+    );
+  };
+
+  const resetAllFilters = () => {
+    setSearchQuery("");
+    setActiveTab("all");
+    setOnlySignedCert(false);
+    setSelectedStatuses(["RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"]);
+    setSelectedProduct("All Plans");
+    setSelectedTimeRange("Last 24 Hours");
+    setSelectedSystem("All (OMS, HLR, OCS…)");
+    setCurrentPage(1);
+    setOpenDropdown(null);
   };
 
   const filteredOrders = orders.filter((o) => {
@@ -214,6 +265,26 @@ export default function OrdersPage() {
     if (activeTab === "slow" && !o.activationTime.includes("12.") && !o.activationTime.includes("18.") && !o.activationTime.includes("15.")) return false;
     if (activeTab === "attention" && o.status !== "NEEDS_ATTENTION") return false;
     if (onlySignedCert && o.certStatus !== "verified") return false;
+
+    // Status filter
+    if (selectedStatuses.length > 0 && !selectedStatuses.includes(o.status)) {
+      return false;
+    }
+
+    // Product filter
+    if (selectedProduct !== "All Plans") {
+      if (selectedProduct === "Fiber Broadband" && !o.product.toLowerCase().includes("fiber")) return false;
+      if (selectedProduct === "5G Postpaid" && !o.product.toLowerCase().includes("5g")) return false;
+      if (selectedProduct === "eSIM Add-on" && !o.product.toLowerCase().includes("esim")) return false;
+      if (selectedProduct === "IoT / SIP Trunk" && !o.product.toLowerCase().includes("iot") && !o.product.toLowerCase().includes("sip")) return false;
+    }
+
+    // Systems filter
+    if (selectedSystem !== "All (OMS, HLR, OCS…)") {
+      if (selectedSystem === "HLR / Network only" && !o.taskDetail.toLowerCase().includes("hlr") && o.status !== "RETRYING" && o.status !== "NEEDS_ATTENTION") return false;
+      if (selectedSystem === "OCS / Billing only" && !o.taskDetail.toLowerCase().includes("ocs") && o.status !== "FAILED") return false;
+      if (selectedSystem === "Inventory (SIM) only" && !o.product.toLowerCase().includes("sim")) return false;
+    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -227,6 +298,12 @@ export default function OrdersPage() {
     }
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / rowsPerPage));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (validCurrentPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredOrders.length);
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
   const renderStatusBadge = (status: DisplayOrder["status"]) => {
     switch (status) {
@@ -449,44 +526,185 @@ export default function OrdersPage() {
             </div>
 
             {/* Status Filter Dropdown */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
-              <span className="text-[#64748B]">Status:</span>
-              <span className="font-medium text-[#0A1B2E]">All (7 selected)</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "status" ? null : "status");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer"
+                type="button"
+              >
+                <span className="text-[#64748B]">Status:</span>
+                <span className="font-medium text-[#0A1B2E]">
+                  {selectedStatuses.length === 7 ? "All (7 selected)" : `${selectedStatuses.length} selected`}
+                </span>
+                <span className="material-symbols-outlined text-[16px] text-[#64748B]">
+                  {openDropdown === "status" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "status" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-56 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#64748B] uppercase tracking-wider flex items-center justify-between">
+                    <span>Filter by Status</span>
+                    <button
+                      onClick={() => setSelectedStatuses(selectedStatuses.length === 7 ? [] : ["RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"])}
+                      className="text-[#0A1B2E] hover:underline normal-case font-medium"
+                      type="button"
+                    >
+                      {selectedStatuses.length === 7 ? "Deselect All" : "Select All"}
+                    </button>
+                  </div>
+                  {(["RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"] as const).map((st) => (
+                    <label
+                      key={st}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[#F8FAFC] cursor-pointer text-body-sm font-body-sm text-[#0A1B2E]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedStatuses.includes(st)}
+                        onChange={() => toggleStatusOption(st)}
+                        className="rounded border-[#CBD5E1] text-[#0A1B2E] focus:ring-0 w-3.5 h-3.5"
+                      />
+                      <span className="font-mono text-xs">{st}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Product / Plan Filter */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
-              <span className="text-[#64748B]">Product:</span>
-              <span className="font-medium text-[#0A1B2E]">All Plans</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "product" ? null : "product");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer"
+                type="button"
+              >
+                <span className="text-[#64748B]">Product:</span>
+                <span className="font-medium text-[#0A1B2E]">{selectedProduct}</span>
+                <span className="material-symbols-outlined text-[16px] text-[#64748B]">
+                  {openDropdown === "product" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "product" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-52 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+                    Catalog Product
+                  </div>
+                  {["All Plans", "Fiber Broadband", "5G Postpaid", "eSIM Add-on", "IoT / SIP Trunk"].map((prod) => (
+                    <button
+                      key={prod}
+                      onClick={() => {
+                        setSelectedProduct(prod);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-body-sm font-body-sm transition-colors flex items-center justify-between ${
+                        selectedProduct === prod ? "bg-[#F1F5F9] font-semibold text-[#0A1B2E]" : "hover:bg-[#F8FAFC] text-[#475569]"
+                      }`}
+                      type="button"
+                    >
+                      <span>{prod}</span>
+                      {selectedProduct === prod && (
+                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Date Range Filter */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">calendar_today</span>
-              <span className="font-medium text-[#0A1B2E]">Last 24 Hours</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "timerange" ? null : "timerange");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px] text-[#64748B]">calendar_today</span>
+                <span className="font-medium text-[#0A1B2E]">{selectedTimeRange}</span>
+                <span className="material-symbols-outlined text-[16px] text-[#64748B]">
+                  {openDropdown === "timerange" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "timerange" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-48 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+                    Time Window
+                  </div>
+                  {["Last 1 Hour", "Last 6 Hours", "Last 24 Hours", "Last 7 Days", "All History"].map((tr) => (
+                    <button
+                      key={tr}
+                      onClick={() => {
+                        setSelectedTimeRange(tr);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-body-sm font-body-sm transition-colors flex items-center justify-between ${
+                        selectedTimeRange === tr ? "bg-[#F1F5F9] font-semibold text-[#0A1B2E]" : "hover:bg-[#F8FAFC] text-[#475569]"
+                      }`}
+                      type="button"
+                    >
+                      <span>{tr}</span>
+                      {selectedTimeRange === tr && (
+                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Systems Involved */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
-              <span className="text-[#64748B]">Systems:</span>
-              <span className="font-medium text-[#0A1B2E]">All (OMS, HLR, OCS…)</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "systems" ? null : "systems");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer"
+                type="button"
+              >
+                <span className="text-[#64748B]">Systems:</span>
+                <span className="font-medium text-[#0A1B2E]">{selectedSystem}</span>
+                <span className="material-symbols-outlined text-[16px] text-[#64748B]">
+                  {openDropdown === "systems" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "systems" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-56 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+                    Subsystem Filter
+                  </div>
+                  {["All (OMS, HLR, OCS…)", "HLR / Network only", "OCS / Billing only", "Inventory (SIM) only"].map((sys) => (
+                    <button
+                      key={sys}
+                      onClick={() => {
+                        setSelectedSystem(sys);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-body-sm font-body-sm transition-colors flex items-center justify-between ${
+                        selectedSystem === sys ? "bg-[#F1F5F9] font-semibold text-[#0A1B2E]" : "hover:bg-[#F8FAFC] text-[#475569]"
+                      }`}
+                      type="button"
+                    >
+                      <span className="truncate">{sys}</span>
+                      {selectedSystem === sys && (
+                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E] shrink-0">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Certificate Toggle Switch */}
             <div className="flex items-center gap-2 pl-1 py-1">
@@ -509,18 +727,14 @@ export default function OrdersPage() {
           {/* Right Toolbar Controls */}
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => {
-                setSearchQuery("");
-                setActiveTab("all");
-                setOnlySignedCert(false);
-              }}
-              className="font-label-sm text-label-sm text-primary-container hover:underline"
+              onClick={resetAllFilters}
+              className="font-label-sm text-label-sm text-primary-container hover:underline cursor-pointer"
               type="button"
             >
               Clear filters
             </button>
             <span className="font-label-sm text-label-sm text-outline">
-              Showing {filteredOrders.length} of 1,284
+              Showing {filteredOrders.length} of {orders.length}
             </span>
           </div>
         </div>
@@ -551,7 +765,7 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F1F5F9] font-body-sm text-body-sm">
-              {filteredOrders.map((ord) => {
+              {paginatedOrders.map((ord) => {
                 const isSelected = selectedIds.includes(ord.id);
                 return (
                   <tr
@@ -677,35 +891,88 @@ export default function OrdersPage() {
         {/* PAGINATION FOOTER */}
         <div className="px-4 py-3 bg-surface-container-lowest flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-body-sm text-body-sm border-t border-[#EDF0F5]">
           <div className="flex items-center gap-4 text-outline">
-            <span>Showing <strong className="text-on-surface font-medium">1-{filteredOrders.length}</strong> of <strong className="text-on-surface font-medium">1,284</strong> orders</span>
+            <span>
+              Showing <strong className="text-on-surface font-medium">{filteredOrders.length === 0 ? 0 : startIndex + 1}-{endIndex}</strong> of <strong className="text-on-surface font-medium">{filteredOrders.length}</strong> orders
+            </span>
             <div className="flex items-center gap-1">
               <label className="font-label-sm text-label-sm" htmlFor="rowsPerPage">Rows:</label>
-              <select className="h-7 py-0 pl-2 pr-6 rounded bg-surface-container-low font-label-sm text-label-sm text-on-surface border-0 focus:ring-1 focus:ring-primary-container" id="rowsPerPage">
-                <option>25 per page</option>
-                <option>50 per page</option>
-                <option>100 per page</option>
+              <select
+                className="h-7 py-0 pl-2 pr-6 rounded bg-surface-container-low font-label-sm text-label-sm text-on-surface border-0 focus:ring-1 focus:ring-primary-container cursor-pointer"
+                id="rowsPerPage"
+                value={rowsPerPage}
+                onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              >
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={25}>25 per page</option>
+                <option value={50}>50 per page</option>
               </select>
             </div>
           </div>
           {/* Pagination Buttons */}
-          <div className="flex items-center gap-1">
-            <button className="px-2.5 h-7 rounded text-[#94A3B8] hover:bg-[#F8FAFC] disabled:opacity-40 font-medium font-body-sm" disabled type="button">
+          <div className="flex items-center gap-1 select-none">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={validCurrentPage <= 1}
+              className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] disabled:text-[#94A3B8] disabled:cursor-not-allowed font-medium font-body-sm transition-colors cursor-pointer"
+              type="button"
+            >
               Previous
             </button>
-            <button className="w-7 h-7 rounded bg-[#0A1B2E] text-white font-medium font-label-sm text-label-sm flex items-center justify-center shadow-2xs" type="button">
-              1
-            </button>
-            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
-              2
-            </button>
-            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
-              3
-            </button>
-            <span className="px-1 text-[#94A3B8] font-label-sm text-label-sm">…</span>
-            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
-              161
-            </button>
-            <button className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] font-medium font-body-sm transition-colors" type="button">
+
+            {/* Dynamic page numbers calculation */}
+            {(() => {
+              const pages: (number | string)[] = [];
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+              } else {
+                pages.push(1);
+                if (validCurrentPage > 3) {
+                  pages.push("…");
+                }
+                const startMiddle = Math.max(2, validCurrentPage - 1);
+                const endMiddle = Math.min(totalPages - 1, validCurrentPage + 1);
+                for (let i = startMiddle; i <= endMiddle; i++) {
+                  if (!pages.includes(i)) pages.push(i);
+                }
+                if (validCurrentPage < totalPages - 2) {
+                  pages.push("…");
+                }
+                if (!pages.includes(totalPages)) pages.push(totalPages);
+              }
+
+              return pages.map((p, idx) => {
+                if (p === "…") {
+                  return (
+                    <span key={`dots-${idx}`} className="px-1 text-[#94A3B8] font-label-sm text-label-sm">
+                      …
+                    </span>
+                  );
+                }
+                const isCurrent = p === validCurrentPage;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(Number(p))}
+                    className={`w-7 h-7 rounded font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors cursor-pointer ${
+                      isCurrent
+                        ? "bg-[#0A1B2E] text-white shadow-2xs"
+                        : "hover:bg-[#F8FAFC] text-[#0A1B2E]"
+                    }`}
+                    type="button"
+                  >
+                    {p}
+                  </button>
+                );
+              });
+            })()}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={validCurrentPage >= totalPages}
+              className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] disabled:text-[#94A3B8] disabled:cursor-not-allowed font-medium font-body-sm transition-colors cursor-pointer"
+              type="button"
+            >
               Next
             </button>
           </div>

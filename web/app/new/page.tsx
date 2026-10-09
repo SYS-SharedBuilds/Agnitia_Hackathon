@@ -51,26 +51,122 @@ export default function NewOrderPage() {
   };
 
   const [validatedSuccess, setValidatedSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Product specific rate plans
+  const PRODUCT_RATE_PLANS: Record<"fiber" | "5g" | "esim", { plans: string[]; sla: string; tier: string; badge: string }> = {
+    fiber: {
+      plans: [
+        "Fiber Broadband 500 (500 Mbps Symmetrical · $65/mo)",
+        "Fiber Broadband Gig (1000 Mbps Symmetrical · $85/mo)",
+        "Fiber Enterprise Pro 2.5G ($180/mo)",
+      ],
+      sla: "SLA: p99 latency < 12ms · 99.99% Availability",
+      tier: "Broadband Core",
+      badge: "FTTH GPON/XGS-PON",
+    },
+    "5g": {
+      plans: [
+        "5G Postpaid Unlimited (Voice + Data Uncapped · $75/mo)",
+        "5G Business Priority Slice (Guaranteed 100Mbps · $110/mo)",
+        "5G IoT Mobile Metering (500MB Pool · $15/mo)",
+      ],
+      sla: "SLA: 5QI-9 Low-Latency QoS Profile · VoNR",
+      tier: "5G SA Slice",
+      badge: "5G SA Core (HLR/HSS)",
+    },
+    esim: {
+      plans: [
+        "eSIM Roaming Global (10GB International · $45/mo)",
+        "eSIM Smartwatch Multi-Device Add-on ($10/mo)",
+        "eSIM Data Pass (Unlimited 7-Day Roam · $25)",
+      ],
+      sla: "SLA: Instant RSP SM-DP+ Profile Delivery < 5s",
+      tier: "GSMA RSP v3",
+      badge: "SM-DP+ Remote Provisioning",
+    },
+  };
+
+  const handleProductChange = (type: "fiber" | "5g" | "esim") => {
+    setProductType(type);
+    setRatePlan(PRODUCT_RATE_PLANS[type].plans[0]);
+    setValidatedSuccess(false);
+    setValidationErrors([]);
+    setFieldErrors({});
+  };
 
   const handleValidate = () => {
     const errs: string[] = [];
+    const errorsMap: Record<string, string> = {};
+
+    // Customer
+    if (!fullName.trim()) {
+      errs.push("customer_id: Customer full legal name or ID is required");
+      errorsMap.fullName = "Full Legal Name is required";
+    }
+
+    if (!email.trim() || !email.includes("@")) {
+      errs.push("email: Valid billing / service email address is required");
+      errorsMap.email = "Valid email address required";
+    }
+
+    // MSISDN
+    const cleanMsisdn = msisdn.replace(/\D/g, "");
+    if (!cleanMsisdn || cleanMsisdn.length < 10) {
+      errs.push("msisdn: Target phone MSISDN must contain at least 10 digits");
+      errorsMap.msisdn = "Valid MSISDN required (min 10 digits)";
+    }
+
+    // Address (Mandatory for Fiber broadband ONT dispatch)
+    if (productType === "fiber") {
+      if (!streetAddress.trim()) {
+        errs.push("site_address: Street address is required for FTTH physical drop & ONT installation");
+        errorsMap.streetAddress = "Street address required for Fiber";
+      }
+      if (!city.trim()) {
+        errs.push("site_city: City is required for terminal ODF cross-connect matching");
+        errorsMap.city = "City required";
+      }
+      if (!zip.trim()) {
+        errs.push("site_zip: Postal / ZIP code is required for GIS dispatch");
+        errorsMap.zip = "ZIP code required";
+      }
+    }
+
+    // SIM / ICCID (Mandatory for 5G & eSIM)
     const cleanIccid = simIccid.replace(/\s+/g, "");
     if (!cleanIccid || cleanIccid.length < 18 || cleanIccid.length > 22 || !/^\d+$/.test(cleanIccid)) {
       errs.push("iccid: Invalid E.118 SIM identifier (expected 18-22 digits starting with 89)");
+      errorsMap.simIccid = "Must be 18-22 digits starting with 89";
     } else if (!cleanIccid.startsWith("89")) {
       errs.push("iccid: E.118 SIM identifier must begin with telecom prefix '89'");
+      errorsMap.simIccid = "Must begin with prefix 89";
     }
+
+    // Client Ref (Idempotency Key)
     if (!clientRef.trim()) {
-      errs.push("client_order_ref: Missing client order reference");
+      errs.push("client_order_ref: Missing client order reference (Idempotency Key)");
+      errorsMap.clientRef = "Client order reference required";
     } else if (clientRef.length > 128) {
       errs.push("client_order_ref: Maximum length is 128 characters");
+      errorsMap.clientRef = "Maximum 128 characters";
     }
-    if (!fullName.trim()) {
-      errs.push("customer_id: Customer name/ID cannot be empty");
-    }
+
+    setFieldErrors(errorsMap);
+
     if (errs.length > 0) {
       setValidationErrors(errs);
       setValidatedSuccess(false);
+
+      // Focus first invalid input field
+      const firstKey = Object.keys(errorsMap)[0];
+      if (firstKey === "fullName") document.getElementById("cust-fullname")?.focus();
+      else if (firstKey === "email") document.getElementById("cust-email")?.focus();
+      else if (firstKey === "msisdn") document.getElementById("cust-msisdn")?.focus();
+      else if (firstKey === "streetAddress") document.getElementById("site-address")?.focus();
+      else if (firstKey === "simIccid") document.getElementById("sim-iccid")?.focus();
+      else if (firstKey === "clientRef") document.getElementById("client-ref")?.focus();
+
       return false;
     } else {
       setValidationErrors([]);
@@ -81,14 +177,14 @@ export default function NewOrderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleValidate();
-    const cleanIccid = simIccid.replace(/\s+/g, "");
-    if (!cleanIccid || cleanIccid.length < 18 || !clientRef.trim() || !fullName.trim()) {
-      return;
-    }
+    if (submitting) return;
+
+    const isValid = handleValidate();
+    if (!isValid) return;
 
     setSubmitting(true);
     try {
+      const cleanIccid = simIccid.replace(/\s+/g, "");
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const productCode = productType === "fiber" ? "FIBER_500" : productType === "5g" ? "MOBILE_5G" : "ESIM_ADDON";
       const res = await fetch(`${apiHost}/orders`, {
@@ -98,6 +194,9 @@ export default function NewOrderPage() {
           client_order_ref: clientRef.trim(),
           customer_id: fullName.trim(),
           product: productCode,
+          plan_name: ratePlan,
+          site_address: productType === "fiber" ? `${streetAddress}, ${city}, ${state} ${zip}` : undefined,
+          device_id: deviceImei.trim() || undefined,
           msisdn: `+1 ${msisdn.trim()}`,
           iccid: cleanIccid,
           engine: "temporal",
@@ -111,6 +210,7 @@ export default function NewOrderPage() {
         const errorData = await res.json().catch(() => null);
         if (errorData?.detail) {
           setValidationErrors([typeof errorData.detail === "string" ? errorData.detail : JSON.stringify(errorData.detail)]);
+          setValidatedSuccess(false);
         } else {
           router.push("/orders/ORD-20260712-004218");
         }
@@ -302,7 +402,7 @@ export default function NewOrderPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Option A: Fiber Broadband */}
                   <label
-                    onClick={() => setProductType("fiber")}
+                    onClick={() => handleProductChange("fiber")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
                       productType === "fiber" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
@@ -314,7 +414,7 @@ export default function NewOrderPage() {
                         </span>
                         <input
                           checked={productType === "fiber"}
-                          onChange={() => setProductType("fiber")}
+                          onChange={() => handleProductChange("fiber")}
                           className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
@@ -330,7 +430,7 @@ export default function NewOrderPage() {
 
                   {/* Option B: 5G Postpaid */}
                   <label
-                    onClick={() => setProductType("5g")}
+                    onClick={() => handleProductChange("5g")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
                       productType === "5g" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
@@ -342,7 +442,7 @@ export default function NewOrderPage() {
                         </span>
                         <input
                           checked={productType === "5g"}
-                          onChange={() => setProductType("5g")}
+                          onChange={() => handleProductChange("5g")}
                           className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
@@ -353,12 +453,12 @@ export default function NewOrderPage() {
                         Standalone 5G NR network slice with VoNR and dynamic QoS profile.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#64748B]">5G SA Slice</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#0A1B2E] font-semibold">5G SA Slice</span>
                   </label>
 
                   {/* Option C: eSIM Add-on */}
                   <label
-                    onClick={() => setProductType("esim")}
+                    onClick={() => handleProductChange("esim")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
                       productType === "esim" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
@@ -370,7 +470,7 @@ export default function NewOrderPage() {
                         </span>
                         <input
                           checked={productType === "esim"}
-                          onChange={() => setProductType("esim")}
+                          onChange={() => handleProductChange("esim")}
                           className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
@@ -381,7 +481,7 @@ export default function NewOrderPage() {
                         Instant remote SIM provisioning (RSP) via SM-DP+ server profile.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#64748B]">GSMA RSP v3</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#0A1B2E] font-semibold">GSMA RSP v3</span>
                   </label>
                 </div>
 
@@ -396,13 +496,13 @@ export default function NewOrderPage() {
                       value={ratePlan}
                       onChange={(e) => setRatePlan(e.target.value)}
                     >
-                      <option>Fiber Broadband 500 (500 Mbps Symmetrical · $65/mo)</option>
-                      <option>Fiber Broadband Gig (1000 Mbps Symmetrical · $85/mo)</option>
-                      <option>Fiber Enterprise Pro 2.5G ($180/mo)</option>
+                      {PRODUCT_RATE_PLANS[productType].plans.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
                     </select>
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0]">
                       <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
-                      <span>SLA: p99 latency &lt; 12ms</span>
+                      <span>{PRODUCT_RATE_PLANS[productType].sla}</span>
                     </div>
                   </div>
                 </div>
@@ -676,7 +776,7 @@ export default function NewOrderPage() {
 
             {/* Visual Miniature DAG organized by Waves */}
             <div className="space-y-3 font-mono text-label-sm">
-              {/* WAVE 1 */}
+              {/* WAVE 1 - Root Validation */}
               <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 1 · Root</span>
@@ -685,7 +785,7 @@ export default function NewOrderPage() {
                 <div className="bg-[#F8FAFC] rounded p-2 flex items-center justify-between border border-[#E2E8F0]">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">verified_user</span>
-                    <span className="text-[#0A1B2E] font-medium">Validate Order</span>
+                    <span className="text-[#0A1B2E] font-medium">validate_order</span>
                   </div>
                   <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">OMS Core</span>
                 </div>
@@ -693,39 +793,57 @@ export default function NewOrderPage() {
 
               {/* CONNECTOR */}
               <div className="flex justify-center -my-1 text-[#CBD5E1]">
-                <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
+                <span className="material-symbols-outlined text-[16px]">{productType === "esim" ? "arrow_downward" : "arrow_downward"}</span>
               </div>
 
-              {/* WAVE 2 (Forked in parallel) */}
+              {/* WAVE 2 - Inventory & Parallel Billing */}
               <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[#0A1B2E] uppercase text-label-sm font-semibold tracking-wider">Wave 2 · Parallel Fork</span>
+                  <span className="text-[#0A1B2E] uppercase text-label-sm font-semibold tracking-wider">
+                    {productType === "esim" ? "Wave 2 · Inventory Allocation" : "Wave 2 · Parallel Fork"}
+                  </span>
                   <span className="text-[#64748B]">max 420ms</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {productType === "esim" ? (
                   <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH A</span>
-                      <span className="text-[#64748B]">340ms</span>
+                      <span className="text-[#0A1B2E] text-[10px] font-bold">SM-DP+ PROFILE</span>
+                      <span className="text-[#64748B]">280ms</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">inventory_2</span>
-                      <span className="text-[#0A1B2E] truncate font-medium">Reserve Inventory</span>
+                      <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">sim_card</span>
+                      <span className="text-[#0A1B2E] truncate font-medium">reserve_esim_profile</span>
                     </div>
-                    <div className="text-[#64748B] text-[10px] mt-1">SIM/eSIM Pool</div>
+                    <div className="text-[#64748B] text-[10px] mt-1">Inventory · RSP Pool</div>
                   </div>
-                  <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH B</span>
-                      <span className="text-[#64748B]">420ms</span>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH A</span>
+                        <span className="text-[#64748B]">340ms</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">inventory_2</span>
+                        <span className="text-[#0A1B2E] truncate font-medium">
+                          {productType === "fiber" ? "reserve_inventory" : "reserve_sim"}
+                        </span>
+                      </div>
+                      <div className="text-[#64748B] text-[10px] mt-1">Inventory Core</div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">account_balance_wallet</span>
-                      <span className="text-[#0A1B2E] truncate font-medium">Create Billing Acc</span>
+                    <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH B</span>
+                        <span className="text-[#64748B]">420ms</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">account_balance_wallet</span>
+                        <span className="text-[#0A1B2E] truncate font-medium">create_billing_account</span>
+                      </div>
+                      <div className="text-[#64748B] text-[10px] mt-1">Billing Core</div>
                     </div>
-                    <div className="text-[#64748B] text-[10px] mt-1">OCS Billing Core</div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* CONNECTOR */}
@@ -733,18 +851,22 @@ export default function NewOrderPage() {
                 <span className="material-symbols-outlined text-[16px]">merge</span>
               </div>
 
-              {/* WAVE 3 */}
+              {/* WAVE 3 - Network Activation */}
               <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 3 · Network Sync</span>
+                  <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 3 · Network Activation</span>
                   <span className="text-[#64748B]">1,420ms</span>
                 </div>
                 <div className="bg-[#F8FAFC] rounded p-2 flex items-center justify-between border border-[#E2E8F0]">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">settings_ethernet</span>
-                    <span className="text-[#0A1B2E] font-medium">Provision Network</span>
+                    <span className="text-[#0A1B2E] font-medium">
+                      {productType === "fiber" ? "provision_network" : productType === "5g" ? "provision_5g_core" : "activate_network_profile"}
+                    </span>
                   </div>
-                  <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">HLR/HSS Gateway</span>
+                  <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">
+                    {productType === "fiber" ? "FTTH ODF / ONT" : "HLR/HSS Gateway"}
+                  </span>
                 </div>
               </div>
 
@@ -753,7 +875,7 @@ export default function NewOrderPage() {
                 <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
               </div>
 
-              {/* WAVE 4 & 5 */}
+              {/* WAVE 4 & 5 - Verification & Rating */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                   <div className="flex items-center justify-between mb-1">
@@ -762,7 +884,9 @@ export default function NewOrderPage() {
                   </div>
                   <div className="bg-[#F8FAFC] rounded p-1.5 text-[#0A1B2E] truncate flex items-center gap-1.5 border border-[#E2E8F0]">
                     <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">sync_alt</span>
-                    <span className="font-medium">Verify Sync</span>
+                    <span className="font-medium">
+                      {productType === "fiber" ? "verify_service" : productType === "5g" ? "verify_sim_reg" : "verify_activation"}
+                    </span>
                   </div>
                 </div>
                 <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
@@ -772,19 +896,19 @@ export default function NewOrderPage() {
                   </div>
                   <div className="bg-[#F8FAFC] rounded p-1.5 text-[#0A1B2E] truncate flex items-center gap-1.5 border border-[#E2E8F0]">
                     <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">payments</span>
-                    <span className="font-medium">Start Rating</span>
+                    <span className="font-medium">start_billing</span>
                   </div>
                 </div>
               </div>
 
-              {/* WAVE 6 */}
+              {/* WAVE 6 - Customer Notification */}
               <div className="bg-white rounded-lg p-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 6</span>
-                    <span className="text-[#0A1B2E] font-medium">Notify Customer (SMS-C)</span>
+                    <span className="text-[#0A1B2E] font-medium">notify_customer</span>
                   </div>
-                  <span className="text-[#64748B] text-[10px]">180ms · best-effort</span>
+                  <span className="text-[#64748B] text-[10px]">SMS-C · best-effort</span>
                 </div>
               </div>
             </div>
