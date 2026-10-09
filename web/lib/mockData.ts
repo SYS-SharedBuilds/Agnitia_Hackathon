@@ -2,7 +2,7 @@
 // Adheres to rules: Realistic IDs (ORD-2026-..., CUST-..., MSISDN, IMSI), consistent state across pages,
 // strictly synthetic data, typed, and clean fallback integration.
 
-import { MetricsSummary, Order, OrderEvent, TaskRecord, OrderState, TaskState } from "./types";
+import { MetricsSummary, Order, OrderEvent, TaskRecord } from "./types";
 
 export interface TelecomResource {
   id: string;

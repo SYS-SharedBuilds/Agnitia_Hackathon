@@ -26,6 +26,18 @@ tasks:
       backoff_coefficient: 2.0
       max_interval_sec: 8.0
     timeout_sec: 15
+  - id: create_billing_account
+    system: billing
+    action: create_account
+    depends_on: [reserve_esim_profile]
+    compensation: void_account
+    retry:
+      max_attempts: 3
+      initial_interval_sec: 1.0
+      backoff_coefficient: 2.0
+      max_interval_sec: 8.0
+    timeout_sec: 15
+
 
   - id: activate_network_profile
     system: network
@@ -42,7 +54,7 @@ tasks:
   - id: verify_activation
     system: network
     action: verify
-    depends_on: [activate_network_profile]
+    depends_on: [activate_network_profile, create_billing_account]
     compensation: null
     read_only: true
     retry:
