@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MetricsSummary, Order } from "@/lib/types";
+import { MOCK_OPERATIONAL_KPIS, MOCK_ORDERS } from "@/lib/mockData";
 
 export default function OverviewPage() {
-  const [metrics, setMetrics] = useState<MetricsSummary | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [metrics, setMetrics] = useState<MetricsSummary | null>(MOCK_OPERATIONAL_KPIS);
+  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  const [isLiveBackend, setIsLiveBackend] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "running" | "succeeded" | "rolling-back" | "rolled-back" | "needs-attention">("all");
   const [filterQuery, setFilterQuery] = useState("");
@@ -18,10 +20,19 @@ export default function OverviewPage() {
         fetch(`${apiHost}/metrics/summary`),
         fetch(`${apiHost}/orders?limit=25`),
       ]);
-      if (mRes.ok) setMetrics(await mRes.json());
-      if (oRes.ok) setOrders(await oRes.json());
-    } catch (e) {
-      console.error("Fetch error", e);
+      if (mRes.ok) {
+        setMetrics(await mRes.json());
+        setIsLiveBackend(true);
+      }
+      if (oRes.ok) {
+        const liveOrders = await oRes.json();
+        if (liveOrders.length > 0) {
+          setOrders(liveOrders);
+          setIsLiveBackend(true);
+        }
+      }
+    } catch {
+      // Backend not running, preserves central MOCK_OPERATIONAL_KPIS and MOCK_ORDERS
     }
   };
 
@@ -32,134 +43,27 @@ export default function OverviewPage() {
     return () => clearInterval(interval);
   }, [isPaused]);
 
-  // Demo fallback items matching Screen 2 specifications
-  const displayOrders = orders.length > 0 ? orders.map((o, idx) => ({
+  // Orders mapping prioritizing real backend or central realistic telecom data
+  const displayOrders = orders.map((o, idx) => ({
     id: o.order_id,
-    customer: o.customer_id,
+    customer: (o.payload?.customer_name as string) || o.customer_id,
     msisdn: (o.payload?.msisdn as string) || "+1 555 019-4821",
     product: o.product || "Fiber Broadband 500",
     status: (o.state as string),
     statusKey: (o.state as string) === "ACTIVE" ? "succeeded" : (o.state as string) === "ROLLING_BACK" ? "rolling-back" : (o.state as string) === "ROLLED_BACK" ? "rolled-back" : (o.state as string) === "NEEDS_ATTENTION" ? "needs-attention" : "running",
     step: o.current_step || "HLR Provisioning",
-    duration: "2.4s",
+    duration: o.activation_ms ? `${(o.activation_ms / 1000).toFixed(1)}s` : "2.4s",
     created: "Just now",
     cert: (o.state as string) === "ACTIVE" ? "verified" : (o.state as string) === "NEEDS_ATTENTION" ? "error" : "pending",
-    segments: ["success", "success", (o.state as string) === "IN_PROGRESS" ? "running" : "pending", "pending", "pending"],
-    isLive: idx === 0,
-  })) : [
-    {
-      id: "ORD-20260712-004217",
-      customer: "Marcus Vance",
-      msisdn: "+1 555 019-4821",
-      product: "Fiber Broadband 500",
-      status: "RUNNING",
-      statusKey: "running",
-      step: "HLR Provisioning",
-      duration: "2.4s",
-      created: "4s ago",
-      cert: "hourglass_top",
-      segments: ["success", "success", "running", "idle", "idle"],
-      isLive: true,
-    },
-    {
-      id: "ORD-20260712-004216",
-      customer: "Aria Montgomery",
-      msisdn: "+1 555 302-8812",
-      product: "5G Postpaid Unlimited",
-      status: "SUCCEEDED",
-      statusKey: "succeeded",
-      step: "Welcome SMS Dispatched",
-      duration: "1.8s",
-      created: "18s ago",
-      cert: "verified",
-      segments: ["success", "success", "success", "success", "success"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004215",
-      customer: "Kasper Thorne",
-      msisdn: "+1 555 891-2311",
-      product: "Enterprise SIP Trunk",
-      status: "RETRYING",
-      statusKey: "running",
-      step: "Billing Account Sync",
-      duration: "4.8s",
-      created: "42s ago",
-      cert: "pending",
-      segments: ["success", "success", "success", "retrying", "idle"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004214",
-      customer: "Helix Labs Ltd",
-      msisdn: "+1 555 762-9011",
-      product: "Cloud Interconnect 10G",
-      status: "ROLLING_BACK",
-      statusKey: "rolling-back",
-      step: "Compensating HLR",
-      duration: "14.2s",
-      created: "1m ago",
-      cert: "cancel",
-      segments: ["compensating", "compensating", "idle", "idle", "error"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004213",
-      customer: "Elena Rostova",
-      msisdn: "+1 555 441-9988",
-      product: "eSIM Roaming Global",
-      status: "COMPENSATED",
-      statusKey: "rolled-back",
-      step: "eSIM Profile Download (Cleaned)",
-      duration: "3.1s",
-      created: "2m ago",
-      cert: "remove_done",
-      segments: ["compensated", "compensated", "compensated", "compensated", "compensated"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004212",
-      customer: "Jonah Sterling",
-      msisdn: "+1 555 124-7744",
-      product: "Fiber Broadband 1G",
-      status: "SUCCEEDED",
-      statusKey: "succeeded",
-      step: "CPE Auto-Provisioned",
-      duration: "2.9s",
-      created: "3m ago",
-      cert: "verified",
-      segments: ["success", "success", "success", "success", "success"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004211",
-      customer: "Devon Miller",
-      msisdn: "+1 555 609-1229",
-      product: "eSIM Add-on Data",
-      status: "SUCCEEDED",
-      statusKey: "succeeded",
-      step: "eSIM Profile Download",
-      duration: "1.2s",
-      created: "4m ago",
-      cert: "verified",
-      segments: ["success", "success", "success", "success", "success"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004210",
-      customer: "Northstar Freight",
-      msisdn: "+1 555 238-9900",
-      product: "IoT SIM Pool (500x)",
-      status: "NEEDS_ATTENTION",
-      statusKey: "needs-attention",
-      step: "HLR Provisioning (Code 403)",
-      duration: "28.4s",
-      created: "5m ago",
-      cert: "error",
-      segments: ["success", "success", "attention", "idle", "idle"],
-      isLive: false,
-    },
-  ];
+    segments: (o.state as string) === "ACTIVE"
+      ? ["success", "success", "success", "success", "success"]
+      : (o.state as string) === "ROLLED_BACK"
+      ? ["compensated", "compensated", "compensated", "idle", "idle"]
+      : (o.state as string) === "NEEDS_ATTENTION"
+      ? ["success", "success", "error", "idle", "idle"]
+      : ["success", "success", "running", "idle", "idle"],
+    isLive: isLiveBackend && idx === 0,
+  }));
 
   const filteredOrders = displayOrders.filter((ord) => {
     if (activeTab !== "all" && ord.statusKey !== activeTab) return false;

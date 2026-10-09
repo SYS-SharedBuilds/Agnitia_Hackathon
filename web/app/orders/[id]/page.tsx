@@ -4,14 +4,18 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Order, OrderEvent, TaskRecord } from "@/lib/types";
+import { MOCK_ORDERS, MOCK_ORDER_TASKS, MOCK_ORDER_EVENTS } from "@/lib/mockData";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
-  const orderId = (typeof id === "string" ? id : Array.isArray(id) ? id[0] : "") || "ORD-20260712-004217";
+  const orderId = (typeof id === "string" ? id : Array.isArray(id) ? id[0] : "") || "ORD-2026-10482";
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [, setTasks] = useState<TaskRecord[]>([]);
-  const [, setEvents] = useState<OrderEvent[]>([]);
+  // Match synthetic order fixture if available
+  const initialMatchedOrder = MOCK_ORDERS.find((o) => o.order_id === orderId) || MOCK_ORDERS[0];
+  const [order, setOrder] = useState<Order | null>(initialMatchedOrder);
+  const [, setTasks] = useState<TaskRecord[]>(MOCK_ORDER_TASKS[orderId] || MOCK_ORDER_TASKS["ORD-2026-10482"] || []);
+  const [, setEvents] = useState<OrderEvent[]>(MOCK_ORDER_EVENTS[orderId] || MOCK_ORDER_EVENTS["ORD-2026-10482"] || []);
+  const [isLiveBackend, setIsLiveBackend] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert">("task");
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
@@ -37,12 +41,13 @@ export default function OrderDetailPage() {
         const d = await dRes.json();
         setOrder(d.order);
         setTasks(d.tasks || []);
+        setIsLiveBackend(true);
       }
       if (eRes.ok) {
         setEvents(await eRes.json());
       }
     } catch {
-      // Backend not running, using mock state
+      // Backend not running, preserves deterministic fallback state
     }
   }, [orderId]);
 
@@ -407,29 +412,48 @@ export default function OrderDetailPage() {
                 </span>
               </button>
             </div>
-            {/* Prominent NEEDS_ATTENTION Semantic Pill */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1B2E] text-white border border-[#0A1B2E] shadow-2xs">
-              <span className="material-symbols-outlined text-[15px]">warning</span>
-              <span className="font-label-sm text-label-sm font-bold tracking-wide uppercase">NEEDS_ATTENTION</span>
+            {/* Prominent Status Semantic Pill */}
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-white shadow-2xs ${
+              order?.state === "ACTIVE"
+                ? "bg-[#10B981] border border-[#059669]"
+                : order?.state === "ROLLED_BACK"
+                ? "bg-[#64748B] border border-[#475569]"
+                : order?.state === "NEEDS_ATTENTION"
+                ? "bg-[#0A1B2E] border border-[#0A1B2E]"
+                : "bg-[#2563EB] border border-[#1D4ED8]"
+            }`}>
+              <span className="material-symbols-outlined text-[15px]">
+                {order?.state === "ACTIVE" ? "check_circle" : order?.state === "ROLLED_BACK" ? "settings_backup_restore" : "warning"}
+              </span>
+              <span className="font-label-sm text-label-sm font-bold tracking-wide uppercase">{order?.state || "IN_PROGRESS"}</span>
             </div>
-            <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1] font-semibold font-mono">
-              COMPENSATION FAILED (5/5)
-            </span>
+            {!isLiveBackend && (
+              <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-[#F1F5F9] text-[#2563EB] border border-[#BFDBFE] font-semibold font-mono">
+                SIMULATED TELECOM SAGA
+              </span>
+            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors border border-[#CBD5E1] shadow-2xs">
+            <Link
+              href={`/orders/${orderId}/replay`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors border border-[#CBD5E1] shadow-2xs"
+            >
               <span className="material-symbols-outlined text-[16px]">history</span>
               <span>Replay Mode</span>
-            </button>
-            {/* Certificate Pending Badge */}
+            </Link>
+            {/* Certificate Status Badge */}
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-white border border-[#CBD5E1] text-[#0A1B2E] shadow-2xs"
-              title="Certificate pending — order not terminal-consistent"
+              title={order?.state === "ACTIVE" ? "Cryptographically signed certificate" : "Certificate pending — saga incomplete"}
             >
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">warning</span>
-              <span>Certificate pending — order not terminal-consistent</span>
+              <span className="material-symbols-outlined text-[16px] text-[#2563EB]">
+                {order?.state === "ACTIVE" ? "verified" : "hourglass_top"}
+              </span>
+              <span>
+                {order?.state === "ACTIVE" ? "Signed Certificate Sealed" : "Certificate pending — order not terminal"}
+              </span>
             </div>
             <a
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium text-[#0A1B2E] bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] transition-colors shadow-2xs"
@@ -463,25 +487,24 @@ export default function OrderDetailPage() {
           <div className="text-outline-variant">·</div>
           <div className="flex items-center gap-1.5">
             <span className="text-outline">Customer:</span>
-            <span className="font-semibold text-on-surface">{order?.customer_id || "Marcus Vance"}</span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant">(+1 555 019-4821)</span>
+            <span className="font-semibold text-on-surface">{(order?.payload?.customer_name as string) || order?.customer_id || "Marcus Vance"}</span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant">({(order?.payload?.msisdn as string) || "+1 555 019-4821"})</span>
           </div>
           <div className="text-outline-variant">·</div>
           <div className="flex items-center gap-1.5">
             <span className="text-outline">Client Ref:</span>
-            <span className="font-label-sm text-label-sm text-on-surface font-semibold">EXT-CRM-991024</span>
+            <span className="font-label-sm text-label-sm text-on-surface font-semibold">{order?.client_order_ref || "EXT-CRM-991024"}</span>
           </div>
           <div className="text-outline-variant">·</div>
           <div className="flex items-center gap-1.5">
             <span className="text-outline">Created:</span>
-            <span className="font-label-sm text-label-sm text-on-surface">2026-07-12 14:22:04 UTC</span>
-            <span className="text-on-surface-variant">(8m 14s ago)</span>
+            <span className="font-label-sm text-label-sm text-on-surface">{order?.created_at ? new Date(order.created_at).toUTCString() : "2026-10-09 05:58:12 UTC"}</span>
           </div>
           <div className="text-outline-variant">·</div>
           <div className="flex items-center gap-1.5 ml-auto">
             <span className="material-symbols-outlined text-[16px] text-primary-container">timer</span>
             <span className="font-label-sm text-label-sm text-primary-container font-bold px-2 py-0.5 rounded bg-surface-container">
-              Elapsed: 4.82s
+              Elapsed: {order?.activation_ms ? `${(order.activation_ms / 1000).toFixed(2)}s` : "3.12s"}
             </span>
           </div>
         </div>

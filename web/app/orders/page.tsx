@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Order } from "@/lib/types";
+import { MOCK_ORDERS } from "@/lib/mockData";
 
 interface DisplayOrder {
   id: string;
@@ -21,6 +22,31 @@ interface DisplayOrder {
 }
 
 const INITIAL_ORDERS: DisplayOrder[] = [
+  ...MOCK_ORDERS.map((o) => ({
+    id: o.order_id,
+    clientRef: o.client_order_ref,
+    customer: (o.payload?.customer_name as string) || o.customer_id,
+    msisdn: (o.payload?.msisdn as string) || "+1 555 019-4821",
+    product: o.product,
+    status: (o.state === "ACTIVE"
+      ? "SUCCEEDED"
+      : o.state === "ROLLED_BACK"
+      ? "COMPENSATED"
+      : o.state === "IN_PROGRESS"
+      ? "RUNNING"
+      : o.state === "NEEDS_ATTENTION"
+      ? "NEEDS_ATTENTION"
+      : o.state === "CANCELLED"
+      ? "FAILED"
+      : "PENDING") as DisplayOrder["status"],
+    tasksCompleted: o.state === "ACTIVE" ? 8 : o.state === "ROLLED_BACK" ? 5 : o.state === "IN_PROGRESS" ? 3 : 1,
+    totalTasks: 8,
+    taskDetail: o.current_step || (o.state === "ACTIVE" ? "100%" : "In Flight"),
+    retries: o.state === "NEEDS_ATTENTION" ? "5 (exhausted)" : o.state === "ROLLED_BACK" ? "4 (halted)" : "0",
+    activationTime: o.activation_ms ? `${(o.activation_ms / 1000).toFixed(1)}s` : "2.4s",
+    created: "Just now",
+    certStatus: (o.state === "ACTIVE" ? "verified" : o.state === "NEEDS_ATTENTION" ? "pending" : o.state === "ROLLED_BACK" ? "verified" : "none") as DisplayOrder["certStatus"],
+  })),
   {
     id: "ORD-20260712-004217",
     clientRef: "EXT-CRM-991024",
@@ -145,13 +171,18 @@ const INITIAL_ORDERS: DisplayOrder[] = [
 
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<"all" | "failed" | "slow" | "attention">("all");
-  const [searchQuery, setSearchQuery] = useState("ORD-");
-  const [onlySignedCert, setOnlySignedCert] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<string[]>(["ORD-20260712-004217", "ORD-20260712-004214"]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [productFilter, setProductFilter] = useState<string>("ALL");
+  const [onlySignedCert, setOnlySignedCert] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>(["ORD-2026-10482", "ORD-20260712-004217"]);
   const [orders, setOrders] = useState<DisplayOrder[]>(INITIAL_ORDERS);
+  const [isLiveBackend, setIsLiveBackend] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
   useEffect(() => {
-    // Optionally fetch dynamic orders from API
+    // Attempt real backend fetch first
     const loadApiOrders = async () => {
       try {
         const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -159,18 +190,27 @@ export default function OrdersPage() {
         if (res.ok) {
           const apiData: Order[] = await res.json();
           if (apiData.length > 0) {
+            setIsLiveBackend(true);
             const mapped: DisplayOrder[] = apiData.map((o) => ({
               id: o.order_id,
-              clientRef: `EXT-CRM-${o.order_id.slice(-6)}`,
-              customer: o.customer_id,
+              clientRef: o.client_order_ref || `EXT-CRM-${o.order_id.slice(-6)}`,
+              customer: (o.payload?.customer_name as string) || o.customer_id,
               msisdn: String(o.payload?.msisdn || "+1 555 019-4821"),
               product: o.product || "Fiber Broadband 500",
-              status: ((o.state as string) === "ACTIVE" ? "SUCCEEDED" : (o.state as string) === "ROLLED_BACK" ? "ROLLED_BACK" : (o.state as string) === "ROLLING_BACK" ? "ROLLING_BACK" : (o.state as string) === "NEEDS_ATTENTION" ? "NEEDS_ATTENTION" : "RUNNING") as DisplayOrder["status"],
+              status: ((o.state as string) === "ACTIVE"
+                ? "SUCCEEDED"
+                : (o.state as string) === "ROLLED_BACK"
+                ? "COMPENSATED"
+                : (o.state as string) === "ROLLING_BACK"
+                ? "COMPENSATING"
+                : (o.state as string) === "NEEDS_ATTENTION"
+                ? "NEEDS_ATTENTION"
+                : "RUNNING") as DisplayOrder["status"],
               tasksCompleted: (o.state as string) === "ACTIVE" ? 8 : 4,
               totalTasks: 8,
-              taskDetail: (o.state as string) === "ACTIVE" ? "100%" : "50%",
-              retries: "0",
-              activationTime: "2.8s",
+              taskDetail: (o.state as string) === "ACTIVE" ? "100%" : "In Flight",
+              retries: (o.state as string) === "NEEDS_ATTENTION" ? "5 (exhausted)" : "0",
+              activationTime: o.activation_ms ? `${(o.activation_ms / 1000).toFixed(1)}s` : "2.8s",
               created: "Just now",
               certStatus: (o.state as string) === "ACTIVE" ? "verified" : "pending",
             }));
@@ -178,7 +218,7 @@ export default function OrdersPage() {
           }
         }
       } catch {
-        // Fallback to INITIAL_ORDERS
+        // Preserves rich typed INITIAL_ORDERS
       }
     };
     loadApiOrders();
@@ -190,6 +230,36 @@ export default function OrdersPage() {
     );
   };
 
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      if (activeTab === "failed" && o.status !== "FAILED") return false;
+      if (activeTab === "slow" && !o.activationTime.includes("12.") && !o.activationTime.includes("18.") && !o.activationTime.includes("15.") && !o.activationTime.includes("8.")) return false;
+      if (activeTab === "attention" && o.status !== "NEEDS_ATTENTION") return false;
+      if (onlySignedCert && o.certStatus !== "verified") return false;
+
+      if (statusFilter !== "ALL" && o.status !== statusFilter) return false;
+      if (productFilter !== "ALL" && !o.product.toLowerCase().includes(productFilter.toLowerCase())) return false;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const match =
+          o.id.toLowerCase().includes(q) ||
+          o.clientRef.toLowerCase().includes(q) ||
+          o.customer.toLowerCase().includes(q) ||
+          o.msisdn.toLowerCase().includes(q) ||
+          o.product.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      return true;
+    });
+  }, [orders, activeTab, onlySignedCert, statusFilter, productFilter, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / rowsPerPage));
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredOrders.slice(start, start + rowsPerPage);
+  }, [filteredOrders, currentPage, rowsPerPage]);
+
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredOrders.length) {
       setSelectedIds([]);
@@ -197,25 +267,6 @@ export default function OrdersPage() {
       setSelectedIds(filteredOrders.map((o) => o.id));
     }
   };
-
-  const filteredOrders = orders.filter((o) => {
-    if (activeTab === "failed" && o.status !== "FAILED") return false;
-    if (activeTab === "slow" && !o.activationTime.includes("12.") && !o.activationTime.includes("18.") && !o.activationTime.includes("15.")) return false;
-    if (activeTab === "attention" && o.status !== "NEEDS_ATTENTION") return false;
-    if (onlySignedCert && o.certStatus !== "verified") return false;
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const match =
-        o.id.toLowerCase().includes(q) ||
-        o.clientRef.toLowerCase().includes(q) ||
-        o.customer.toLowerCase().includes(q) ||
-        o.msisdn.toLowerCase().includes(q) ||
-        o.product.toLowerCase().includes(q);
-      if (!match) return false;
-    }
-    return true;
-  });
 
   const renderStatusBadge = (status: DisplayOrder["status"]) => {
     switch (status) {
@@ -438,57 +489,73 @@ export default function OrdersPage() {
             </div>
 
             {/* Status Filter Dropdown */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
-              <span className="text-[#64748B]">Status:</span>
-              <span className="font-medium text-[#0A1B2E]">All (7 selected)</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            <div className="relative">
+              <select
+                aria-label="Filter by Status"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs focus:outline-none focus:ring-1 focus:ring-[#2563EB] cursor-pointer"
+              >
+                <option value="ALL">Status: All States</option>
+                <option value="SUCCEEDED">ACTIVE / SUCCEEDED</option>
+                <option value="RUNNING">IN_PROGRESS / RUNNING</option>
+                <option value="NEEDS_ATTENTION">NEEDS_ATTENTION</option>
+                <option value="COMPENSATED">ROLLED_BACK / COMPENSATED</option>
+                <option value="COMPENSATING">ROLLING_BACK</option>
+                <option value="FAILED">FAILED / CANCELLED</option>
+              </select>
+            </div>
 
             {/* Product / Plan Filter */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
-              <span className="text-[#64748B]">Product:</span>
-              <span className="font-medium text-[#0A1B2E]">All Plans</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            <div className="relative">
+              <select
+                aria-label="Filter by Product Plan"
+                value={productFilter}
+                onChange={(e) => {
+                  setProductFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs focus:outline-none focus:ring-1 focus:ring-[#2563EB] cursor-pointer"
+              >
+                <option value="ALL">Product: All Plans</option>
+                <option value="Fiber">Fiber Broadband</option>
+                <option value="5G">5G Postpaid</option>
+                <option value="eSIM">eSIM Roaming</option>
+                <option value="SIP">Enterprise SIP Trunk</option>
+                <option value="IoT">IoT SIM Pool</option>
+              </select>
+            </div>
 
             {/* Date Range Filter */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
+            <div className="h-8 px-2.5 rounded bg-white flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] border border-[#CBD5E1] shadow-2xs">
               <span className="material-symbols-outlined text-[16px] text-[#64748B]">calendar_today</span>
               <span className="font-medium text-[#0A1B2E]">Last 24 Hours</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+            </div>
 
             {/* Systems Involved */}
-            <button
-              className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] transition-colors border border-[#CBD5E1] shadow-2xs"
-              type="button"
-            >
+            <div className="h-8 px-2.5 rounded bg-white flex items-center gap-1.5 font-label-md text-label-md text-[#0A1B2E] border border-[#CBD5E1] shadow-2xs">
               <span className="text-[#64748B]">Systems:</span>
-              <span className="font-medium text-[#0A1B2E]">All (OMS, HLR, OCS…)</span>
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">expand_more</span>
-            </button>
+              <span className="font-medium text-[#0A1B2E]">OMS · HLR · OCS</span>
+            </div>
 
             {/* Certificate Toggle Switch */}
             <div className="flex items-center gap-2 pl-1 py-1">
               <label className="relative inline-flex items-center cursor-pointer select-none">
                 <input
                   checked={onlySignedCert}
-                  onChange={(e) => setOnlySignedCert(e.target.checked)}
+                  onChange={(e) => {
+                    setOnlySignedCert(e.target.checked);
+                    setCurrentPage(1);
+                  }}
                   className="sr-only peer"
                   type="checkbox"
                 />
-                <div className="w-7 h-4 bg-surface-container-highest peer-checked:bg-primary-container rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
+                <div className="w-7 h-4 bg-[#E2E8F0] peer-checked:bg-[#2563EB] rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
               </label>
-              <span className="font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+              <span className="font-label-sm text-label-sm text-[#0A1B2E] flex items-center gap-1">
                 <span className="material-symbols-outlined text-[15px] text-[#0A1B2E]">verified_user</span>
                 <span>Signed Cert</span>
               </span>
@@ -540,7 +607,7 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F1F5F9] font-body-sm text-body-sm">
-              {filteredOrders.map((ord) => {
+              {paginatedOrders.map((ord) => {
                 const isSelected = selectedIds.includes(ord.id);
                 return (
                   <tr
@@ -666,35 +733,59 @@ export default function OrdersPage() {
         {/* PAGINATION FOOTER */}
         <div className="px-4 py-3 bg-surface-container-lowest flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-body-sm text-body-sm border-t border-[#EDF0F5]">
           <div className="flex items-center gap-4 text-outline">
-            <span>Showing <strong className="text-on-surface font-medium">1-{filteredOrders.length}</strong> of <strong className="text-on-surface font-medium">1,284</strong> orders</span>
+            <span>
+              Showing <strong className="text-on-surface font-medium">
+                {filteredOrders.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}-
+                {Math.min(currentPage * rowsPerPage, filteredOrders.length)}
+              </strong> of <strong className="text-on-surface font-medium">{filteredOrders.length}</strong> {isLiveBackend ? "live" : "synthetic"} orders
+            </span>
             <div className="flex items-center gap-1">
               <label className="font-label-sm text-label-sm" htmlFor="rowsPerPage">Rows:</label>
-              <select className="h-7 py-0 pl-2 pr-6 rounded bg-surface-container-low font-label-sm text-label-sm text-on-surface border-0 focus:ring-1 focus:ring-primary-container" id="rowsPerPage">
-                <option>25 per page</option>
-                <option>50 per page</option>
-                <option>100 per page</option>
+              <select
+                className="h-7 py-0 pl-2 pr-6 rounded bg-surface-container-low font-label-sm text-label-sm text-on-surface border-0 focus:ring-1 focus:ring-primary-container cursor-pointer"
+                id="rowsPerPage"
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={25}>25 per page</option>
               </select>
             </div>
           </div>
           {/* Pagination Buttons */}
           <div className="flex items-center gap-1">
-            <button className="px-2.5 h-7 rounded text-[#94A3B8] hover:bg-[#F8FAFC] disabled:opacity-40 font-medium font-body-sm" disabled type="button">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] disabled:opacity-40 font-medium font-body-sm cursor-pointer disabled:cursor-not-allowed"
+              type="button"
+            >
               Previous
             </button>
-            <button className="w-7 h-7 rounded bg-[#2563EB] text-white font-medium font-label-sm text-label-sm flex items-center justify-center shadow-2xs" type="button">
-              1
-            </button>
-            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
-              2
-            </button>
-            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
-              3
-            </button>
-            <span className="px-1 text-[#94A3B8] font-label-sm text-label-sm">…</span>
-            <button className="w-7 h-7 rounded hover:bg-[#F8FAFC] text-[#0A1B2E] font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors" type="button">
-              161
-            </button>
-            <button className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] font-medium font-body-sm transition-colors" type="button">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 rounded font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors cursor-pointer ${
+                  currentPage === page
+                    ? "bg-[#2563EB] text-white shadow-2xs font-bold"
+                    : "hover:bg-[#F8FAFC] text-[#0A1B2E]"
+                }`}
+                type="button"
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="px-2.5 h-7 rounded text-[#0A1B2E] hover:bg-[#F8FAFC] disabled:opacity-40 font-medium font-body-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
+              type="button"
+            >
               Next
             </button>
           </div>
