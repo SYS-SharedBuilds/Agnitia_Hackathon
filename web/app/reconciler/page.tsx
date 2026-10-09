@@ -353,7 +353,7 @@ export default function ReconcilerPage() {
                 Resource Drift Reconciler
               </h1>
               <span className="inline-flex items-center gap-1 font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-white text-[#0A1B2E] font-semibold border border-[#CBD5E1] shadow-2xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E] animate-pulse"></span>
                 ACTIVE AUDITOR
               </span>
             </div>
@@ -374,7 +374,7 @@ export default function ReconcilerPage() {
             <button
               onClick={handleRunSweep}
               disabled={isSweeping}
-              className="inline-flex items-center gap-2 h-9 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg font-body-md text-body-md font-medium transition-all shadow-xs group cursor-pointer disabled:opacity-75"
+              className="inline-flex items-center gap-2 h-9 px-4 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg font-body-md text-body-md font-medium transition-all shadow-xs group cursor-pointer disabled:opacity-75"
             >
               <span className={`material-symbols-outlined text-[18px] transition-transform duration-500 ${isSweeping ? "animate-spin" : "group-hover:rotate-180"}`}>
                 sync
@@ -407,7 +407,7 @@ export default function ReconcilerPage() {
                 <select
                   value={sweepInterval}
                   onChange={(e) => setSweepInterval(e.target.value)}
-                  className="h-8 pl-2.5 pr-8 bg-[#F8FAFC] border border-[#CBD5E1] rounded-md font-label-md text-label-md text-[#0A1B2E] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] appearance-none cursor-pointer"
+                  className="h-8 pl-2.5 pr-8 bg-[#F8FAFC] border border-[#CBD5E1] rounded-md font-label-md text-label-md text-[#0A1B2E] focus:outline-none focus:border-[#0A1B2E] focus:ring-1 focus:ring-[#0A1B2E] appearance-none cursor-pointer"
                 >
                   <option value="1m">Every 1m</option>
                   <option value="5m">Every 5m</option>
@@ -440,7 +440,7 @@ export default function ReconcilerPage() {
                   onChange={(e) => setAutoRepair(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-10 h-5.5 bg-[#CBD5E1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#CBD5E1] after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                <div className="w-10 h-5.5 bg-[#CBD5E1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#CBD5E1] after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#0A1B2E]"></div>
               </div>
               <span className="font-body-md text-body-md font-medium text-[#0A1B2E]">Auto-Repair Enabled</span>
             </label>
@@ -559,7 +559,7 @@ export default function ReconcilerPage() {
               </span>
             </div>
             <div className="flex items-center gap-2 text-label-sm font-mono text-[#64748B]">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#2563EB]"></span>
+              <span className="inline-block w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
               <span>Next Audit: in 2m 46s</span>
             </div>
           </div>
@@ -573,7 +573,7 @@ export default function ReconcilerPage() {
               <input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-8.5 pl-9 pr-3 bg-white border border-[#CBD5E1] rounded-lg font-body-md text-body-md text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all"
+                className="w-full h-8.5 pl-9 pr-3 bg-white border border-[#CBD5E1] rounded-lg font-body-md text-body-md text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#0A1B2E] focus:ring-1 focus:ring-[#0A1B2E] transition-all"
                 placeholder="Filter by Resource ID, MSISDN, Order ID..."
                 type="text"
               />
@@ -583,7 +583,7 @@ export default function ReconcilerPage() {
               <select
                 value={subsystemFilter}
                 onChange={(e) => setSubsystemFilter(e.target.value)}
-                className="h-8.5 px-3 bg-white border border-[#CBD5E1] rounded-lg font-body-sm text-body-sm text-[#0A1B2E] focus:outline-none focus:border-[#2563EB] cursor-pointer"
+                className="h-8.5 px-3 bg-white border border-[#CBD5E1] rounded-lg font-body-sm text-body-sm text-[#0A1B2E] focus:outline-none focus:border-[#0A1B2E] cursor-pointer"
               >
                 <option value="all">All Subsystems (4)</option>
                 <option value="hlr">HLR/HSS Gateway</option>
@@ -650,7 +650,7 @@ export default function ReconcilerPage() {
                     >
                       <td className={`py-3 px-4 font-mono font-medium ${isSelected ? "text-[#0A1B2E]" : "text-[#0A1B2E]"}`}>
                         <div className="flex items-center gap-1.5">
-                          {isSelected && <span className="w-2 h-2 rounded-full bg-[#2563EB]"></span>}
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-[#0A1B2E]"></span>}
                           <span>{item.resourceId}</span>
                         </div>
                       </td>
@@ -682,7 +682,7 @@ export default function ReconcilerPage() {
                         <Link
                           href={`/orders/${item.linkedOrder}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="font-mono text-[#2563EB] hover:underline inline-flex items-center gap-1 font-medium"
+                          className="font-mono text-[#0A1B2E] hover:underline inline-flex items-center gap-1 font-medium"
                         >
                           {item.linkedOrder}
                           <span className="material-symbols-outlined text-[13px]">open_in_new</span>
@@ -699,12 +699,12 @@ export default function ReconcilerPage() {
                       <td className="py-3 px-4 font-mono text-[#64748B] text-label-sm">{item.timestamp}</td>
                       <td className="py-3 px-4 text-right">
                         {isSelected ? (
-                          <button className="inline-flex items-center gap-1 px-2.5 py-1 text-label-sm font-medium rounded-md bg-[#2563EB] text-white shadow-2xs hover:bg-[#1D4ED8]">
+                          <button className="inline-flex items-center gap-1 px-2.5 py-1 text-label-sm font-medium rounded-md bg-[#0A1B2E] text-white shadow-2xs hover:bg-[#14263b]">
                             <span>Diff</span>
                             <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                           </button>
                         ) : (
-                          <button className="inline-flex items-center gap-1 px-2 py-1 text-label-sm text-[#2563EB] hover:bg-[#F8FAFC] rounded">
+                          <button className="inline-flex items-center gap-1 px-2 py-1 text-label-sm text-[#0A1B2E] hover:bg-[#F8FAFC] rounded">
                             Inspect Diff →
                           </button>
                         )}
@@ -756,7 +756,7 @@ export default function ReconcilerPage() {
                   </span>
                   <button
                     onClick={() => copyResourceId(selectedDrift.resourceId)}
-                    className="p-0.5 hover:text-[#2563EB] text-[#94A3B8] cursor-pointer"
+                    className="p-0.5 hover:text-[#0A1B2E] text-[#94A3B8] cursor-pointer"
                     title="Copy Resource ID"
                   >
                     <span className="material-symbols-outlined text-[15px]">
@@ -781,7 +781,7 @@ export default function ReconcilerPage() {
                   <span className="text-[#64748B]">Linked Orchestration Order:</span>
                   <Link
                     href={`/orders/${selectedDrift.linkedOrder}`}
-                    className="font-mono text-label-sm text-[#2563EB] font-semibold hover:underline inline-flex items-center gap-1"
+                    className="font-mono text-label-sm text-[#0A1B2E] font-semibold hover:underline inline-flex items-center gap-1"
                   >
                     {selectedDrift.linkedOrder}
                     <span className="material-symbols-outlined text-[13px]">open_in_new</span>
@@ -931,7 +931,7 @@ export default function ReconcilerPage() {
                 </button>
                 <Link
                   href={`/orders/${selectedDrift.linkedOrder}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-label-md font-medium text-white bg-[#0A1B2E] hover:bg-[#14263b] rounded-lg shadow-xs transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">timeline</span>
                   <span>View Trace</span>
@@ -968,7 +968,7 @@ export default function ReconcilerPage() {
           </div>
           <Link
             href="/proof/certificates"
-            className="inline-flex items-center gap-1 text-label-md text-white bg-[#2563EB] hover:bg-[#1D4ED8] font-medium px-3.5 py-1.5 rounded-lg transition-colors shadow-xs"
+            className="inline-flex items-center gap-1 text-label-md text-white bg-[#0A1B2E] hover:bg-[#14263b] font-medium px-3.5 py-1.5 rounded-lg transition-colors shadow-xs"
           >
             <span>Proof Certificate</span>
             <span className="material-symbols-outlined text-[16px]">verified</span>

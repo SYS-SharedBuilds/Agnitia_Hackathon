@@ -479,7 +479,7 @@ export default function OrderReplayPage() {
                   {/* Event 27: Current Replay Head PINNED */}
                   <div className="relative pl-3">
                     <span className="absolute -left-4 top-1 h-3 w-3 rounded-full bg-primary ring-4 ring-primary-fixed"></span>
-                    <div className="bg-[#EEF2FF] rounded-md p-3 shadow-xs border border-[#C7D2FE]">
+                    <div className="bg-[#F8FAFC] rounded-md p-3 shadow-xs border border-[#CBD5E1]">
                       <div className="flex items-center justify-between font-label-sm">
                         <span className="font-mono text-primary font-bold flex items-center gap-1">
                           <span className="material-symbols-outlined text-[13px]">push_pin</span>
@@ -706,7 +706,7 @@ export default function OrderReplayPage() {
               style={{ left: `${(currentSeq / 42) * 100}%` }}
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 group"
             >
-              <div className="w-5 h-8 bg-[#2563EB] rounded shadow-md flex items-center justify-center text-white cursor-grab active:cursor-grabbing">
+              <div className="w-5 h-8 bg-[#0A1B2E] rounded shadow-md flex items-center justify-center text-white cursor-grab active:cursor-grabbing">
                 <span className="material-symbols-outlined text-[14px]">drag_handle</span>
               </div>
               {/* Tooltip Callout */}

@@ -32,8 +32,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               icon ? "pl-9" : ""
             } ${rightElement ? "pr-10" : ""} ${
               error
-                ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
-                : "border-[#CBD5E1] focus:border-[#2563EB] focus:ring-[#2563EB]/20"
+                ? "border-[#0A1B2E] focus:border-[#0A1B2E] focus:ring-[#0A1B2E]/20"
+                : "border-[#CBD5E1] focus:border-[#0A1B2E] focus:ring-[#0A1B2E]/20"
             } ${className}`}
             {...props}
           />

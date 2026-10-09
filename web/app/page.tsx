@@ -91,10 +91,10 @@ export default function OverviewPage() {
       case "RUNNING":
       case "EXECUTING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[10.5px] font-semibold bg-white text-[#2563EB] border border-[#2563EB] shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[10.5px] font-semibold bg-white text-[#0A1B2E] border border-[#0A1B2E] shadow-2xs">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#2563EB]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#0A1B2E]"></span>
             </span>
             RUNNING
           </span>
@@ -143,7 +143,7 @@ export default function OverviewPage() {
       case "success":
         return <span key={idx} className="h-2 w-2.5 rounded-xs bg-[#0A1B2E]" />;
       case "running":
-        return <span key={idx} className="h-2 w-2.5 rounded-xs bg-[#2563EB] animate-pulse" />;
+        return <span key={idx} className="h-2 w-2.5 rounded-xs bg-[#0A1B2E] animate-pulse" />;
       case "retrying":
         return <span key={idx} className="h-2 w-2.5 rounded-xs bg-[#64748B] animate-pulse" />;
       case "compensating":
@@ -181,8 +181,8 @@ export default function OverviewPage() {
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[#0A1B2E] text-[11.5px] font-mono">
               {!isPaused && (
                 <span className="relative flex h-2 w-2" id="refresh-pulse">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
                 </span>
               )}
               <span id="refresh-label">{isPaused ? "Paused" : "Auto-refresh: 5s"}</span>
@@ -208,7 +208,7 @@ export default function OverviewPage() {
               a.download = `telemetry-overview-${Date.now()}.json`;
               a.click();
             }}
-            className="inline-flex items-center gap-1.5 bg-[#2563EB] text-white hover:bg-[#1D4ED8] px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 bg-[#0A1B2E] text-white hover:bg-[#14263b] px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors shadow-xs"
           >
             <span className="material-symbols-outlined text-[16px]">file_download</span>
             <span>Export Telemetry</span>
@@ -480,7 +480,7 @@ export default function OverviewPage() {
           </div>
           <div className="pt-3 text-[11.5px] text-[#64748B] flex items-center justify-between border-t border-[#F1F5F9]">
             <span>Net Success vs Total: <strong className="text-[#0A1B2E] font-mono">98.6%</strong></span>
-            <span className="font-mono text-[11px] text-[#2563EB] cursor-pointer hover:underline">Saga analytics →</span>
+            <span className="font-mono text-[11px] text-[#0A1B2E] cursor-pointer hover:underline">Saga analytics →</span>
           </div>
         </div>
       </div>
@@ -494,8 +494,8 @@ export default function OverviewPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2563EB]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0A1B2E]"></span>
                 </span>
                 <h2 className="text-[16px] font-bold text-[#0A1B2E] tracking-tight">Live Orders</h2>
                 <span className="font-mono text-[11px] text-[#0A1B2E] bg-[#F1F5F9] px-2 py-0.5 rounded-full border border-[#CBD5E1]">1,284 total</span>
@@ -507,7 +507,7 @@ export default function OverviewPage() {
                   <input
                     value={filterQuery}
                     onChange={(e) => setFilterQuery(e.target.value)}
-                    className="h-8 pl-7 pr-2.5 text-[12px] bg-white border border-[#CBD5E1] rounded-md text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] w-48 sm:w-56"
+                    className="h-8 pl-7 pr-2.5 text-[12px] bg-white border border-[#CBD5E1] rounded-md text-[#0A1B2E] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#0A1B2E] w-48 sm:w-56"
                     placeholder="Filter ID, customer, step…"
                     type="text"
                   />
@@ -613,7 +613,7 @@ export default function OverviewPage() {
                       ord.isLive ? "border-l-2 border-l-[#0A1B2E] bg-[#F8FAFC]" : ""
                     }`}
                   >
-                    <td className="px-3.5 py-2 font-mono text-[11.5px] font-semibold truncate text-[#2563EB] hover:underline cursor-pointer">
+                    <td className="px-3.5 py-2 font-mono text-[11.5px] font-semibold truncate text-[#0A1B2E] hover:underline cursor-pointer">
                       <Link href={`/orders/${ord.id}`}>{ord.id}</Link>
                     </td>
                     <td className="px-3 py-2 truncate">
@@ -660,7 +660,7 @@ export default function OverviewPage() {
               <button className="px-2.5 py-1 bg-white border border-[#E2E8F0] rounded text-[#94A3B8] cursor-not-allowed" disabled>
                 Previous
               </button>
-              <button className="px-2.5 py-1 bg-[#2563EB] text-white rounded font-medium shadow-2xs">1</button>
+              <button className="px-2.5 py-1 bg-[#0A1B2E] text-white rounded font-medium shadow-2xs">1</button>
               <button className="px-2.5 py-1 bg-white border border-[#CBD5E1] rounded text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors">2</button>
               <button className="px-2.5 py-1 bg-white border border-[#CBD5E1] rounded text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors">3</button>
               <span className="px-1 text-[#94A3B8]">…</span>
@@ -715,8 +715,8 @@ export default function OverviewPage() {
               <div className="py-2.5 flex items-center justify-between bg-[#F8FAFC] -mx-2 px-2 rounded-md">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="relative flex h-2 w-2 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
                   </span>
                   <div className="min-w-0">
                     <div className="font-medium text-[#0A1B2E] truncate">Network <span className="text-[11px] text-[#64748B]">(HLR / UDM)</span></div>

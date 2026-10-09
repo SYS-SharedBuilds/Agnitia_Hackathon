@@ -41,12 +41,12 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "RUNNING":
     case "IN_PROGRESS":
-      style = "bg-white text-[#0A1B2E] border-[#2563EB]";
+      style = "bg-white text-[#0A1B2E] border-[#0A1B2E]";
       content = (
         <>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
           </span>
           <span className="font-semibold tracking-wide">RUNNING</span>
         </>

@@ -40,7 +40,7 @@ export default function LoadGeneratorPage() {
               12
             </span>
           </Link>
-          <button className="px-3.5 py-2 rounded-lg font-body-md text-body-md font-semibold text-primary bg-[#EEF2FF] shadow-sm flex items-center gap-2">
+          <button className="px-3.5 py-2 rounded-lg font-body-md text-body-md font-semibold text-primary bg-[#F8FAFC] shadow-sm flex items-center gap-2">
             <span className="material-symbols-outlined text-[17px] text-primary">speed</span>
             <span>Load Generator</span>
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
@@ -87,7 +87,7 @@ export default function LoadGeneratorPage() {
       </div>
 
       {/* DETERMINISTIC WORKLOAD NOTIFICATION BANNER */}
-      <div className="bg-gradient-to-r from-[#EEF2FF] via-[#F5F3FF] to-white border border-[#C7D2FE] rounded-lg p-3.5 flex items-center justify-between text-on-surface text-body-sm font-body-sm shadow-xs">
+      <div className="bg-gradient-to-r from-[#F8FAFC] via-[#F5F3FF] to-white border border-[#CBD5E1] rounded-lg p-3.5 flex items-center justify-between text-on-surface text-body-sm font-body-sm shadow-xs">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 rounded-md bg-primary-container text-white items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-[18px]">hub</span>
@@ -102,7 +102,7 @@ export default function LoadGeneratorPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]"></span>
             <span>Mesh synchronized</span>
           </span>
-          <span className="text-[#C7D2FE]">·</span>
+          <span className="text-[#CBD5E1]">·</span>
           <span className="font-mono">Sync latency: 1.1ms</span>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function LoadGeneratorPage() {
                 <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Load Profile Configuration</h2>
                 <p className="font-body-sm text-body-sm text-[#64748B] mt-0.5">Parameters for synthetic saga generation</p>
               </div>
-              <span className="font-label-sm text-label-sm font-medium px-2.5 py-1 rounded-full bg-[#EEF2FF] text-primary border border-[#C7D2FE]">
+              <span className="font-label-sm text-label-sm font-medium px-2.5 py-1 rounded-full bg-[#F8FAFC] text-primary border border-[#CBD5E1]">
                 Synthetic Traffic Generator
               </span>
             </div>
@@ -380,10 +380,10 @@ export default function LoadGeneratorPage() {
                 </h2>
                 <p className="font-body-sm text-body-sm text-[#64748B] mt-0.5">Live distributed execution metrics across 8 k6 pods</p>
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#2563EB] font-label-sm text-label-sm font-mono">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0A1B2E] font-label-sm text-label-sm font-mono">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A1B2E] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0A1B2E]"></span>
                 </span>
                 <span>RUNNING (84% Completed)</span>
                 <span className="text-blue-300">·</span>
