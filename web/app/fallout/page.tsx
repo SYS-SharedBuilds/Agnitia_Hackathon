@@ -141,7 +141,7 @@ export default function FalloutQueuePage() {
                 <option>OCS Billing</option>
                 <option>SIM/eSIM Provisioner</option>
               </select>
-              <span className="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-[18px]">
+              <span className="material-symbols-outlined absolute right-2 top-2 text-[#000000] pointer-events-none text-[18px]">
                 expand_more
               </span>
             </div>
@@ -153,7 +153,7 @@ export default function FalloutQueuePage() {
                 <option>Age (Newest first)</option>
                 <option>SLA Severity</option>
               </select>
-              <span className="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-[18px]">
+              <span className="material-symbols-outlined absolute right-2 top-2 text-[#000000] pointer-events-none text-[18px]">
                 sort
               </span>
             </div>
@@ -568,7 +568,7 @@ export default function FalloutQueuePage() {
                   <div className="mt-0.5">
                     <span
                       className={`material-symbols-outlined text-[20px] ${
-                        isCurrentResolved ? "text-emerald-700 font-bold" : "text-outline"
+                        isCurrentResolved ? "text-emerald-700 font-bold" : "text-[#000000]"
                       }`}
                       style={isCurrentResolved ? { fontVariationSettings: "'FILL' 1" } : undefined}
                     >
@@ -585,7 +585,7 @@ export default function FalloutQueuePage() {
                       <span className={`font-label-sm text-label-sm font-bold ${
                         isCurrentResolved
                           ? "bg-[#0A1B2E] text-white px-2 py-0.5 rounded font-mono"
-                          : "text-outline"
+                          : "text-[#000000]"
                       }`}>
                         {isCurrentResolved ? "COMPLETED" : "QUEUED"}
                       </span>
@@ -847,7 +847,7 @@ export default function FalloutQueuePage() {
               <div className="flex flex-col gap-2.5">
                 {/* Item 1 */}
                 <div className="flex items-start gap-3 text-body-sm font-body-sm">
-                  <span className="font-label-sm text-label-sm text-outline shrink-0 w-24 font-mono">15:36:21 UTC</span>
+                  <span className="font-label-sm text-label-sm text-[#000000] shrink-0 w-24 font-mono">15:36:21 UTC</span>
                   <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shrink-0">
                     System
                   </span>
@@ -861,7 +861,7 @@ export default function FalloutQueuePage() {
                 </div>
                 {/* Item 2 */}
                 <div className="flex items-start gap-3 text-body-sm font-body-sm">
-                  <span className="font-label-sm text-label-sm text-outline shrink-0 w-24 font-mono">15:36:22 UTC</span>
+                  <span className="font-label-sm text-label-sm text-[#000000] shrink-0 w-24 font-mono">15:36:22 UTC</span>
                   <span className="px-1.5 py-0.5 rounded bg-primary-fixed/40 text-primary font-label-sm text-label-sm shrink-0">
                     Orchestrator
                   </span>
@@ -873,7 +873,7 @@ export default function FalloutQueuePage() {
                 </div>
                 {/* Item 3 */}
                 <div className="flex items-start gap-3 text-body-sm font-body-sm">
-                  <span className="font-label-sm text-label-sm text-outline shrink-0 w-24 font-mono">15:45:10 UTC</span>
+                  <span className="font-label-sm text-label-sm text-[#000000] shrink-0 w-24 font-mono">15:45:10 UTC</span>
                   <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shrink-0">
                     Monitoring
                   </span>
@@ -883,7 +883,7 @@ export default function FalloutQueuePage() {
                 </div>
                 {/* Item 4 */}
                 <div className="flex items-start gap-3 text-body-sm font-body-sm">
-                  <span className="font-label-sm text-label-sm text-outline shrink-0 w-24 font-mono">16:10:04 UTC</span>
+                  <span className="font-label-sm text-label-sm text-[#000000] shrink-0 w-24 font-mono">16:10:04 UTC</span>
                   <span className="px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm shrink-0 font-mono">
                     SLA Monitor
                   </span>
@@ -902,7 +902,7 @@ export default function FalloutQueuePage() {
         <details className="group bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 transition-all overflow-hidden">
           <summary className="p-4 flex items-center justify-between cursor-pointer select-none hover:bg-surface-container-low transition-colors list-none">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-outline group-open:rotate-180 transition-transform">
+              <span className="material-symbols-outlined text-[#000000] group-open:rotate-180 transition-transform">
                 expand_more
               </span>
               <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
@@ -935,7 +935,7 @@ export default function FalloutQueuePage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                 100% Consistency Rate maintained
               </span>
-              <span className="font-label-sm text-label-sm text-outline">Temporal Cluster: 0 Halts</span>
+              <span className="font-label-sm text-label-sm text-[#000000]">Temporal Cluster: 0 Halts</span>
             </div>
           </div>
         </details>

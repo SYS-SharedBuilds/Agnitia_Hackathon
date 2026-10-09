@@ -112,9 +112,10 @@ module.exports = {
         "on-tertiary-fixed": "#0F172A",
         "on-tertiary-fixed-variant": "#334155",
 
-        "on-surface": "#0F172A",
-        "on-surface-variant": "#475569",
-        "on-background": "#0F172A",
+        // Typography & Outlines: Solid Black Typography & Subtle Borders
+        "on-surface": "#000000",
+        "on-surface-variant": "#000000",
+        "on-background": "#000000",
         outline: "#CBD5E1",
         "outline-variant": "#E2E8F0",
 

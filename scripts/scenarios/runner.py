@@ -44,6 +44,30 @@ async def wait_order(
     return last_res
 
 
+async def wait_task_state(
+    client: httpx.AsyncClient,
+    base_api: str,
+    order_id: str,
+    task_id: str,
+    expected_state: str,
+    timeout_sec: float = 10.0,
+) -> bool:
+    deadline = time.time() + timeout_sec
+    while time.time() < deadline:
+        try:
+            r = await client.get(f"{base_api}/orders/{order_id}")
+            if r.is_success:
+                data = r.json()
+                tasks = data.get("tasks", [])
+                for t in tasks:
+                    if t.get("task_id") == task_id and t.get("state") == expected_state:
+                        return True
+        except Exception:
+            pass
+        await asyncio.sleep(0.1)
+    return False
+
+
 async def run_scenario(name: str) -> dict[str, Any]:
     scenario_id = name.upper()
     client = httpx.AsyncClient(timeout=30.0)
@@ -319,32 +343,47 @@ async def run_scenario(name: str) -> dict[str, Any]:
         elif scenario_id == "S9":
             result["name"] = "Operator Mid-Flight Cancellation"
             result["expected"] = "CANCELLED"
-            # Injected delay on network provision so cancellation arrives mid-flight
-            await client.put(
-                "http://localhost:8103/admin/chaos",
-                json={"mode": "delay", "delay_ms": 3500, "match_action": "provision"},
-            )
-            res = await client.post(
-                f"{base_api}/orders",
-                json={
-                    "client_order_ref": order_ref,
-                    "customer_id": "CUST-S9",
-                    "product": "FIBER_500",
-                },
-            )
-            order_id = res.json()["order_id"]
-            await asyncio.sleep(0.8)
+            chaos_url = "http://localhost:8103/admin/chaos"
+            try:
+                # Injected latency on network provision so cancellation arrives mid-flight
+                r = await client.put(
+                    chaos_url,
+                    json={
+                        "mode": "none",
+                        "latency": {"min_ms": 3000, "max_ms": 3500},
+                        "match_action": "provision",
+                    },
+                )
+                assert r.status_code == 200, r.text
 
-            cancel_res = await client.post(
-                f"{base_api}/orders/{order_id}/cancel",
-                json={"reason": "Operator cancelled via scenario S9"},
-            )
-            order_data = await wait_order(client, base_api, order_id, timeout_sec=25.0)
-            st = order_data.get("order", {}).get("state", "UNKNOWN")
-            result["observed"] = st
-            result["details"] = {"order_id": order_id, "cancel_call": cancel_res.status_code}
-            if st in ("CANCELLED", "ROLLED_BACK"):
-                result["status"] = "PASS"
+                res = await client.post(
+                    f"{base_api}/orders",
+                    json={
+                        "client_order_ref": order_ref,
+                        "customer_id": "CUST-S9",
+                        "product": "FIBER_500",
+                    },
+                )
+                assert res.status_code in (200, 202), res.text
+                order_id = res.json()["order_id"]
+
+                # Wait until order is mid-flight in provision_network
+                await wait_task_state(client, base_api, order_id, "provision_network", "RUNNING", timeout_sec=10.0)
+
+                cancel_res = await client.post(
+                    f"{base_api}/orders/{order_id}/cancel",
+                    params={"reason": "S9 operator cancel"},
+                )
+                assert cancel_res.status_code == 202, cancel_res.text
+
+                order_data = await wait_order(client, base_api, order_id, timeout_sec=25.0)
+                st = order_data.get("order", {}).get("state", "UNKNOWN")
+                result["observed"] = f"{st} (cancel_call={cancel_res.status_code})"
+                result["details"] = {"order_id": order_id, "cancel_call": cancel_res.status_code}
+                if st == "CANCELLED" and cancel_res.status_code == 202:
+                    result["status"] = "PASS"
+            finally:
+                await client.delete(chaos_url)
 
         elif scenario_id == "S10":
             result["name"] = "High Load (Orders + Transient Faults)"
@@ -458,6 +497,10 @@ async def main() -> None:
     print("================================================================================")
 
     scenarios = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12"]
+    if len(sys.argv) > 1:
+        chosen = sys.argv[1].upper()
+        if chosen in scenarios:
+            scenarios = [chosen]
     results = []
 
     for sc in scenarios:

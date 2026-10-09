@@ -4,6 +4,7 @@ from typing import Any
 
 from temporalio import workflow
 from temporalio.common import RetryPolicy
+from temporalio.exceptions import ActivityError, ApplicationError
 
 with workflow.unsafe.imports_passed_through():
     from services.orchestrator.activities import (
@@ -77,6 +78,7 @@ class ServiceActivationWorkflow:
 
         all_tasks_map = {t.id: t for t in self.plan.tasks}
         failed_task_id: str | None = None
+        has_critical_failure = False
 
         # Main Forward Wave Scheduling Loop
         while True:
@@ -129,11 +131,15 @@ class ServiceActivationWorkflow:
                         retry_policy=retry_policy,
                     )
                     return task_def.id, True, res, False
+                except ActivityError as exc:
+                    cause = exc.cause
+                    is_biz_err = isinstance(cause, ApplicationError) and cause.type == "BusinessError"
+                    err_str = str(cause) if cause else str(exc)
+                    return task_def.id, False, err_str, is_biz_err
                 except Exception as exc:
-                    # Detect if error is known business error (known not applied) vs unknown outcome / timeout
                     err_str = str(exc)
-                    is_business_error = "BusinessError" in err_str or "422" in err_str
-                    return task_def.id, False, err_str, is_business_error
+                    is_biz_err = "BusinessError" in err_str
+                    return task_def.id, False, err_str, is_biz_err
 
             # Parallel gather for the current wave
             results = await asyncio.gather(*[run_single_task(t) for t in ready_tasks])
@@ -160,8 +166,12 @@ class ServiceActivationWorkflow:
             if has_critical_failure:
                 break
 
-        # Check terminal outcome
-        if failed_task_id or self.cancel_requested:
+        # Check terminal outcome: honor cancellation or handle failure
+        cancelled = self.cancel_requested
+        if has_critical_failure or failed_task_id is not None or cancelled:
+            if cancelled and not self.failure_reason:
+                self.failure_reason = f"Cancelled: {self.cancel_reason or 'Operator requested cancellation'}"
+
             # SAGA ROLLBACK:
             # targets = reverse(completed_stack) + attempted_effects (ambiguous outcome tasks)
             self.state = OrderState.ROLLING_BACK
@@ -215,12 +225,12 @@ class ServiceActivationWorkflow:
                         self.task_states[tid] = TaskState.COMPENSATION_FAILED.value
                         compensation_failed = True
 
-            if self.cancel_requested:
-                self.state = OrderState.CANCELLED
-                evt_type = "order.cancelled"
-            elif compensation_failed:
+            if compensation_failed:
                 self.state = OrderState.NEEDS_ATTENTION
                 evt_type = "order.needs_attention"
+            elif cancelled and not has_critical_failure:
+                self.state = OrderState.CANCELLED
+                evt_type = "order.cancelled"
             else:
                 self.state = OrderState.ROLLED_BACK
                 evt_type = "order.rolled_back"
@@ -241,12 +251,21 @@ class ServiceActivationWorkflow:
                 )
 
         else:
-            self.state = OrderState.ACTIVE
-            await workflow.execute_activity(
-                publish_order_event_activity,
-                args=[self.order_id, "order.active", self._next_seq(), {}],
-                start_to_close_timeout=timedelta(seconds=5),
-            )
+            # Check self.cancel_requested once more immediately before setting ACTIVE
+            if self.cancel_requested:
+                self.state = OrderState.CANCELLED
+                await workflow.execute_activity(
+                    publish_order_event_activity,
+                    args=[self.order_id, "order.cancelled", self._next_seq(), {"reason": f"Cancelled: {self.cancel_reason}"}],
+                    start_to_close_timeout=timedelta(seconds=5),
+                )
+            else:
+                self.state = OrderState.ACTIVE
+                await workflow.execute_activity(
+                    publish_order_event_activity,
+                    args=[self.order_id, "order.active", self._next_seq(), {}],
+                    start_to_close_timeout=timedelta(seconds=5),
+                )
 
         return {
             "order_id": self.order_id,

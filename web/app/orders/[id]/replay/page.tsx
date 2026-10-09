@@ -60,11 +60,11 @@ export default function OrderReplayPage() {
           <Link href="/orders" className="hover:text-primary cursor-pointer transition-colors">
             Orders
           </Link>
-          <span className="text-outline-variant font-label-sm">/</span>
+          <span className="text-[#000000]-variant font-label-sm">/</span>
           <span className="font-label-md font-semibold text-on-surface bg-surface-container px-2 py-0.5 rounded">
             {orderId}
           </span>
-          <span className="text-outline-variant">·</span>
+          <span className="text-[#000000]-variant">·</span>
           <span className="text-on-surface font-medium">Fiber Activation Saga</span>
           <span className="font-label-sm text-secondary bg-secondary-fixed/50 px-1.5 py-0.5 rounded font-mono">
             v1.18.4
@@ -138,7 +138,7 @@ export default function OrderReplayPage() {
               onClick={handleExportReplay}
               className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-surface-container-lowest text-on-surface border border-[#E2E8F0] font-body-md font-medium rounded-lg hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px] text-[#64748B]">file_download</span>
+              <span className="material-symbols-outlined text-[16px] text-[#000000]">file_download</span>
               <span>Export Replay Slice</span>
             </button>
             <a
@@ -215,7 +215,7 @@ export default function OrderReplayPage() {
           {/* DAG Diagram Workspace Container */}
           <div className="relative bg-surface-container-lowest rounded-xl shadow-sm p-6 overflow-hidden min-h-[580px] flex flex-col justify-between border border-[#E3E8F0]">
             {/* SVG Grid Dot Background */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40 text-outline-variant" height="100%" width="100%">
+            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40 text-[#000000]-variant" height="100%" width="100%">
               <defs>
                 <pattern height="20" id="dot-grid-pattern-replay" patternUnits="userSpaceOnUse" width="20">
                   <circle cx="2" cy="2" fill="currentColor" r="1.2"></circle>
@@ -228,7 +228,7 @@ export default function OrderReplayPage() {
             <div className="relative z-10 flex items-center justify-between pointer-events-none">
               <div className="pointer-events-auto flex items-center gap-2 bg-surface-container-lowest/90 backdrop-blur px-2.5 py-1.5 rounded-lg shadow-sm font-label-sm border border-[#E2E8F0]">
                 <span className="text-tertiary">EXECUTION GRAPH</span>
-                <span className="text-outline-variant">·</span>
+                <span className="text-[#000000]-variant">·</span>
                 <span className="text-primary font-mono font-medium">SAGA COMPENSATION RUNNER</span>
               </div>
               <div className="pointer-events-auto flex items-center gap-1 bg-surface-container-lowest/95 backdrop-blur p-1 rounded-lg shadow-sm text-on-surface-variant font-label-sm border border-[#E2E8F0]">
@@ -729,7 +729,7 @@ export default function OrderReplayPage() {
             <span>0.00s (Validate)</span>
             <span>1.20s (Parallel Fork)</span>
             <span>2.98s (Verify Service)</span>
-            <span className="text-[#0A1B2E] font-semibold">3.62s (OCS Fail)</span>
+            <span className="text-[#000000] font-semibold">3.62s (OCS Fail)</span>
             <span className="text-primary font-bold">3.82s [HEAD]</span>
             <span>4.82s (Compensated)</span>
           </div>
@@ -738,7 +738,7 @@ export default function OrderReplayPage() {
         {/* Scrubber Footer Sync Status */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-tertiary font-label-sm">
           <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[15px] text-[#0A1B2E]">sync_saved_locally</span>
+            <span className="material-symbols-outlined text-[15px] text-[#000000]">sync_saved_locally</span>
             <span>
               Replay buffer synchronized from Temporal event history log (42 events). Memory snapshot:{" "}
               <strong className="text-on-surface">100% deterministic</strong>.

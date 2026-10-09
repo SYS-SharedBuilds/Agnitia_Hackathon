@@ -14,8 +14,8 @@ import {
   Node,
   MarkerType,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { InteractiveDagNode, DagNodeData } from "@/components/ui/InteractiveDagNode";
+import { TaskRecord } from "@/lib/types";
 
 const nodeTypes = {
   customDagNode: InteractiveDagNode,
@@ -27,6 +27,8 @@ interface OrderDagProps {
   onSelectTask: (taskId: string) => void;
   dagGrid: boolean;
   dagMinimap: boolean;
+  tasks?: TaskRecord[];
+  orderState?: string;
 }
 
 export function OrderDagCanvas({
@@ -35,8 +37,94 @@ export function OrderDagCanvas({
   onSelectTask,
   dagGrid,
   dagMinimap,
+  tasks = [],
+  orderState,
 }: OrderDagProps) {
   const getInitialNodes = useCallback((): Node<DagNodeData>[] => {
+    // If we have live tasks from the backend, build the DAG dynamically!
+    if (tasks && tasks.length > 0) {
+      const taskMap = new Map(tasks.map((t) => [t.task_id, t]));
+
+      // Define standard layout coordinate registry for product task graphs
+      const positions: Record<string, { x: number; y: number }> = {
+        validate_order: { x: 30, y: 155 },
+        reserve_inventory: { x: 270, y: 70 },
+        reserve_sim: { x: 270, y: 70 },
+        reserve_esim_profile: { x: 270, y: 70 },
+        provision_network: { x: 490, y: 70 },
+        provision_5g_core: { x: 490, y: 70 },
+        activate_network_profile: { x: 490, y: 70 },
+        create_billing_account: { x: 270, y: 240 },
+        verify_service: { x: 710, y: 70 },
+        verify_sim_registration: { x: 710, y: 70 },
+        verify_activation: { x: 710, y: 70 },
+        start_billing: { x: 930, y: 155 },
+        complete_order: { x: 1150, y: 155 },
+        notify_customer: { x: 1150, y: 260 },
+        deprovision_network: { x: 490, y: 350 },
+        release_inventory: { x: 270, y: 350 },
+        void_billing_account: { x: 50, y: 350 },
+      };
+
+      const systemLabels: Record<string, string> = {
+        oms: "OMS",
+        inventory: "SIM/eSIM",
+        network: "Network",
+        billing: "OCS",
+        notification: "SMS-C",
+      };
+
+      return tasks.map((t, idx) => {
+        const pos = positions[t.task_id] || { x: 30 + (idx % 4) * 230, y: 70 + Math.floor(idx / 4) * 110 };
+        const isSelected = selectedTaskId === t.task_id;
+        
+        let status: DagNodeData["status"] = "SUCCEEDED";
+        let isStalled = false;
+        let isBestEffort = t.task_id === "notify_customer";
+
+        if (t.state === "RUNNING") {
+          status = "SUCCEEDED"; // rendered with animated attempt
+        } else if (t.state === "FAILED") {
+          status = "FAILED";
+        } else if (t.state === "COMPENSATION_FAILED") {
+          status = isResolved ? "RESOLVED" : "FAILED";
+        } else if (t.state === "COMPENSATED") {
+          status = "RESOLVED";
+        } else if (t.state === "PENDING" || t.state === "SKIPPED") {
+          status = "PAUSED / WAITING";
+          isStalled = true;
+        }
+
+        const nameFormatted = t.task_id
+          .split("_")
+          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+
+        return {
+          id: t.task_id,
+          type: "customDagNode",
+          position: pos,
+          data: {
+            taskId: t.task_id,
+            system: systemLabels[t.system.toLowerCase()] || t.system.toUpperCase(),
+            name: nameFormatted,
+            metaLeft: t.attempts > 1 ? `Attempt ×${t.attempts}` : t.state,
+            metaRight: t.last_error ? "Error" : "Done",
+            status,
+            badgeText: t.attempts > 1 ? `×${t.attempts}` : undefined,
+            badgeStyle: t.state === "FAILED" || t.state === "COMPENSATION_FAILED" ? "failed" : "default",
+            isResolved,
+            isStalled,
+            isBestEffort,
+            isSelected,
+            tooltipTitle: t.last_error ? `Task ${t.task_id} Alert` : undefined,
+            tooltipText: t.last_error || undefined,
+          },
+        };
+      });
+    }
+
+    // Default Fallback Demo Graph
     return [
       {
         id: "validate_order",
@@ -193,7 +281,7 @@ export function OrderDagCanvas({
         },
       },
     ];
-  }, [isResolved, selectedTaskId]);
+  }, [isResolved, selectedTaskId, tasks]);
 
   const initialEdges: Edge[] = useMemo(
     () => [
@@ -289,42 +377,55 @@ export function OrderDagCanvas({
   const [nodes, setNodes, onNodesChange] = useNodesState(getInitialNodes());
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Sync node data updates (e.g. selection or resolution status) while keeping moved positions intact
+  // Sync node data updates when tasks, resolution, or selection changes
   useEffect(() => {
-    setNodes((currentNodes) =>
-      currentNodes.map((node) => {
-        const isSelected = selectedTaskId === node.id;
-        if (node.id === "deprovision_network") {
+    if (tasks && tasks.length > 0) {
+      const freshNodes = getInitialNodes();
+      setNodes((currentNodes) => {
+        const curMap = new Map(currentNodes.map((n) => [n.id, n]));
+        return freshNodes.map((fresh) => {
+          const existing = curMap.get(fresh.id);
+          return {
+            ...fresh,
+            // Retain user dragged position if node was already dragged
+            position: existing ? existing.position : fresh.position,
+            data: {
+              ...fresh.data,
+              isSelected: selectedTaskId === fresh.id,
+            },
+          };
+        });
+      });
+    } else {
+      setNodes((currentNodes) =>
+        currentNodes.map((node) => {
+          const isSelected = selectedTaskId === node.id;
+          if (node.id === "deprovision_network") {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                isSelected,
+                status: isResolved ? "RESOLVED" : "FAILED",
+                metaLeft: isResolved ? "Operator Over..." : "504 Gateway...",
+                metaRight: isResolved ? "Done" : "5.94s",
+                badgeText: isResolved ? "NOC" : "5× Fail",
+                badgeStyle: isResolved ? "noc" : "failed",
+                isResolved,
+              },
+            };
+          }
           return {
             ...node,
             data: {
               ...node.data,
               isSelected,
-              status: isResolved ? "RESOLVED" : "FAILED",
-              metaLeft: isResolved ? "Operator Over..." : "504 Gateway...",
-              metaRight: isResolved ? "Done" : "5.94s",
-              badgeText: isResolved ? "NOC" : "5× Fail",
-              badgeStyle: isResolved ? "noc" : "failed",
-              isResolved,
-              tooltipTitle: isResolved
-                ? "Rollback Completed: Operator Override Applied"
-                : "Rollback Stalled: Deprovision Network Failed",
-              tooltipText: isResolved
-                ? "HLR Profile purged manually via NOC override ticket. Subsequent rollbacks and tombstone records verified."
-                : "Compensation halted at Deprovision Network (5 retries exhausted). Subsequent rollbacks Release Inventory (WAITING) and Void Billing (WAITING) are paused until operator resolves.",
             },
           };
-        }
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            isSelected,
-          },
-        };
-      })
-    );
-  }, [isResolved, selectedTaskId, setNodes]);
+        })
+      );
+    }
+  }, [tasks, isResolved, selectedTaskId, getInitialNodes, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) =>
