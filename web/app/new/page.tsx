@@ -8,43 +8,81 @@ export default function NewOrderPage() {
   const router = useRouter();
   const [showToast, setShowToast] = useState(true);
   const [productType, setProductType] = useState<"fiber" | "5g" | "esim">("fiber");
-  const [fullName, setFullName] = useState("Marcus Vance");
-  const [email, setEmail] = useState("m.vance@vancetech.io");
-  const [msisdn, setMsisdn] = useState("555 019-4821");
-  const [ratePlan, setRatePlan] = useState("Fiber Broadband 500 (500 Mbps Symmetrical · $65/mo)");
-  const [streetAddress, setStreetAddress] = useState("742 Evergreen Terrace, Suite 400");
-  const [city, setCity] = useState("Springfield");
-  const [state, setState] = useState("OR");
-  const [zip, setZip] = useState("97477");
-  const [simIccid, setSimIccid] = useState("89014103211123456780");
-  const [deviceImei, setDeviceImei] = useState("354892091248102");
+  const [fullName, setFullName] = useState("Aarav Sharma");
+  const [email, setEmail] = useState("aarav.sharma@airtelmail.in");
+  const [msisdn, setMsisdn] = useState("98201 54821");
+  const [ratePlan, setRatePlan] = useState("JioFiber Ultra 500 (500 Mbps Symmetrical · ₹1,499/mo)");
+  const [streetAddress, setStreetAddress] = useState("Flat 402, Godrej Woods, Sector 43");
+  const [city, setCity] = useState("Noida");
+  const [district, setDistrict] = useState("Gautam Buddha Nagar");
+  const [state, setState] = useState("Uttar Pradesh");
+  const [zip, setZip] = useState("201303");
+  const [simIccid, setSimIccid] = useState("89918603211123456780");
+  const [deviceImei, setDeviceImei] = useState("864892091248102");
   const [clientRef, setClientRef] = useState("EXT-CRM-991024");
   const [activationTiming, setActivationTiming] = useState<"immediate" | "scheduled">("immediate");
-  const [activationDate, setActivationDate] = useState("2026-07-12 15:00:00 UTC");
+  const [activationDate, setActivationDate] = useState("2026-07-12 15:00:00 IST");
   const [chaosTarget, setChaosTarget] = useState("hlr");
   const [chaosFault, setChaosFault] = useState("HTTP 504 Timeout after 5 retries");
   const [chaosSeed, setChaosSeed] = useState("chaos-seed-9921");
   const [submitting, setSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  // Indian States & Union Territories with popular telecom circles/districts
+  const INDIAN_STATES_DISTRICTS: Record<string, string[]> = {
+    "Uttar Pradesh": ["Gautam Buddha Nagar (Noida)", "Ghaziabad", "Lucknow", "Kanpur Nagar", "Varanasi", "Agra", "Prayagraj"],
+    "Maharashtra": ["Mumbai Suburban", "Mumbai City", "Pune", "Thane", "Nagpur", "Nashik", "Aurangabad"],
+    "Karnataka": ["Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Dakshina Kannada (Mangaluru)", "Hubballi-Dharwad"],
+    "Delhi NCT": ["New Delhi", "South Delhi", "Central Delhi", "North Delhi", "West Delhi", "East Delhi"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Kanchipuram"],
+    "Telangana": ["Hyderabad", "Rangareddy", "Medchal-Malkajgiri", "Warangal", "Sangareddy"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar"],
+    "West Bengal": ["Kolkata", "North 24 Parganas", "South 24 Parganas", "Howrah", "Darjeeling"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer"],
+    "Haryana": ["Gurugram", "Faridabad", "Panchkula", "Ambala", "Karnal"],
+    "Kerala": ["Ernakulam (Kochi)", "Thiruvananthapuram", "Kozhikode", "Thrissur"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "SAS Nagar (Mohali)"],
+    "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur"],
+    "Bihar": ["Patna", "Gaya", "Muzaffarpur", "Bhagalpur"],
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Tirupati"],
+  };
+
   const fillPreset = (type: "fiber" | "5g" | "esim") => {
     setProductType(type);
     if (type === "fiber") {
-      setFullName("Marcus Vance");
-      setEmail("m.vance@vancetech.io");
-      setSimIccid("89014103211123456780");
+      setFullName("Aarav Sharma");
+      setEmail("aarav.sharma@airtelmail.in");
+      setMsisdn("98201 54821");
+      setStreetAddress("Flat 402, Godrej Woods, Sector 43");
+      setCity("Noida");
+      setDistrict("Gautam Buddha Nagar (Noida)");
+      setState("Uttar Pradesh");
+      setZip("201303");
+      setSimIccid("89918603211123456780");
       setClientRef("EXT-CRM-991024");
       setValidationErrors([]);
     } else if (type === "5g") {
-      setFullName("Apex Logistics LLC");
-      setEmail("ops@apexlogistics.net");
-      setSimIccid("89012604928193847291");
+      setFullName("Tata Consultancy Logistics LLP");
+      setEmail("ops@tataclg.co.in");
+      setMsisdn("98110 88401");
+      setStreetAddress("Plot 14, Phase 3, Hinjawadi Rajiv Gandhi Infotech Park");
+      setCity("Pune");
+      setDistrict("Pune");
+      setState("Maharashtra");
+      setZip("411057");
+      setSimIccid("89910204928193847291");
       setClientRef("EXT-5G-884019");
       setValidationErrors([]);
     } else if (type === "esim") {
-      setFullName("Elena Rostova");
-      setEmail("elena.rostova@globemail.org");
-      setSimIccid("89044021992019482012");
+      setFullName("Priya Venkatesh");
+      setEmail("priya.venkatesh@infosys.com");
+      setMsisdn("97422 00412");
+      setStreetAddress("32, 100 Feet Road, Indiranagar");
+      setCity("Bengaluru");
+      setDistrict("Bengaluru Urban");
+      setState("Karnataka");
+      setZip("560038");
+      setSimIccid("89914402199201948201");
       setClientRef("CRM-ESIM-00412");
       setValidationErrors([]);
     }
@@ -53,35 +91,35 @@ export default function NewOrderPage() {
   const [validatedSuccess, setValidatedSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Product specific rate plans
+  // Product specific rate plans in Indian Telecom Context (₹ INR)
   const PRODUCT_RATE_PLANS: Record<"fiber" | "5g" | "esim", { plans: string[]; sla: string; tier: string; badge: string }> = {
     fiber: {
       plans: [
-        "Fiber Broadband 500 (500 Mbps Symmetrical · $65/mo)",
-        "Fiber Broadband Gig (1000 Mbps Symmetrical · $85/mo)",
-        "Fiber Enterprise Pro 2.5G ($180/mo)",
+        "Airtel Xstream / JioFiber 300 Mbps (Unlimited Data · ₹999/mo + GST)",
+        "JioFiber Ultra 500 (500 Mbps Symmetrical · ₹1,499/mo)",
+        "Tata Play Fiber GigaPro (1000 Mbps Dedicated IP · ₹3,499/mo)",
       ],
-      sla: "SLA: p99 latency < 12ms · 99.99% Availability",
+      sla: "SLA: p99 latency < 8ms · 99.98% Fiber Availability",
       tier: "Broadband Core",
       badge: "FTTH GPON/XGS-PON",
     },
     "5g": {
       plans: [
-        "5G Postpaid Unlimited (Voice + Data Uncapped · $75/mo)",
-        "5G Business Priority Slice (Guaranteed 100Mbps · $110/mo)",
-        "5G IoT Mobile Metering (500MB Pool · $15/mo)",
+        "Jio True5G / Airtel 5G Plus Postpaid (Unlimited 5G Data · ₹699/mo)",
+        "Enterprise 5G Network Slice (Guaranteed 250Mbps QoS · ₹2,499/mo)",
+        "Vi / Airtel IoT M2M Smart Metering (1GB Telemetry Pool · ₹149/mo)",
       ],
-      sla: "SLA: 5QI-9 Low-Latency QoS Profile · VoNR",
+      sla: "SLA: 5QI-9 Low-Latency QoS Profile · VoNR Enabled",
       tier: "5G SA Slice",
       badge: "5G SA Core (HLR/HSS)",
     },
     esim: {
       plans: [
-        "eSIM Roaming Global (10GB International · $45/mo)",
-        "eSIM Smartwatch Multi-Device Add-on ($10/mo)",
-        "eSIM Data Pass (Unlimited 7-Day Roam · $25)",
+        "eSIM International Roaming Global Pass (10GB High-Speed · ₹2,999/pack)",
+        "eSIM Smartwatch Multi-SIM OneNumber Sharing (₹199/mo)",
+        "eSIM Instant Data Booster (15-Day Roam Pack · ₹1,499)",
       ],
-      sla: "SLA: Instant RSP SM-DP+ Profile Delivery < 5s",
+      sla: "SLA: Instant GSMA RSP SM-DP+ Profile Delivery < 5s",
       tier: "GSMA RSP v3",
       badge: "SM-DP+ Remote Provisioning",
     },
@@ -110,30 +148,39 @@ export default function NewOrderPage() {
       errorsMap.email = "Valid email address required";
     }
 
-    // MSISDN
+    // MSISDN (10-digit Indian Mobile Number)
     const cleanMsisdn = msisdn.replace(/\D/g, "");
     if (!cleanMsisdn || cleanMsisdn.length < 10) {
-      errs.push("msisdn: Target phone MSISDN must contain at least 10 digits");
-      errorsMap.msisdn = "Valid MSISDN required (min 10 digits)";
+      errs.push("msisdn: Target phone MSISDN must contain 10 digits (e.g., 98201 54821)");
+      errorsMap.msisdn = "Valid 10-digit mobile number required";
     }
 
     // Address (Mandatory for Fiber broadband ONT dispatch)
     if (productType === "fiber") {
       if (!streetAddress.trim()) {
-        errs.push("site_address: Street address is required for FTTH physical drop & ONT installation");
+        errs.push("site_address: Flat / House / Street address is required for FTTH physical drop & ONT installation");
         errorsMap.streetAddress = "Street address required for Fiber";
       }
       if (!city.trim()) {
-        errs.push("site_city: City is required for terminal ODF cross-connect matching");
+        errs.push("site_city: City / Town is required for terminal ODF cross-connect matching");
         errorsMap.city = "City required";
       }
-      if (!zip.trim()) {
-        errs.push("site_zip: Postal / ZIP code is required for GIS dispatch");
-        errorsMap.zip = "ZIP code required";
+      if (!district.trim()) {
+        errs.push("site_district: District / Telecom Circle is required");
+        errorsMap.district = "District required";
+      }
+      if (!state.trim()) {
+        errs.push("site_state: State / UT is required");
+        errorsMap.state = "State required";
+      }
+      const cleanZip = zip.replace(/\D/g, "");
+      if (!cleanZip || cleanZip.length !== 6) {
+        errs.push("site_zip: Indian PIN Code must be exactly 6 digits (e.g. 201303, 560038)");
+        errorsMap.zip = "Valid 6-digit PIN Code required";
       }
     }
 
-    // SIM / ICCID (Mandatory for 5G & eSIM)
+    // SIM / ICCID (Mandatory for 5G & eSIM - 18 to 22 digits starting with 89)
     const cleanIccid = simIccid.replace(/\s+/g, "");
     if (!cleanIccid || cleanIccid.length < 18 || cleanIccid.length > 22 || !/^\d+$/.test(cleanIccid)) {
       errs.push("iccid: Invalid E.118 SIM identifier (expected 18-22 digits starting with 89)");
@@ -187,6 +234,10 @@ export default function NewOrderPage() {
       const cleanIccid = simIccid.replace(/\s+/g, "");
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const productCode = productType === "fiber" ? "FIBER_500" : productType === "5g" ? "MOBILE_5G" : "ESIM_ADDON";
+      const fullAddress = productType === "fiber"
+        ? `${streetAddress}, ${city}, Dist: ${district}, ${state} - ${zip}, India`
+        : undefined;
+
       const res = await fetch(`${apiHost}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -195,9 +246,9 @@ export default function NewOrderPage() {
           customer_id: fullName.trim(),
           product: productCode,
           plan_name: ratePlan,
-          site_address: productType === "fiber" ? `${streetAddress}, ${city}, ${state} ${zip}` : undefined,
+          site_address: fullAddress,
           device_id: deviceImei.trim() || undefined,
-          msisdn: `+1 ${msisdn.trim()}`,
+          msisdn: `+91 ${msisdn.trim()}`,
           iccid: cleanIccid,
           engine: "temporal",
           chaos_key: chaosSeed || undefined,
@@ -237,7 +288,7 @@ export default function NewOrderPage() {
                 <span className="hidden sm:inline text-[#CBD5E1]">•</span>
                 <span className="font-label-md text-label-md text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded font-mono font-semibold">ORD-20260712-004218</span>
                 <span className="hidden md:inline text-body-sm font-body-sm text-[#64748B] truncate">
-                  Saga execution initiated on Temporal cluster <span className="font-label-sm font-mono text-[#0A1B2E]">prod-us-east-4</span>
+                  Saga execution initiated on Temporal cluster <span className="font-label-sm font-mono text-[#0A1B2E]">prod-in-central-1 (Mumbai)</span>
                 </span>
               </div>
             </div>
@@ -368,24 +419,25 @@ export default function NewOrderPage() {
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="cust-msisdn">
-                      Target Phone / MSISDN
+                      Target Phone / MSISDN (India +91)
                     </label>
                     <div className="relative flex items-center">
-                      <span className="absolute left-3 font-label-md text-label-md font-mono text-on-surface-variant select-none">+1</span>
+                      <span className="absolute left-3 font-label-md text-label-md font-mono text-on-surface-variant select-none font-semibold">+91</span>
                       <input
-                        className="w-full h-9 pl-9 pr-8 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border border-[#E2E8F0] focus:bg-surface-container-lowest transition-colors"
+                        className="w-full h-9 pl-12 pr-8 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border border-[#E2E8F0] focus:bg-surface-container-lowest transition-colors"
                         id="cust-msisdn"
                         type="text"
+                        placeholder="98201 54821"
                         value={msisdn}
                         onChange={(e) => setMsisdn(e.target.value)}
                       />
-                      <span className="material-symbols-outlined absolute right-2.5 text-[#0A1B2E] text-[18px]" title="Portability Verified">
+                      <span className="material-symbols-outlined absolute right-2.5 text-[#0A1B2E] text-[18px]" title="TRAI MNPO Portability Verified">
                         verified
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1.5 text-[#64748B] font-body-sm text-body-sm">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
-                      <span>Validated via National Number Portability DB (Routing point: SP-US-3341)</span>
+                      <span>Validated via National MNPO Clearinghouse (Circle: UP-West / Delhi-NCR LSA-IN-401)</span>
                     </div>
                   </div>
                 </div>
@@ -508,59 +560,85 @@ export default function NewOrderPage() {
                 </div>
               </fieldset>
 
-              {/* Section 3: Site / Service Address */}
+              {/* Section 3: Site / Service Address (India Context) */}
               <fieldset className="space-y-4">
                 <legend className="w-full flex items-center gap-3 pb-2.5 border-b border-[#EDF0F5]">
                   <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">
                     3
                   </span>
-                  <span className="font-headline-sm text-headline-sm text-on-surface">Site &amp; Service Physical Address</span>
+                  <span className="font-headline-sm text-headline-sm text-on-surface">Site &amp; Service Physical Address (India)</span>
                 </legend>
                 <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
                   <div className="sm:col-span-6">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-address">
-                      Street Address
+                      Flat / House / Street Address
                     </label>
                     <input
                       className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
                       id="site-address"
                       type="text"
+                      placeholder="e.g. Flat 402, Godrej Woods, Sector 43"
                       value={streetAddress}
                       onChange={(e) => setStreetAddress(e.target.value)}
                     />
                   </div>
-                  <div className="sm:col-span-3">
+                  <div className="sm:col-span-2">
+                    <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-state">
+                      State / UT
+                    </label>
+                    <select
+                      className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
+                      id="site-state"
+                      value={state}
+                      onChange={(e) => {
+                        const newState = e.target.value;
+                        setState(newState);
+                        if (INDIAN_STATES_DISTRICTS[newState]) {
+                          setDistrict(INDIAN_STATES_DISTRICTS[newState][0]);
+                        }
+                      }}
+                    >
+                      {Object.keys(INDIAN_STATES_DISTRICTS).map((st) => (
+                        <option key={st} value={st}>{st}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-district">
+                      District / Telecom Circle
+                    </label>
+                    <input
+                      className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
+                      id="site-district"
+                      type="text"
+                      placeholder="e.g. Gautam Buddha Nagar"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                    />
+                  </div>
+                  <div className="sm:col-span-1">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-city">
-                      City
+                      City / Town
                     </label>
                     <input
                       className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
                       id="site-city"
                       type="text"
+                      placeholder="Noida"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                     />
                   </div>
                   <div className="sm:col-span-1">
-                    <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-state">
-                      State
-                    </label>
-                    <input
-                      className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md uppercase border border-[#E2E8F0] focus:bg-surface-container-lowest"
-                      id="site-state"
-                      type="text"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-zip">
-                      Postal / ZIP
+                      PIN Code
                     </label>
                     <input
                       className="w-full h-9 px-3 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border border-[#E2E8F0] focus:bg-surface-container-lowest"
                       id="site-zip"
                       type="text"
+                      maxLength={6}
+                      placeholder="201303"
                       value={zip}
                       onChange={(e) => setZip(e.target.value)}
                     />
@@ -570,9 +648,9 @@ export default function NewOrderPage() {
                 <div className="bg-white border border-[#CBD5E1] rounded-lg p-2.5 flex items-center justify-between text-body-sm font-body-sm text-[#0A1B2E] shadow-2xs">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#0A1B2E] shrink-0"></span>
-                    <span className="font-mono text-label-sm">● Geocoded: lat 44.0462, lon -123.0220</span>
+                    <span className="font-mono text-label-sm">● Geocoded: lat 28.5355, lon 77.3910 (Noida / NCR Circle)</span>
                     <span className="text-[#CBD5E1] hidden md:inline">|</span>
-                    <span className="font-mono text-label-sm text-[#64748B] hidden md:inline">Terminal DP: FTTH-CAB-92A (Available · Port 4 Free)</span>
+                    <span className="font-mono text-label-sm text-[#64748B] hidden md:inline">Terminal DP: BHARATNET-FIBER-DP-09 (Available · Port 3 Free)</span>
                   </div>
                   <span className="font-label-sm text-label-sm font-semibold uppercase text-[#0A1B2E] tracking-wider">Ready</span>
                 </div>
@@ -678,7 +756,7 @@ export default function NewOrderPage() {
                       />
                     </div>
                     <span className="px-2.5 py-1.5 bg-surface-container rounded text-on-surface-variant font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0]">
-                      UTC / Operator local (PDT -07:00)
+                      IST (UTC+05:30) / Operator local
                     </span>
                   </div>
                 </div>
