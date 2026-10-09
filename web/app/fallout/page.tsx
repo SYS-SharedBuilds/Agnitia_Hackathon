@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { FalloutDagCanvas } from "@/components/ui/FalloutDagCanvas";
 
 interface FalloutIncident {
   id: string;
@@ -47,6 +48,7 @@ const INITIAL_INCIDENTS: FalloutIncident[] = [
 
 export default function FalloutQueuePage() {
   const [incidents, setIncidents] = useState<FalloutIncident[]>(INITIAL_INCIDENTS);
+  const [resolvedIds, setResolvedIds] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<string>("ORD-20260712-004217");
   const [activeTab, setActiveTab] = useState<"active" | "resolved">("active");
   const [subsystemFilter, setSubsystemFilter] = useState("All Subsystems");
@@ -58,6 +60,7 @@ export default function FalloutQueuePage() {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [activeDagNode, setActiveDagNode] = useState<string>("rollback-deprovision");
 
+  const isCurrentResolved = resolvedIds.includes(selectedId);
   const selectedIncident = incidents.find((i) => i.id === selectedId) || incidents[0];
 
   const handleClaim = (id: string) => {
@@ -70,15 +73,16 @@ export default function FalloutQueuePage() {
     setIsResolving(true);
     setTimeout(() => {
       setIsResolving(false);
-      alert(`Triggered Temporal compensation workflow replay for ${id}.`);
+      setResolvedIds((prev) => Array.from(new Set([...prev, id])));
+      alert(`Triggered Temporal compensation workflow replay for ${id}. Profile lock cleared and rollback completed.`);
     }, 900);
   };
 
   const handleManualResolveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIncidents((prev) => prev.filter((i) => i.id !== selectedId));
+    setResolvedIds((prev) => Array.from(new Set([...prev, selectedId])));
     setShowManualModal(false);
-    alert(`Incident ${selectedId} marked RESOLVED with reference ${resolutionTicket}.`);
+    alert(`Incident ${selectedId} marked RESOLVED with reference ${resolutionTicket}. Guided checklist now completed.`);
   };
 
   const filteredIncidents = incidents.filter((inc) => {
@@ -352,9 +356,13 @@ export default function FalloutQueuePage() {
                     >
                       <span className="material-symbols-outlined text-[18px]">content_copy</span>
                     </button>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1B2E] text-white font-label-sm text-label-sm font-bold shadow-2xs">
-                      <span className="h-2 w-2 rounded-full bg-white"></span>
-                      {selectedIncident.status}
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-2xs ${
+                      isCurrentResolved
+                        ? "bg-emerald-700 text-white"
+                        : "bg-[#0A1B2E] text-white"
+                    }`}>
+                      <span className={`h-2 w-2 rounded-full ${isCurrentResolved ? "bg-white" : "bg-white"}`}></span>
+                      {isCurrentResolved ? "RESOLVED · OPERATOR_OVERRIDE_APPLIED" : selectedIncident.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-body-sm font-body-sm text-[#64748B]">
@@ -403,28 +411,37 @@ export default function FalloutQueuePage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleClaim(selectedIncident.id)}
-                    className="h-8 px-3 rounded-md bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] font-body-sm text-body-sm font-medium shadow-2xs border border-[#CBD5E1] flex items-center gap-1.5 transition-colors"
+                    className="h-8 px-3 rounded-md bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] font-body-sm text-body-sm font-medium shadow-2xs border border-[#CBD5E1] flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px]">person_add</span>
                     <span>{selectedIncident.assignedTo ? "Assigned to You" : "Assign to me"}</span>
                   </button>
-                  <button
-                    onClick={() => setShowManualModal(true)}
-                    className="h-8 px-3 rounded-md bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] border border-[#CBD5E1] font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-colors shadow-2xs"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">handyman</span>
-                    <span>Resolve Manually…</span>
-                  </button>
-                  <button
-                    onClick={() => handleRetryCompensation(selectedIncident.id)}
-                    disabled={isResolving}
-                    className="h-8 px-3 rounded-md bg-[#0A1B2E] hover:bg-[#14263b] text-white font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all shadow-xs"
-                  >
-                    <span className={`material-symbols-outlined text-[16px] ${isResolving ? "animate-spin" : ""}`}>
-                      replay
+                  {!isCurrentResolved ? (
+                    <>
+                      <button
+                        onClick={() => setShowManualModal(true)}
+                        className="h-8 px-3 rounded-md bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] border border-[#CBD5E1] font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">handyman</span>
+                        <span>Resolve Manually…</span>
+                      </button>
+                      <button
+                        onClick={() => handleRetryCompensation(selectedIncident.id)}
+                        disabled={isResolving}
+                        className="h-8 px-3 rounded-md bg-[#0A1B2E] hover:bg-[#14263b] text-white font-body-sm text-body-sm font-medium flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                      >
+                        <span className={`material-symbols-outlined text-[16px] ${isResolving ? "animate-spin" : ""}`}>
+                          replay
+                        </span>
+                        <span>{isResolving ? "Replaying..." : "Retry Compensation"}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <span className="h-8 px-3 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 font-label-sm text-label-sm font-bold flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px]">task_alt</span>
+                      <span>Resolved via Operator Override</span>
                     </span>
-                    <span>{isResolving ? "Replaying..." : "Retry Compensation"}</span>
-                  </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -438,8 +455,12 @@ export default function FalloutQueuePage() {
                     Guided Remediation Checklist
                   </h2>
                 </div>
-                <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-medium">
-                  1 of 3 steps completed
+                <span className={`font-label-sm text-label-sm px-2.5 py-0.5 rounded-full font-medium ${
+                  isCurrentResolved
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : "bg-surface-container-high text-on-surface-variant"
+                }`}>
+                  {isCurrentResolved ? "3 of 3 steps completed (RESOLVED)" : "1 of 3 steps completed"}
                 </span>
               </div>
               <div className="flex flex-col gap-3">
@@ -470,68 +491,120 @@ export default function FalloutQueuePage() {
                   </div>
                 </div>
 
-                {/* Step 2: CURRENT ACTIVE STEP */}
-                <div className="flex items-start gap-3 p-3.5 rounded-lg bg-[#F8FAFC] shadow-xs border border-[#CBD5E1]">
+                {/* Step 2: DYNAMIC STATE */}
+                <div className={`flex items-start gap-3 p-3.5 rounded-lg border transition-all ${
+                  isCurrentResolved
+                    ? "bg-surface-container-low/70 border-outline-variant/20"
+                    : "bg-[#F8FAFC] shadow-xs border-[#CBD5E1]"
+                }`}>
                   <div className="mt-0.5">
-                    <span className="material-symbols-outlined text-primary text-[20px]">radio_button_checked</span>
+                    <span
+                      className={`material-symbols-outlined text-[20px] ${
+                        isCurrentResolved ? "text-[#0A1B2E]" : "text-primary"
+                      }`}
+                      style={isCurrentResolved ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    >
+                      {isCurrentResolved ? "check_circle" : "radio_button_checked"}
+                    </span>
                   </div>
                   <div className="flex-1 flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-body-md text-body-md font-semibold text-primary">
+                      <span className={`font-body-md text-body-md font-semibold ${
+                        isCurrentResolved ? "text-on-surface line-through decoration-outline" : "text-primary"
+                      }`}>
                         2. Verify network resources or retry automated compensation
                       </span>
-                      <span className="font-label-sm text-label-sm bg-primary text-on-primary px-2 py-0.5 rounded font-bold">
-                        IN PROGRESS
+                      <span className={`font-label-sm text-label-sm px-2 py-0.5 rounded font-bold ${
+                        isCurrentResolved
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono"
+                          : "bg-primary text-on-primary"
+                      }`}>
+                        {isCurrentResolved ? "VERIFIED & CLEARED" : "IN PROGRESS"}
                       </span>
                     </div>
                     <p className="font-body-sm text-body-sm text-on-surface">
-                      Execute{" "}
-                      <button
-                        onClick={() => handleRetryCompensation(selectedIncident.id)}
-                        className="underline font-semibold text-primary hover:text-primary-container"
-                      >
-                        Retry Compensation
-                      </button>{" "}
-                      if cluster gRPC endpoint has recovered, or trigger automated network release script via orchestrator runner.
+                      {isCurrentResolved ? (
+                        <span className="text-[#475569]">
+                          Orchestrator runner cleared profile lock and verified tombstone on <code className="bg-slate-100 px-1 rounded font-mono">hlr-east-01</code>. Residual resources deallocated.
+                        </span>
+                      ) : (
+                        <>
+                          Execute{" "}
+                          <button
+                            onClick={() => handleRetryCompensation(selectedIncident.id)}
+                            className="underline font-semibold text-primary hover:text-primary-container"
+                          >
+                            Retry Compensation
+                          </button>{" "}
+                          if cluster gRPC endpoint has recovered, or trigger automated network release script via orchestrator runner.
+                        </>
+                      )}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <button
-                        onClick={() => alert("Executing HLR Lock Purge Script via Temporal Runner...")}
-                        className="h-7 px-2.5 rounded bg-surface-container-lowest hover:bg-surface-container-low text-primary font-label-sm text-label-sm font-medium shadow-xs border border-outline-variant/30 inline-flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">terminal</span> Run Lock Purge Script
-                      </button>
-                      <button
-                        onClick={() => alert("gRPC Health Probe: hlr-east-01 is UP (RTT 18ms). Ready to retry.")}
-                        className="h-7 px-2.5 rounded bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm font-medium border border-outline-variant/30 inline-flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">sync_alt</span> Probe gRPC Health (hlr-east-01)
-                      </button>
-                    </div>
+                    {!isCurrentResolved && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <button
+                          onClick={() => alert("Executing HLR Lock Purge Script via Temporal Runner...")}
+                          className="h-7 px-2.5 rounded bg-surface-container-lowest hover:bg-surface-container-low text-primary font-label-sm text-label-sm font-medium shadow-xs border border-outline-variant/30 inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">terminal</span> Run Lock Purge Script
+                        </button>
+                        <button
+                          onClick={() => alert("gRPC Health Probe: hlr-east-01 is UP (RTT 18ms). Ready to retry.")}
+                          className="h-7 px-2.5 rounded bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm font-medium border border-outline-variant/30 inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">sync_alt</span> Probe gRPC Health (hlr-east-01)
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Step 3: PENDING STEP */}
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-surface-container-low/40 opacity-75 border border-outline-variant/20">
+                {/* Step 3: DYNAMIC RESOLUTION STEP */}
+                <div className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                  isCurrentResolved
+                    ? "bg-[#F8FAFC] shadow-xs border-[#CBD5E1]"
+                    : "bg-surface-container-low/40 opacity-75 border-outline-variant/20"
+                }`}>
                   <div className="mt-0.5">
-                    <span className="material-symbols-outlined text-outline text-[20px]">radio_button_unchecked</span>
+                    <span
+                      className={`material-symbols-outlined text-[20px] ${
+                        isCurrentResolved ? "text-emerald-700 font-bold" : "text-outline"
+                      }`}
+                      style={isCurrentResolved ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    >
+                      {isCurrentResolved ? "task_alt" : "radio_button_unchecked"}
+                    </span>
                   </div>
                   <div className="flex-1 flex flex-col gap-0.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-body-sm text-body-sm font-medium text-on-surface">
+                      <span className={`font-body-sm text-body-sm font-semibold ${
+                        isCurrentResolved ? "text-[#0A1B2E]" : "text-on-surface"
+                      }`}>
                         3. Resolve manually with NOC change ticket reference
                       </span>
-                      <span className="font-label-sm text-label-sm text-outline font-medium">QUEUED</span>
+                      <span className={`font-label-sm text-label-sm font-bold ${
+                        isCurrentResolved
+                          ? "bg-[#0A1B2E] text-white px-2 py-0.5 rounded font-mono"
+                          : "text-outline"
+                      }`}>
+                        {isCurrentResolved ? "COMPLETED" : "QUEUED"}
+                      </span>
                     </div>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
-                      Requires mandatory JIRA/INC incident cross-reference and peer confirmation once resource deallocation is reconciled.
+                      {isCurrentResolved ? (
+                        <span className="text-emerald-900 font-medium">
+                          NOC override ticket applied. Saga rollback cascade verified and order transitioned to ROLLED_BACK.
+                        </span>
+                      ) : (
+                        "Requires mandatory JIRA/INC incident cross-reference and peer confirmation once resource deallocation is reconciled."
+                      )}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 3. Mini Saga Execution DAG (Failed Compensation Flow) */}
+            {/* 3. Mini Saga Execution DAG (Interactive ReactFlow Graph) */}
             <div className="bg-white rounded-xl shadow-2xs border border-[#CBD5E1] flex flex-col overflow-hidden">
               {/* DAG Header & Controls */}
               <div className="p-4 border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-3 bg-white">
@@ -544,12 +617,16 @@ export default function FalloutQueuePage() {
                       <h2 className="text-[15px] font-bold text-[#0A1B2E] tracking-tight">
                         Saga Orchestration Execution DAG
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]">
-                        HALTED
+                      <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold border ${
+                        isCurrentResolved
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                          : "bg-[#FEE2E2] text-[#991B1B] border-[#FECACA]"
+                      }`}>
+                        {isCurrentResolved ? "RESOLVED" : "HALTED"}
                       </span>
                     </div>
                     <p className="text-[12px] text-[#64748B]">
-                      Interactive saga topology · Click any task node to inspect retry telemetry, inputs, and compensation handlers
+                      Interactive saga topology · Drag tags to restructure · Click nodes to inspect telemetry &amp; retry handlers
                     </p>
                   </div>
                 </div>
@@ -575,222 +652,12 @@ export default function FalloutQueuePage() {
                 </div>
               </div>
 
-              {/* DAG Canvas Playground */}
-              <div
-                className="w-full bg-[#F8FAFC] p-5 overflow-x-auto select-none border-b border-[#E2E8F0]"
-                style={{
-                  backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
-                  backgroundSize: "16px 16px",
-                }}
-              >
-                <div className="min-w-[840px] flex flex-col gap-6 py-2">
-                  {/* FORWARD WAVE */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 shrink-0 flex items-center gap-1 font-mono text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
-                      <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-                      Forward
-                    </div>
-
-                    {/* Step 1: Validate Order */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDagNode("forward-validate")}
-                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
-                        activeDagNode === "forward-validate"
-                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[10px] text-[#64748B] font-semibold">OMS:8101</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
-                          <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                          PASS
-                        </span>
-                      </div>
-                      <div className="font-semibold text-[13px] text-[#0A1B2E] truncate">Validate Order</div>
-                      <div className="font-mono text-[11px] text-[#64748B] mt-1 flex justify-between">
-                        <span>Latency</span>
-                        <span>220ms</span>
-                      </div>
-                    </button>
-
-                    <span className="text-[#94A3B8] font-bold">→</span>
-
-                    {/* Step 2: Parallel Wave (Forked Branch) */}
-                    <div className="flex flex-col gap-2 w-[180px] shrink-0">
-                      {/* Branch A: SIM */}
-                      <button
-                        type="button"
-                        onClick={() => setActiveDagNode("forward-inventory")}
-                        className={`text-left p-2.5 rounded-lg border transition-all cursor-pointer shadow-2xs bg-white ${
-                          activeDagNode === "forward-inventory"
-                            ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                            : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="font-mono text-[10px] text-[#64748B] font-semibold">SIM_INV:8102</span>
-                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
-                            <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                            PASS
-                          </span>
-                        </div>
-                        <div className="font-semibold text-[12px] text-[#0A1B2E] truncate">Reserve Inventory</div>
-                      </button>
-
-                      {/* Branch B: Billing */}
-                      <button
-                        type="button"
-                        onClick={() => setActiveDagNode("forward-billing")}
-                        className={`text-left p-2.5 rounded-lg border transition-all cursor-pointer shadow-2xs bg-white ${
-                          activeDagNode === "forward-billing"
-                            ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                            : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="font-mono text-[10px] text-[#64748B] font-semibold">OCS:8104</span>
-                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
-                            <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                            PASS
-                          </span>
-                        </div>
-                        <div className="font-semibold text-[12px] text-[#0A1B2E] truncate">Create Billing</div>
-                      </button>
-                    </div>
-
-                    <span className="text-[#94A3B8] font-bold">→</span>
-
-                    {/* Step 3: Provision Network */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDagNode("forward-network")}
-                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
-                        activeDagNode === "forward-network"
-                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[10px] text-[#64748B] font-semibold">HLR:8103</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
-                          <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                          PASS
-                        </span>
-                      </div>
-                      <div className="font-semibold text-[13px] text-[#0A1B2E] truncate">Provision Network</div>
-                      <div className="font-mono text-[11px] text-[#64748B] mt-1 flex justify-between">
-                        <span>Latency</span>
-                        <span>1.42s</span>
-                      </div>
-                    </button>
-
-                    <span className="text-[#94A3B8] font-bold">→</span>
-
-                    {/* Step 4: Start Charging (Failed Trigger) */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDagNode("forward-charging")}
-                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[190px] shrink-0 bg-white ${
-                        activeDagNode === "forward-charging"
-                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[10px] text-[#64748B] font-semibold">OCS:8104</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                          <span className="material-symbols-outlined text-[13px]">cancel</span>
-                          ERR 500
-                        </span>
-                      </div>
-                      <div className="font-semibold text-[13px] text-[#0A1B2E] truncate">Start Charging</div>
-                      <div className="font-mono text-[11px] text-[#64748B] mt-1 truncate">
-                        Rating Engine Timeout
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* ROLLBACK COMPENSATION WAVE */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <div className="w-24 shrink-0 flex items-center gap-1 font-mono text-[11px] font-bold text-[#0A1B2E] uppercase tracking-wider">
-                      <span className="material-symbols-outlined text-[16px]">undo</span>
-                      Rollback
-                    </div>
-
-                    {/* Compensation Step 1: Deprovision Network (FAILED ROOT) */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDagNode("rollback-deprovision")}
-                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-xs w-[220px] shrink-0 bg-[#0A1B2E] text-white ${
-                        activeDagNode === "rollback-deprovision"
-                          ? "ring-2 ring-[#0A1B2E] ring-offset-2 border-white"
-                          : "border-[#0A1B2E] hover:bg-[#14263b]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[10px] text-[#CBD5E1] font-semibold">HLR:8103</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-white font-bold bg-[#14263b] px-1.5 py-0.5 rounded border border-[#334155]">
-                          <span className="material-symbols-outlined text-[13px] animate-pulse">warning</span>
-                          EXHAUSTED
-                        </span>
-                      </div>
-                      <div className="font-bold text-[13px] text-white truncate">Deprovision Network</div>
-                      <div className="font-mono text-[11px] text-[#CBD5E1] mt-1 flex justify-between">
-                        <span>Retries</span>
-                        <span>5 / 5 Failed</span>
-                      </div>
-                    </button>
-
-                    <span className="text-[#94A3B8] font-bold">→</span>
-
-                    {/* Compensation Step 2: Release Inventory (STALLED) */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDagNode("rollback-inventory")}
-                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
-                        activeDagNode === "rollback-inventory"
-                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[10px] text-[#94A3B8] font-semibold">SIM_INV:8102</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#64748B] font-semibold bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                          <span className="material-symbols-outlined text-[13px]">pause_circle</span>
-                          STALLED
-                        </span>
-                      </div>
-                      <div className="font-medium text-[13px] text-[#475569] truncate">Release Inventory</div>
-                      <div className="font-mono text-[11px] text-[#94A3B8] mt-1">Waiting on HLR compensation</div>
-                    </button>
-
-                    <span className="text-[#94A3B8] font-bold">→</span>
-
-                    {/* Compensation Step 3: Void Billing Account (STALLED) */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDagNode("rollback-billing")}
-                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
-                        activeDagNode === "rollback-billing"
-                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
-                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[10px] text-[#94A3B8] font-semibold">OCS:8104</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#64748B] font-semibold bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                          <span className="material-symbols-outlined text-[13px]">pause_circle</span>
-                          STALLED
-                        </span>
-                      </div>
-                      <div className="font-medium text-[13px] text-[#475569] truncate">Void Billing Acct</div>
-                      <div className="font-mono text-[11px] text-[#94A3B8] mt-1">Waiting on HLR compensation</div>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              {/* Fully Interactive ReactFlow DAG Canvas */}
+              <FalloutDagCanvas
+                activeDagNode={activeDagNode}
+                onSelectNode={(nodeId) => setActiveDagNode(nodeId)}
+                isResolved={isCurrentResolved}
+              />
 
               {/* Interactive Inspector Panel for Clicked Node */}
               <div className="p-4 bg-[#F8FAFC] border-t border-[#E2E8F0]">
@@ -801,21 +668,34 @@ export default function FalloutQueuePage() {
                         <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[#0A1B2E] text-white">
                           TASK: HLR_DEPROVISION_SLICE
                         </span>
-                        <span className="text-[12px] font-bold text-[#0A1B2E]">Compensation Failure (Halted Saga)</span>
+                        <span className="text-[12px] font-bold text-[#0A1B2E]">
+                          {isCurrentResolved
+                            ? "Manually Resolved (Operator Override Applied)"
+                            : "Compensation Failure (Halted Saga)"}
+                        </span>
                       </div>
                       <p className="text-[12px] text-[#64748B]">
-                        Attempted 5 exponential retries [1s, 2s, 4s, 8s, 16s]. Subsystem endpoint <code className="bg-white px-1 py-0.5 rounded border font-mono text-[#0A1B2E]">hlr-east-01:8103</code> unresponsive.
+                        {isCurrentResolved
+                          ? "Verified subscriber profile purged manually via NOC override ticket. Downstream tombstones confirmed clean."
+                          : "Attempted 5 exponential retries [1s, 2s, 4s, 8s, 16s]. Subsystem endpoint hlr-east-01:8103 unresponsive."}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleRetryCompensation(selectedIncident.id)}
-                        disabled={isResolving}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white font-medium text-[12px] shadow-xs cursor-pointer disabled:opacity-75"
-                      >
-                        <span className={`material-symbols-outlined text-[14px] ${isResolving ? "animate-spin" : ""}`}>replay</span>
-                        <span>Retry Compensation Now</span>
-                      </button>
+                      {!isCurrentResolved ? (
+                        <button
+                          onClick={() => handleRetryCompensation(selectedIncident.id)}
+                          disabled={isResolving}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white font-medium text-[12px] shadow-xs cursor-pointer disabled:opacity-75"
+                        >
+                          <span className={`material-symbols-outlined text-[14px] ${isResolving ? "animate-spin" : ""}`}>replay</span>
+                          <span>Retry Compensation Now</span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[12px] font-bold font-mono border border-emerald-300">
+                          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                          RESOLVED
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
