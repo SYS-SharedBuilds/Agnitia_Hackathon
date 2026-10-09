@@ -38,12 +38,10 @@ export function OrderDagCanvas({
   dagGrid,
   dagMinimap,
   tasks = [],
-  orderState,
 }: OrderDagProps) {
   const getInitialNodes = useCallback((): Node<DagNodeData>[] => {
     // If we have live tasks from the backend, build the DAG dynamically!
     if (tasks && tasks.length > 0) {
-      const taskMap = new Map(tasks.map((t) => [t.task_id, t]));
 
       // Define standard layout coordinate registry for product task graphs
       const positions: Record<string, { x: number; y: number }> = {
@@ -80,7 +78,7 @@ export function OrderDagCanvas({
         
         let status: DagNodeData["status"] = "SUCCEEDED";
         let isStalled = false;
-        let isBestEffort = t.task_id === "notify_customer";
+        const isBestEffort = t.task_id === "notify_customer";
 
         if (t.state === "RUNNING") {
           status = "SUCCEEDED"; // rendered with animated attempt

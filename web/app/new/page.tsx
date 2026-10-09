@@ -90,7 +90,6 @@ export default function NewOrderPage() {
 
   const [validatedSuccess, setValidatedSuccess] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Product specific rate plans in Indian Telecom Context (₹ INR)
   const PRODUCT_RATE_PLANS: Record<"fiber" | "5g" | "esim", { plans: string[]; sla: string; tier: string; badge: string }> = {
@@ -131,7 +130,6 @@ export default function NewOrderPage() {
     setRatePlan(PRODUCT_RATE_PLANS[type].plans[0]);
     setValidatedSuccess(false);
     setValidationErrors([]);
-    setFieldErrors({});
   };
 
   const handleValidate = () => {
@@ -200,7 +198,6 @@ export default function NewOrderPage() {
       errorsMap.clientRef = "Maximum 128 characters";
     }
 
-    setFieldErrors(errorsMap);
     setIsValidating(true);
 
     setTimeout(() => {
@@ -253,7 +250,7 @@ export default function NewOrderPage() {
         const mockPort = portMap[chaosTarget];
         if (mockPort) {
           try {
-            let mode = "always_fail";
+            const mode = "always_fail";
             let status = 500;
             if (chaosFault.includes("504")) {
               status = 504;

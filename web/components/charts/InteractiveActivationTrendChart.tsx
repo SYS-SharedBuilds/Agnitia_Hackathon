@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 export interface TrendPoint {

@@ -29,7 +29,6 @@ export default function OrderDetailPage() {
     issued_at: string;
     public_key_pem: string;
   } | null>(null);
-  const [certLoading, setCertLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert" | "ai-rca">("ai-rca");
   const [aiRcaData, setAiRcaData] = useState<{
