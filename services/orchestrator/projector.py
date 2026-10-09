@@ -120,11 +120,24 @@ class EventProjector:
             upsert_task = text(
                 """
                 INSERT INTO ops.tasks (order_id, task_id, system, state, attempts, started_at, ended_at, last_error)
-                VALUES (:order_id, :task_id, :system, :state, :attempts, :ts, NULL, :last_error)
+                VALUES (:order_id, :task_id, :system, :state, :attempts, :ts,
+                    CASE WHEN :state IN ('SUCCEEDED', 'FAILED', 'COMPENSATED', 'COMPENSATION_FAILED') THEN :ts ELSE NULL END,
+                    :last_error)
                 ON CONFLICT (order_id, task_id) DO UPDATE SET
-                    state = excluded.state,
+                    state = CASE
+                        WHEN ops.tasks.state IN ('SUCCEEDED', 'COMPENSATED') AND excluded.state IN ('RUNNING', 'PENDING') THEN ops.tasks.state
+                        ELSE excluded.state
+                    END,
                     attempts = CASE WHEN excluded.attempts > ops.tasks.attempts THEN excluded.attempts ELSE ops.tasks.attempts END,
-                    ended_at = CASE WHEN excluded.state IN ('SUCCEEDED', 'FAILED', 'COMPENSATED', 'COMPENSATION_FAILED') THEN excluded.started_at ELSE ops.tasks.ended_at END,
+                    started_at = CASE
+                        WHEN ops.tasks.started_at IS NOT NULL AND excluded.state IN ('SUCCEEDED', 'FAILED', 'COMPENSATED', 'COMPENSATION_FAILED') THEN ops.tasks.started_at
+                        WHEN ops.tasks.started_at IS NOT NULL AND ops.tasks.started_at < excluded.started_at THEN ops.tasks.started_at
+                        ELSE excluded.started_at
+                    END,
+                    ended_at = CASE
+                        WHEN excluded.state IN ('SUCCEEDED', 'FAILED', 'COMPENSATED', 'COMPENSATION_FAILED') THEN excluded.started_at
+                        ELSE ops.tasks.ended_at
+                    END,
                     last_error = COALESCE(excluded.last_error, ops.tasks.last_error)
                 """
             )
