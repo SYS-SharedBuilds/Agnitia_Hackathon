@@ -19,12 +19,12 @@ export default function NewOrderPage() {
   const [zip, setZip] = useState("201303");
   const [simIccid, setSimIccid] = useState("89918603211123456780");
   const [deviceImei, setDeviceImei] = useState("864892091248102");
-  const [clientRef, setClientRef] = useState("EXT-CRM-991024");
+  const [clientRef, setClientRef] = useState(() => `EXT-CRM-${Math.floor(100000 + Math.random() * 900000)}`);
   const [activationTiming, setActivationTiming] = useState<"immediate" | "scheduled">("immediate");
   const [activationDate, setActivationDate] = useState("2026-07-12 15:00:00 IST");
-  const [chaosTarget, setChaosTarget] = useState("hlr");
+  const [chaosTarget, setChaosTarget] = useState("none");
   const [chaosFault, setChaosFault] = useState("HTTP 504 Timeout after 5 retries");
-  const [chaosSeed, setChaosSeed] = useState("chaos-seed-9921");
+  const [chaosSeed, setChaosSeed] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -247,6 +247,39 @@ export default function NewOrderPage() {
         ? `${streetAddress}, ${city}, Dist: ${district}, ${state} - ${zip}, India`
         : undefined;
 
+      // If user selected a chaos target, configure the corresponding mock subsystem
+      if (chaosTarget !== "none") {
+        const portMap: Record<string, number> = { hlr: 8103, ocs: 8104, inv: 8102 };
+        const mockPort = portMap[chaosTarget];
+        if (mockPort) {
+          try {
+            let mode = "always_fail";
+            let status = 500;
+            if (chaosFault.includes("504")) {
+              status = 504;
+            } else if (chaosFault.includes("500")) {
+              status = 500;
+            }
+            await fetch(`http://localhost:${mockPort}/admin/chaos`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode,
+                status,
+                match_action: chaosTarget === "hlr" ? "provision" : chaosTarget === "ocs" ? "start_charging" : "reserve",
+              }),
+            });
+          } catch {
+            console.warn("Could not set mock chaos directly, relying on chaos_key");
+          }
+        }
+      } else {
+        // Clear chaos across mocks if nominal execution selected
+        for (const port of [8101, 8102, 8103, 8104, 8105]) {
+          fetch(`http://localhost:${port}/admin/chaos`, { method: "DELETE" }).catch(() => {});
+        }
+      }
+
       const res = await fetch(`${apiHost}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -260,23 +293,25 @@ export default function NewOrderPage() {
           msisdn: `+91 ${msisdn.trim()}`,
           iccid: cleanIccid,
           engine: "temporal",
-          chaos_key: chaosSeed || undefined,
+          chaos_key: chaosSeed.trim() || undefined,
         }),
       });
       if (res.ok) {
         const data = await res.json();
-        router.push(`/orders/${data.order_id || "ORD-20260712-004218"}`);
+        if (data.order_id) {
+          router.push(`/orders/${data.order_id}`);
+        } else {
+          router.push("/orders");
+        }
       } else {
         const errorData = await res.json().catch(() => null);
-        if (errorData?.detail) {
-          setValidationErrors([typeof errorData.detail === "string" ? errorData.detail : JSON.stringify(errorData.detail)]);
-          setValidatedSuccess(false);
-        } else {
-          router.push("/orders/ORD-20260712-004218");
-        }
+        const errMsg = errorData?.detail || "Order submission failed";
+        setValidationErrors([typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg)]);
+        setValidatedSuccess(false);
       }
-    } catch {
-      router.push("/orders/ORD-20260712-004218");
+    } catch (err: unknown) {
+      setValidationErrors([err instanceof Error ? err.message : "Failed to connect to order API"]);
+      setValidatedSuccess(false);
     } finally {
       setSubmitting(false);
     }

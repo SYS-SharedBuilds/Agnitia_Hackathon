@@ -162,8 +162,8 @@ export default function OrderDetailPage() {
         </div>
       )}
 
-      {/* STICKY INTERVENTION BANNER (Hidden once resolved) */}
-      {!isResolved && (order ? order.state === "NEEDS_ATTENTION" : true) && (
+      {/* STICKY INTERVENTION BANNER (Only displayed when saga is genuinely halted needing NOC attention) */}
+      {!isResolved && order?.state === "NEEDS_ATTENTION" && (
         <div className="sticky top-14 z-30 bg-white border-2 border-[#0A1B2E] rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-[#0A1B2E] flex items-center justify-center text-white shrink-0 shadow-2xs">
@@ -173,11 +173,11 @@ export default function OrderDetailPage() {
               <div className="flex items-center gap-2">
                 <span className="font-headline-sm text-headline-sm font-bold text-[#000000]">Manual intervention required</span>
                 <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-[#0A1B2E] text-white font-mono font-semibold">
-                  5 RETRIES EXHAUSTED
+                  RETRIES EXHAUSTED
                 </span>
               </div>
               <p className="font-body-sm text-body-sm text-[#000000] mt-0.5">
-                Network deprovision failed after 5 attempts (<code className="font-mono font-semibold text-[#000000]">HLR_GATEWAY_TIMEOUT_504</code>). Saga rollback halted; downstream compensation steps are stalled.
+                {order?.failure_reason || "Downstream task execution or compensation failed. Saga execution halted awaiting operator override."}
               </p>
             </div>
           </div>
@@ -494,26 +494,43 @@ export default function OrderDetailPage() {
               </button>
             </div>
             {/* Prominent State Semantic Pill */}
-            {isResolved || order?.state === "ROLLED_BACK" ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1B2E] text-white border border-[#0A1B2E] shadow-2xs">
-                <span className="material-symbols-outlined text-[15px]">check_circle</span>
-                <span className="font-label-sm text-label-sm font-bold tracking-wide uppercase">ROLLED_BACK</span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1B2E] text-white border border-[#0A1B2E] shadow-2xs">
-                <span className="material-symbols-outlined text-[15px]">warning</span>
-                <span className="font-label-sm text-label-sm font-bold tracking-wide uppercase">NEEDS_ATTENTION</span>
-              </div>
-            )}
-            {isResolved || order?.state === "ROLLED_BACK" ? (
-              <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold font-mono">
-                MANUALLY RESOLVED (NOC OVERRIDE)
-              </span>
-            ) : (
-              <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold font-mono">
-                COMPENSATION FAILED (5/5)
-              </span>
-            )}
+            {(() => {
+              const state = order?.state || (isResolved ? "ROLLED_BACK" : "IN_PROGRESS");
+              const isHalted = state === "NEEDS_ATTENTION";
+              const isSuccess = state === "ACTIVE";
+              const isRolledBack = state === "ROLLED_BACK";
+              return (
+                <>
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-white shadow-2xs ${
+                    isSuccess ? "bg-emerald-700 border border-emerald-600" : isHalted ? "bg-red-700 border border-red-600" : "bg-[#0A1B2E] border border-[#0A1B2E]"
+                  }`}>
+                    <span className="material-symbols-outlined text-[15px]">
+                      {isSuccess ? "check_circle" : isHalted ? "warning" : isRolledBack ? "history" : "sync"}
+                    </span>
+                    <span className="font-label-sm text-label-sm font-bold tracking-wide uppercase">
+                      {state}
+                    </span>
+                  </div>
+                  {isResolved ? (
+                    <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold font-mono">
+                      OPERATOR RESOLVED
+                    </span>
+                  ) : isSuccess ? (
+                    <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold font-mono">
+                      SAGA COMPLETED ({tasks.filter((t) => t.state === "SUCCEEDED").length}/{tasks.length || 8})
+                    </span>
+                  ) : isHalted ? (
+                    <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold font-mono">
+                      ROLLBACK HALTED
+                    </span>
+                  ) : (
+                    <span className="font-label-sm text-label-sm px-2.5 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold font-mono">
+                      EXECUTING ({tasks.filter((t) => t.state === "SUCCEEDED").length}/{tasks.length || 8})
+                    </span>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* Action Buttons */}
@@ -525,13 +542,19 @@ export default function OrderDetailPage() {
               <span className="material-symbols-outlined text-[16px]">history</span>
               <span>Replay Mode</span>
             </Link>
-            {/* Certificate Pending Badge */}
+            {/* Certificate Status Badge */}
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-white border border-[#CBD5E1] text-[#000000] shadow-2xs"
-              title="Certificate pending — order not terminal-consistent"
+              title={certificateData || isResolved ? "Cryptographic certificate verified" : "Certificate pending"}
             >
-              <span className="material-symbols-outlined text-[16px] text-[#000000]">warning</span>
-              <span>Certificate pending — order not terminal-consistent</span>
+              <span className="material-symbols-outlined text-[16px] text-[#000000]">
+                {certificateData || isResolved ? "verified" : "pending"}
+              </span>
+              <span>
+                {certificateData || isResolved
+                  ? "Consistency Certificate Sealed"
+                  : "Certificate pending — saga executing"}
+              </span>
             </div>
             <a
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-md text-body-md font-medium text-[#000000] bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] transition-colors shadow-2xs"
@@ -571,25 +594,30 @@ export default function OrderDetailPage() {
           <div className="text-[#000000]-variant">·</div>
           <div className="flex items-center gap-1.5">
             <span className="text-[#000000]">Customer:</span>
-            <span className="font-semibold text-on-surface">{order?.customer_id || "Marcus Vance"}</span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant">(+1 555 019-4821)</span>
+            <span className="font-semibold text-on-surface">{order?.customer_id || "Customer"}</span>
+            {order?.msisdn && (
+              <span className="font-label-sm text-label-sm text-on-surface-variant">({order.msisdn})</span>
+            )}
           </div>
           <div className="text-[#000000]-variant">·</div>
           <div className="flex items-center gap-1.5">
             <span className="text-[#000000]">Client Ref:</span>
-            <span className="font-label-sm text-label-sm text-on-surface font-semibold">EXT-CRM-991024</span>
+            <span className="font-label-sm text-label-sm text-on-surface font-semibold">
+              {order?.client_order_ref || orderId}
+            </span>
           </div>
           <div className="text-[#000000]-variant">·</div>
           <div className="flex items-center gap-1.5">
             <span className="text-[#000000]">Created:</span>
-            <span className="font-label-sm text-label-sm text-on-surface">2026-07-12 14:22:04 UTC</span>
-            <span className="text-on-surface-variant">(8m 14s ago)</span>
+            <span className="font-label-sm text-label-sm text-on-surface">
+              {order?.created_at ? new Date(order.created_at).toLocaleString() : "Just now"}
+            </span>
           </div>
           <div className="text-[#000000]-variant">·</div>
           <div className="flex items-center gap-1.5 ml-auto">
             <span className="material-symbols-outlined text-[16px] text-primary-container">timer</span>
             <span className="font-label-sm text-label-sm text-primary-container font-bold px-2 py-0.5 rounded bg-surface-container">
-              Elapsed: 4.82s
+              Elapsed: {order?.activation_ms ? `${(order.activation_ms / 1000).toFixed(2)}s` : order?.state === "ACTIVE" ? "1.65s" : "Live"}
             </span>
           </div>
         </div>
@@ -652,65 +680,125 @@ export default function OrderDetailPage() {
             </div>
             <span className="text-[#000000]-variant">|</span>
             <span className="font-label-md text-label-md font-semibold text-on-surface">
-              Seq {currentSeq} <span className="text-on-surface-variant font-normal">/ 42</span>
+              Seq {events.length > 0 ? Math.min(currentSeq, events.length) : currentSeq} <span className="text-on-surface-variant font-normal">/ {events.length || 42}</span>
             </span>
           </div>
 
           {/* Scrubber Label / Status Alert */}
           <div className="flex items-center gap-2 bg-[#F8FAFC] border border-[#CBD5E1] px-3 py-1 rounded-full text-label-sm font-label-sm text-[#000000] shadow-2xs">
-            <span className="material-symbols-outlined text-[15px] text-[#000000]">error</span>
+            <span className="material-symbols-outlined text-[15px] text-[#000000]">
+              {order?.state === "ACTIVE" ? "check_circle" : order?.state === "NEEDS_ATTENTION" ? "error" : "info"}
+            </span>
             <span>
-              Seq {currentSeq}: <span className="font-bold font-mono text-[#000000]">saga.compensation_failed</span> · Deprovision Network (HLR Gateway 504 Gateway Timeout)
+              {(() => {
+                const totalEvts = events.length || 42;
+                const activeEvt = events[Math.min(currentSeq - 1, events.length - 1)];
+                if (activeEvt) {
+                  return (
+                    <>
+                      Seq {activeEvt.seq}: <span className="font-bold font-mono text-[#000000]">{activeEvt.type}</span> · {activeEvt.task_id || order?.state}
+                    </>
+                  );
+                }
+                if (order?.state === "ACTIVE") {
+                  return (
+                    <>
+                      Seq {totalEvts}: <span className="font-bold font-mono text-[#000000]">order.completed</span> · All forward tasks succeeded
+                    </>
+                  );
+                }
+                if (order?.state === "NEEDS_ATTENTION") {
+                  return (
+                    <>
+                      Seq {currentSeq}: <span className="font-bold font-mono text-[#000000]">saga.compensation_failed</span> · Rollback Blocked ({order.failure_reason || "Downstream failure"})
+                    </>
+                  );
+                }
+                return (
+                  <>
+                    Seq {currentSeq}: <span className="font-bold font-mono text-[#000000]">order.in_progress</span> · Processing DAG tasks
+                  </>
+                );
+              })()}
             </span>
           </div>
 
           {/* Jump & Action Buttons */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentSeq(31)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-semibold bg-[#0A1B2E] text-white hover:bg-[#1E293B] transition-colors shadow-2xs"
-            >
-              <span className="material-symbols-outlined text-[14px]">report_problem</span>
-              <span>Jump to Compensation Halt</span>
-            </button>
-            <button className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-white text-[#000000] border border-[#CBD5E1] hover:bg-[#F8FAFC] transition-colors shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E] animate-ping"></span>
-              <span>Waiting on NOC</span>
-            </button>
+            {order?.state === "NEEDS_ATTENTION" ? (
+              <>
+                <button
+                  onClick={() => setCurrentSeq(events.length || 31)}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-semibold bg-[#0A1B2E] text-white hover:bg-[#1E293B] transition-colors shadow-2xs"
+                >
+                  <span className="material-symbols-outlined text-[14px]">report_problem</span>
+                  <span>Jump to Fault Point</span>
+                </button>
+                <button className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-white text-[#000000] border border-[#CBD5E1] hover:bg-[#F8FAFC] transition-colors shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E] animate-ping"></span>
+                  <span>Waiting on NOC</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setCurrentSeq(events.length || 8)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-white text-[#000000] border border-[#CBD5E1] hover:bg-[#F8FAFC] transition-colors shadow-2xs"
+              >
+                <span className="material-symbols-outlined text-[14px]">fast_forward</span>
+                <span>Jump to Latest Event</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Scrubber Progress Bar */}
         <div className="relative pt-2 pb-1">
-          <div
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickPercent = (e.clientX - rect.left) / rect.width;
-              setCurrentSeq(Math.max(1, Math.round(clickPercent * 42)));
-            }}
-            className="w-full h-2 bg-[#F1F5F9] rounded-full relative cursor-pointer overflow-hidden border border-[#CBD5E1]"
-          >
-            <div className="absolute left-0 top-0 bottom-0 bg-[#0A1B2E] rounded-l-full" style={{ width: "55%" }}></div>
-            <div className="absolute top-0 bottom-0 bg-[#475569]" style={{ left: "55%", width: "3%" }}></div>
-            <div className="absolute top-0 bottom-0 bg-[#0A1B2E]" style={{ left: "58%", width: "14%" }}></div>
-            <div className="absolute top-0 bottom-0 bg-[#CBD5E1]" style={{ left: "72%", width: "28%" }}></div>
-          </div>
-          {/* Playhead Thumb Indicator placed exactly at halt point */}
-          <div
-            className="absolute top-1 -ml-2 flex flex-col items-center pointer-events-none transition-all"
-            style={{ left: `${(currentSeq / 42) * 100}%` }}
-          >
-            <div className="w-4 h-4 bg-[#0A1B2E] border-2 border-white rounded-full shadow-md animate-pulse"></div>
-          </div>
-          {/* Timeline Tick Marks */}
-          <div className="flex justify-between items-center px-1 pt-1.5 font-label-sm text-label-sm text-[#000000] font-mono">
-            <span>0.00s (Validate)</span>
-            <span>1.20s (Parallel Fork)</span>
-            <span className="text-[#000000] font-semibold">3.62s (OCS Fail)</span>
-            <span className="text-[#000000] font-bold">5.94s (HLR Retry 5× Fail)</span>
-            <span className="text-[#000000]">Halted: Rollback Blocked</span>
-            <span className="text-[#000000]">Target: 42 (Unreachable)</span>
-          </div>
+          {(() => {
+            const maxSeq = events.length > 0 ? events.length : 42;
+            const isHalted = order?.state === "NEEDS_ATTENTION";
+            const isCompleted = order?.state === "ACTIVE";
+            const percent = isCompleted ? 100 : Math.min(100, Math.max(10, Math.round((currentSeq / maxSeq) * 100)));
+            return (
+              <>
+                <div
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickPercent = (e.clientX - rect.left) / rect.width;
+                    setCurrentSeq(Math.max(1, Math.round(clickPercent * maxSeq)));
+                  }}
+                  className="w-full h-2 bg-[#F1F5F9] rounded-full relative cursor-pointer overflow-hidden border border-[#CBD5E1]"
+                >
+                  <div
+                    className={`absolute left-0 top-0 bottom-0 rounded-full transition-all duration-300 ${
+                      isCompleted ? "bg-[#0A1B2E]" : isHalted ? "bg-red-700" : "bg-[#0A1B2E]"
+                    }`}
+                    style={{ width: `${percent}%` }}
+                  ></div>
+                </div>
+                {/* Playhead Thumb Indicator */}
+                <div
+                  className="absolute top-1 -ml-2 flex flex-col items-center pointer-events-none transition-all"
+                  style={{ left: `${percent}%` }}
+                >
+                  <div className={`w-4 h-4 border-2 border-white rounded-full shadow-md animate-pulse ${
+                    isCompleted ? "bg-[#0A1B2E]" : isHalted ? "bg-red-700" : "bg-[#0A1B2E]"
+                  }`}></div>
+                </div>
+                {/* Timeline Tick Marks */}
+                <div className="flex justify-between items-center px-1 pt-1.5 font-label-sm text-label-sm text-[#000000] font-mono">
+                  <span>0.00s (Validate)</span>
+                  <span>0.34s (Reserve SIM)</span>
+                  <span className="text-[#000000] font-semibold">0.96s (Network &amp; Billing)</span>
+                  <span className="text-[#000000] font-bold">
+                    {isCompleted ? "1.65s (Activated)" : isHalted ? "Compensation Halted" : "Executing..."}
+                  </span>
+                  <span className="text-[#000000]">
+                    Status: {order?.state || "IN_PROGRESS"}
+                  </span>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -760,6 +848,8 @@ export default function OrderDetailPage() {
               }}
               dagGrid={dagGrid}
               dagMinimap={dagMinimap}
+              tasks={tasks}
+              orderState={order?.state}
             />
           </div>
         </div>
@@ -969,7 +1059,30 @@ export default function OrderDetailPage() {
                     },
                   };
 
-                  const currentMeta = taskMetadata[selectedTaskId] || taskMetadata["deprovision_network"];
+                  // Check if selected task exists in live tasks list
+                  const liveTask = tasks.find((t) => t.task_id === selectedTaskId);
+                  const baseMeta = taskMetadata[selectedTaskId];
+                  const currentMeta = liveTask
+                    ? {
+                        title: baseMeta?.title || liveTask.task_id.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+                        system: liveTask.system.toUpperCase(),
+                        action: baseMeta?.action || liveTask.task_id,
+                        attempts: `${liveTask.attempts || 1}/${liveTask.attempts > 1 ? liveTask.attempts : 3}`,
+                        duration: liveTask.ended_at && liveTask.started_at ? `${Math.round((new Date(liveTask.ended_at).getTime() - new Date(liveTask.started_at).getTime()))}ms` : (baseMeta?.duration || "180ms"),
+                        result: liveTask.state,
+                        code: liveTask.last_error ? "ERROR" : "HTTP 200 OK",
+                        err: liveTask.last_error || "None · Completed successfully",
+                      }
+                    : baseMeta || taskMetadata["validate_order"] || {
+                        title: selectedTaskId,
+                        system: "SYSTEM",
+                        action: selectedTaskId,
+                        attempts: "1/3",
+                        duration: "200ms",
+                        result: "SUCCEEDED",
+                        code: "HTTP 200 OK",
+                        err: "None",
+                      };
 
                   return (
                     <>
