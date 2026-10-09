@@ -52,8 +52,9 @@ class CertificateSigner:
         self._private_key: ed25519.Ed25519PrivateKey | None = None
         self._public_key: ed25519.Ed25519PublicKey
 
-        if key_path and Path(key_path).exists():
-            with open(key_path, "rb") as f:
+        actual_path = Path(key_path) if key_path else Path("/tmp/switchon_ed25519.pem")
+        if actual_path.exists():
+            with open(actual_path, "rb") as f:
                 loaded = load_pem_private_key(f.read(), password=None)
                 if isinstance(loaded, ed25519.Ed25519PrivateKey):
                     self._private_key = loaded
@@ -61,17 +62,18 @@ class CertificateSigner:
                 else:
                     raise ValueError("Key in path is not Ed25519PrivateKey")
         else:
-            # Generate local dev key
+            # Generate local dev key and persist
             self._private_key = ed25519.Ed25519PrivateKey.generate()
             self._public_key = self._private_key.public_key()
-            if key_path:
-                p = Path(key_path)
-                p.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                actual_path.parent.mkdir(parents=True, exist_ok=True)
                 pem = self._private_key.private_bytes(
                     Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
                 )
-                with open(p, "wb") as f:
+                with open(actual_path, "wb") as f:
                     f.write(pem)
+            except Exception:
+                pass
 
     def get_public_key_pem(self) -> str:
         return self._public_key.public_bytes(

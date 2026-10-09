@@ -148,13 +148,21 @@ class EventProjector:
         assert self.redis_client is not None
         while True:
             try:
-                entries = await self.redis_client.xreadgroup(
-                    "projector_group",
-                    "projector_worker_1",
-                    {"order.events": ">"},
-                    count=10,
-                    block=2000,
-                )
+                try:
+                    entries = await self.redis_client.xreadgroup(
+                        "projector_group",
+                        "projector_worker_1",
+                        {"order.events": ">"},
+                        count=10,
+                        block=2000,
+                    )
+                except Exception as xerr:
+                    if "NOGROUP" in str(xerr) or "no such key" in str(xerr).lower():
+                        await self.init_redis()
+                        await asyncio.sleep(0.5)
+                        continue
+                    raise xerr
+
                 if not entries:
                     continue
 
