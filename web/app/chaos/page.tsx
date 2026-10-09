@@ -6,6 +6,7 @@ import Link from "next/link";
 interface SubsystemConfig {
   id: string;
   name: string;
+  icon: string;
   port: number;
   protocol: string;
   status: "HEALTHY" | "DEGRADED";
@@ -30,6 +31,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "oms",
     name: "OMS Core (Order Management)",
+    icon: "dns",
     port: 8101,
     protocol: "Orchestrator Kernel · Temporal Workflow Driver · gRPC / HTTP2",
     status: "HEALTHY",
@@ -47,6 +49,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "sim",
     name: "SIM / eSIM Inventory Pool",
+    icon: "sim_card",
     port: 8102,
     protocol: "Profile Allocation · SM-DP+ Interface · REST / mTLS",
     status: "HEALTHY",
@@ -64,6 +67,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "network",
     name: "Network Slice Gateway (HLR / HSS)",
+    icon: "router",
     port: 8103,
     protocol: "Core Network Diameter Protocol & 5G QoS Subsystem · Injected via Chaos Mesh",
     status: "DEGRADED",
@@ -91,6 +95,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "ocs",
     name: "OCS Billing Engine",
+    icon: "payments",
     port: 8104,
     protocol: "Online Charging System · Ro / Diameter · Tariff Quota Locks",
     status: "DEGRADED",
@@ -117,6 +122,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "notif",
     name: "Notification Hub (SMS / Push)",
+    icon: "notifications_active",
     port: 8105,
     protocol: "Customer Dispatches · SMPP Gateway & Webhook Transmitters",
     status: "HEALTHY",
@@ -223,7 +229,7 @@ export default function SystemsChaosPage() {
       <section className="bg-white border border-[#CBD5E1] rounded-xl p-4 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start gap-3.5">
           <div className="p-2 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-[#0A1B2E] shrink-0 mt-0.5 md:mt-0">
-            <span className="material-symbols-outlined text-[20px]">warning</span>
+            <span className="material-symbols-outlined text-[20px]">tune</span>
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -260,16 +266,16 @@ export default function SystemsChaosPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-mono">
+              <span className="text-[11px] uppercase tracking-wider text-[#64748B] font-mono font-semibold">
                 Cluster Topology: us-east-core
               </span>
-              <span className="text-on-surface-variant/40">/</span>
-              <span className="font-label-sm text-label-sm font-mono text-primary font-semibold">Resilience Engine</span>
+              <span className="text-[#CBD5E1]">/</span>
+              <span className="text-[11px] font-mono text-[#0A1B2E] font-semibold">Resilience Engine</span>
             </div>
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-semibold">
+            <h1 className="text-[24px] font-bold text-[#0A1B2E] tracking-tight">
               Systems &amp; Chaos Injection
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
+            <p className="text-[13px] text-[#64748B]">
               Telemetry status, live bulkhead saturation, and targeted fault injection across telecom microservices
             </p>
           </div>
@@ -281,24 +287,24 @@ export default function SystemsChaosPage() {
                 navigator.clipboard.writeText("make chaos-status");
                 alert("Copied CLI command to clipboard: make chaos-status");
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors cursor-pointer border border-outline-variant/30"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] text-[13px] font-medium transition-colors cursor-pointer border border-[#CBD5E1] shadow-2xs"
             >
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">terminal</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">terminal</span>
               <span className="font-mono">make chaos-status</span>
-              <span className="material-symbols-outlined text-[14px] text-on-surface-variant ml-0.5">content_copy</span>
+              <span className="material-symbols-outlined text-[14px] text-[#94A3B8] ml-0.5">content_copy</span>
             </button>
             <button
               onClick={downloadTopologyJSON}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-surface-container-low text-on-surface font-body-md text-body-md shadow-xs transition-colors cursor-pointer border border-outline-variant/30"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] text-[13px] font-medium shadow-2xs transition-colors cursor-pointer border border-[#CBD5E1]"
             >
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">download</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">download</span>
               <span>Export Topology JSON</span>
             </button>
             <button
               onClick={handleResetAllChaos}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-error hover:bg-error/90 text-white font-body-md text-body-md font-medium shadow-xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white text-[13px] font-medium shadow-xs transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">power_settings_new</span>
+              <span className="material-symbols-outlined text-[16px]">restart_alt</span>
               <span>Emergency Reset All</span>
             </button>
           </div>
@@ -307,73 +313,61 @@ export default function SystemsChaosPage() {
         {/* Quick Stats Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Stat 1 */}
-          <div className="bg-white rounded-xl p-4 shadow-2xs border border-[#CBD5E1] flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-[#64748B] tracking-wider">
-                Active Faults
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Active Faults
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                {activeFaultsCount} Faults
               </span>
-              <div className="flex items-baseline gap-2">
-                <span className="font-headline-lg text-headline-lg font-bold text-[#0A1B2E]">
-                  {activeFaultsCount} Faults
-                </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1] font-label-sm text-label-sm font-semibold shadow-2xs">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E] animate-ping"></span>
-                  Live
-                </span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
-              <span className="material-symbols-outlined text-[24px]">crisis_alert</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] text-[10px] font-mono font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E] animate-pulse"></span>
+                Live
+              </span>
             </div>
           </div>
 
           {/* Stat 2 */}
-          <div className="bg-white rounded-xl p-4 shadow-2xs border border-[#CBD5E1] flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-[#64748B] tracking-wider">
-                Subsystems Health
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Subsystems Health
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                {healthyCount} / {systems.length}
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-headline-lg text-headline-lg font-bold text-[#0A1B2E]">
-                  {healthyCount} / {systems.length}
-                </span>
-                <span className="font-body-sm text-body-sm text-[#0A1B2E] font-medium">Nominal (60%)</span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
-              <span className="material-symbols-outlined text-[24px]">verified</span>
+              <span className="text-[11px] font-medium text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-1.5 py-0.5 rounded font-mono">
+                Nominal (60%)
+              </span>
             </div>
           </div>
 
           {/* Stat 3 */}
-          <div className="bg-white rounded-xl p-4 shadow-2xs border border-[#CBD5E1] flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-[#64748B] tracking-wider">
-                Sagas in Blast Radius
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Sagas in Blast Radius
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                4 Orders
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-headline-lg text-headline-lg font-bold text-[#0A1B2E]">4 Orders</span>
-                <span className="font-body-sm text-body-sm text-[#64748B] font-medium">Interception Active</span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
-              <span className="material-symbols-outlined text-[24px]">emergency_heat</span>
+              <span className="text-[11px] font-medium text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-1.5 py-0.5 rounded font-mono">
+                Active Guard
+              </span>
             </div>
           </div>
 
           {/* Stat 4 */}
-          <div className="bg-white rounded-xl p-4 shadow-2xs border border-[#CBD5E1] flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-[#64748B] tracking-wider">
-                Mean Bulkhead Headroom
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Mean Bulkhead Headroom
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                54.2%
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-headline-lg text-headline-lg font-bold text-[#0A1B2E]">54.2%</span>
-                <span className="font-body-sm text-body-sm text-[#64748B]">29 / 71 slots</span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
-              <span className="material-symbols-outlined text-[24px]">tune</span>
+              <span className="text-[11px] text-[#64748B] font-mono">29 / 71 slots</span>
             </div>
           </div>
         </div>
@@ -412,13 +406,11 @@ export default function SystemsChaosPage() {
                   {/* Card Header */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
                     <div className="flex items-start gap-3">
-                      <span
-                        className={`h-3 w-3 rounded-full mt-1.5 shrink-0 ${
-                          isDegraded
-                            ? "bg-[#0A1B2E] animate-pulse"
-                            : "bg-[#0A1B2E]"
-                        }`}
-                      ></span>
+                      <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center text-[#0A1B2E] shrink-0 mt-0.5">
+                        <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">
+                          {sys.icon}
+                        </span>
+                      </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">
@@ -436,7 +428,6 @@ export default function SystemsChaosPage() {
                         <span className="font-body-sm text-body-sm text-[#64748B]">{sys.protocol}</span>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="px-2.5 py-1 rounded-full font-label-sm text-label-sm font-mono font-bold flex items-center gap-1.5 border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
                         <span
@@ -627,7 +618,7 @@ export default function SystemsChaosPage() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
-                    <span className="material-symbols-outlined text-[20px]">shield_with_heart</span>
+                    <span className="material-symbols-outlined text-[18px]">shield</span>
                   </span>
                   <h2 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">
                     Blast Radius

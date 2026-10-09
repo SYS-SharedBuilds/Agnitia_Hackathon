@@ -696,9 +696,9 @@ export default function CatalogPage() {
                   </div>
 
                   {/* Wave Swim-lane Canvas */}
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 pt-2">
                     {/* WAVE 1 */}
-                    <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0]">
+                    <div className="bg-surface-container-low rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0] min-w-0">
                       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-primary text-white font-label-sm text-label-sm flex items-center justify-center font-bold">
@@ -714,22 +714,22 @@ export default function CatalogPage() {
                       </div>
                       <div className="flex flex-col gap-2.5">
                         {/* Node 1.1 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-primary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-primary font-mono break-all sm:break-normal">
                               validate_customer_eligibility
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Read_Only
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">dns</span> OMS (8101)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">VerifyAddressAndCredit</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">VerifyAddressAndCredit</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
                             <span>Timeout: 1,500ms</span>
                             <span className="text-tertiary">Comp: None</span>
                           </div>
@@ -741,31 +741,31 @@ export default function CatalogPage() {
                         </div>
 
                         {/* Node 1.2 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               reserve_terminal_port
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Mutating
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">inventory_2</span> Inventory (8102)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">LockGponPortAndSplitter</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">LockGponPortAndSplitter</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
                             <span>Timeout: 3,000ms</span>
-                            <span className="text-primary font-mono">↩ release_terminal_port</span>
+                            <span className="text-primary font-mono truncate" title="release_terminal_port">↩ release_terminal_port</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* WAVE 2 */}
-                    <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0]">
+                    <div className="bg-surface-container-low rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0] min-w-0">
                       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-secondary text-white font-label-sm text-label-sm flex items-center justify-center font-bold">
@@ -781,75 +781,75 @@ export default function CatalogPage() {
                       </div>
                       <div className="flex flex-col gap-2.5">
                         {/* Node 2.1 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               provision_ont_bridge
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Mutating
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">router</span> Network (8103)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">ConfigureCpeBridge</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">ConfigureCpeBridge</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [reserve_terminal_port]</span>
-                            <span className="text-primary font-mono">↩ deprovision_ont_bridge</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [reserve_terminal_port]</span>
+                            <span className="text-primary font-mono truncate" title="deprovision_ont_bridge">↩ deprovision_ont_bridge</span>
                           </div>
                         </div>
 
                         {/* Node 2.2 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               bind_qos_profile
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Mutating
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">speed</span> Network (8103)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">SetBandwidthSlice (500M)</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">SetBandwidthSlice (500M)</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [reserve_terminal_port]</span>
-                            <span className="text-primary font-mono">↩ unbind_qos_profile</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [reserve_terminal_port]</span>
+                            <span className="text-primary font-mono truncate" title="unbind_qos_profile">↩ unbind_qos_profile</span>
                           </div>
                         </div>
 
                         {/* Node 2.3 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono break-all sm:break-normal">
                               verify_optical_power
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Best_Effort
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">sensors</span> Network (8103)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">SampleOtdrTelemetry</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">SampleOtdrTelemetry</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [provision_ont_bridge]</span>
-                            <span className="text-tertiary">Comp: None</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [provision_ont_bridge]</span>
+                            <span className="text-tertiary shrink-0">Comp: None</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* WAVE 3 */}
-                    <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0]">
+                    <div className="bg-surface-container-low rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0] min-w-0 md:col-span-2 2xl:col-span-1">
                       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-tertiary-container text-white font-label-sm text-label-sm flex items-center justify-center font-bold">
@@ -865,24 +865,24 @@ export default function CatalogPage() {
                       </div>
                       <div className="flex flex-col gap-2.5">
                         {/* Node 3.1 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               activate_tariff_billing
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-semibold font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-semibold font-mono shrink-0">
                               Strict_Commit
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">receipt_long</span> Billing (8104)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">InstantiateChargeLedger</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">InstantiateChargeLedger</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [bind_qos, provision_ont]</span>
-                            <span className="text-primary font-mono">↩ revoke_charge_ledger</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [bind_qos, provision_ont]</span>
+                            <span className="text-primary font-mono truncate" title="revoke_charge_ledger">↩ revoke_charge_ledger</span>
                           </div>
                         </div>
 
@@ -892,23 +892,23 @@ export default function CatalogPage() {
                         </div>
 
                         {/* Node 3.2 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono break-all sm:break-normal">
                               dispatch_welcome_notification
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Best_Effort
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">send</span> Notify (8105)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">SendSmsAndEmail</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">SendSmsAndEmail</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [activate_tariff_billing]</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [activate_tariff_billing]</span>
                             <span className="text-tertiary">Comp: None</span>
                           </div>
                         </div>

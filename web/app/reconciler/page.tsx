@@ -736,10 +736,16 @@ export default function ReconcilerPage() {
 
         {/* INTERACTIVE STATE DIFF DRAWER (Slide-Over Card) */}
         {drawerOpen && (
-          <div
-            className="fixed top-14 right-0 bottom-0 w-[560px] max-w-full bg-white border-l border-[#E2E8F0] shadow-2xl z-50 flex flex-col transition-transform duration-300 transform translate-x-0"
-            id="inspector-drawer"
-          >
+          <>
+            <div
+              className="fixed inset-0 top-14 bg-[#0A1B2E]/40 backdrop-blur-xs z-40 lg:hidden"
+              onClick={() => setDrawerOpen(false)}
+              aria-hidden="true"
+            />
+            <div
+              className="fixed top-14 right-0 bottom-0 w-full sm:w-[560px] max-w-full bg-white border-l border-[#E2E8F0] shadow-2xl z-50 flex flex-col transition-transform duration-300 transform translate-x-0"
+              id="inspector-drawer"
+            >
             {/* Drawer Header */}
             <div className="p-5 border-b border-[#E2E8F0] flex items-start justify-between bg-white shrink-0">
               <div className="space-y-1">
@@ -939,7 +945,8 @@ export default function ReconcilerPage() {
               </div>
             </div>
           </div>
-        )}
+        </>
+      )}
       </div>
 
       {/* ZERO-DRIFT EMPTY STATE / PERIODIC AUDIT MILESTONE SHOWCASE */}

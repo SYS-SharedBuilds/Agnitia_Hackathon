@@ -297,8 +297,8 @@ export default function ScenariosProofPage() {
       </div>
 
       {/* Primary Tab Navigation Strip */}
-      <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
-        <div className="inline-flex p-1 bg-surface-container-high/60 rounded-xl border border-outline-variant/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/30">
+        <div className="inline-flex p-1 bg-surface-container-high/60 rounded-xl border border-outline-variant/40 overflow-x-auto max-w-full scrollbar-none">
           <button
             onClick={() => setActiveTab("scenarios")}
             className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-lg font-body-md text-body-md transition-colors ${

@@ -213,8 +213,8 @@ export default function NewOrderPage() {
 
             {/* Validation Success Banner */}
             {validatedSuccess && (
-              <div className="mb-7 bg-white border border-[#CBD5E1] rounded-lg p-4 shadow-2xs flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="mb-7 bg-white border border-[#CBD5E1] rounded-lg p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start sm:items-center gap-3">
                   <span className="material-symbols-outlined text-[#0A1B2E] text-[20px]">check_circle</span>
                   <div>
                     <span className="font-label-sm text-label-sm font-bold text-[#0A1B2E] uppercase tracking-wide">

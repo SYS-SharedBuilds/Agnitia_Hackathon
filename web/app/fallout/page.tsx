@@ -56,6 +56,7 @@ export default function FalloutQueuePage() {
   const [showManualModal, setShowManualModal] = useState(false);
   const [resolutionTicket, setResolutionTicket] = useState("INC-94821");
   const [resolutionNotes, setResolutionNotes] = useState("");
+  const [activeDagNode, setActiveDagNode] = useState<string>("rollback-deprovision");
 
   const selectedIncident = incidents.find((i) => i.id === selectedId) || incidents[0];
 
@@ -379,7 +380,7 @@ export default function FalloutQueuePage() {
                   <span className="text-[#CBD5E1]">|</span>
                   <a
                     className="inline-flex items-center gap-1 text-[#0A1B2E] hover:text-[#14263b] font-label-sm text-label-sm font-semibold hover:underline"
-                    href="http://localhost:8233"
+                    href={`${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -531,114 +532,379 @@ export default function FalloutQueuePage() {
             </div>
 
             {/* 3. Mini Saga Execution DAG (Failed Compensation Flow) */}
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[20px]">account_tree</span>
-                  <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                    Saga Orchestration Execution DAG
-                  </h2>
+            <div className="bg-white rounded-xl shadow-2xs border border-[#CBD5E1] flex flex-col overflow-hidden">
+              {/* DAG Header & Controls */}
+              <div className="p-4 border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-3 bg-white">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E] flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[18px]">account_tree</span>
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-[15px] font-bold text-[#0A1B2E] tracking-tight">
+                        Saga Orchestration Execution DAG
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]">
+                        HALTED
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-[#64748B]">
+                      Interactive saga topology · Click any task node to inspect retry telemetry, inputs, and compensation handlers
+                    </p>
+                  </div>
                 </div>
-                {/* Legend */}
-                <div className="flex flex-wrap items-center gap-3 font-label-sm text-label-sm">
-                  <div className="flex items-center gap-1">
+
+                {/* Legend Chips */}
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
                     <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
-                    <span className="text-on-surface-variant">Succeeded</span>
-                  </div>
-                  <div className="flex items-center gap-1">
+                    Succeeded
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#CBD5E1] text-[#64748B]">
                     <span className="h-2 w-2 rounded-full bg-[#64748B]"></span>
-                    <span className="text-on-surface-variant">Failed</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
-                    <span className="text-on-surface-variant">Comp. Failed</span>
-                  </div>
-                  <div className="flex items-center gap-1">
+                    Forward Fail
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
+                    <span className="h-2 w-2 rounded-full bg-[#0A1B2E] animate-pulse"></span>
+                    Comp. Failed
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#CBD5E1] text-[#94A3B8]">
                     <span className="h-2 w-2 rounded-full bg-[#CBD5E1]"></span>
-                    <span className="text-on-surface-variant">Stalled</span>
-                  </div>
+                    Stalled
+                  </span>
                 </div>
               </div>
 
-              {/* DAG Graphic Canvas with Dot Grid Background */}
+              {/* DAG Canvas Playground */}
               <div
-                className="w-full bg-[#F8FAFC] rounded-xl p-4 overflow-x-auto border border-outline-variant/30"
+                className="w-full bg-[#F8FAFC] p-5 overflow-x-auto select-none border-b border-[#E2E8F0]"
                 style={{
                   backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
                   backgroundSize: "16px 16px",
                 }}
               >
-                <div className="min-w-[620px] flex flex-col gap-4 py-2">
-                  {/* Forward Execution Flow */}
-                  <div className="flex items-center gap-2">
-                    <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider w-16 shrink-0 font-mono">
-                      Forward:
-                    </span>
-                    {/* Node 1: Validate */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
-                      <div className="flex flex-col">
-                        <span className="font-label-sm text-label-sm font-semibold">Validate Order</span>
-                        <span className="font-label-sm text-label-sm text-outline">220ms</span>
-                      </div>
+                <div className="min-w-[840px] flex flex-col gap-6 py-2">
+                  {/* FORWARD WAVE */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-24 shrink-0 flex items-center gap-1 font-mono text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                      Forward
                     </div>
-                    <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
-                    {/* Parallel Split Nodes */}
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
-                        <span className="font-label-sm text-label-sm font-semibold">Reserve Inventory</span>
+
+                    {/* Step 1: Validate Order */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveDagNode("forward-validate")}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
+                        activeDagNode === "forward-validate"
+                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-[10px] text-[#64748B] font-semibold">OMS:8101</span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
+                          <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                          PASS
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
-                        <span className="font-label-sm text-label-sm font-semibold">Create Billing</span>
+                      <div className="font-semibold text-[13px] text-[#0A1B2E] truncate">Validate Order</div>
+                      <div className="font-mono text-[11px] text-[#64748B] mt-1 flex justify-between">
+                        <span>Latency</span>
+                        <span>220ms</span>
                       </div>
+                    </button>
+
+                    <span className="text-[#94A3B8] font-bold">→</span>
+
+                    {/* Step 2: Parallel Wave (Forked Branch) */}
+                    <div className="flex flex-col gap-2 w-[180px] shrink-0">
+                      {/* Branch A: SIM */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveDagNode("forward-inventory")}
+                        className={`text-left p-2.5 rounded-lg border transition-all cursor-pointer shadow-2xs bg-white ${
+                          activeDagNode === "forward-inventory"
+                            ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                            : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="font-mono text-[10px] text-[#64748B] font-semibold">SIM_INV:8102</span>
+                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
+                            <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                            PASS
+                          </span>
+                        </div>
+                        <div className="font-semibold text-[12px] text-[#0A1B2E] truncate">Reserve Inventory</div>
+                      </button>
+
+                      {/* Branch B: Billing */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveDagNode("forward-billing")}
+                        className={`text-left p-2.5 rounded-lg border transition-all cursor-pointer shadow-2xs bg-white ${
+                          activeDagNode === "forward-billing"
+                            ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                            : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="font-mono text-[10px] text-[#64748B] font-semibold">OCS:8104</span>
+                          <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
+                            <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                            PASS
+                          </span>
+                        </div>
+                        <div className="font-semibold text-[12px] text-[#0A1B2E] truncate">Create Billing</div>
+                      </button>
                     </div>
-                    <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
-                    {/* Node 3: Provision Network */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-xs text-on-surface border border-outline-variant/20">
-                      <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">check_circle</span>
-                      <span className="font-label-sm text-label-sm font-semibold">Provision Network</span>
-                    </div>
-                    <span className="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
-                    {/* Node 4: Start Charging (FAILED) */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F1F5F9] shadow-xs text-[#0A1B2E] font-medium border border-[#CBD5E1]">
-                      <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">cancel</span>
-                      <div className="flex flex-col">
-                        <span className="font-label-sm text-label-sm font-bold">Start Charging</span>
-                        <span className="font-label-sm text-label-sm text-[#64748B]">Err: Rating Engine 500</span>
+
+                    <span className="text-[#94A3B8] font-bold">→</span>
+
+                    {/* Step 3: Provision Network */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveDagNode("forward-network")}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
+                        activeDagNode === "forward-network"
+                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-[10px] text-[#64748B] font-semibold">HLR:8103</span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold">
+                          <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                          PASS
+                        </span>
                       </div>
-                    </div>
+                      <div className="font-semibold text-[13px] text-[#0A1B2E] truncate">Provision Network</div>
+                      <div className="font-mono text-[11px] text-[#64748B] mt-1 flex justify-between">
+                        <span>Latency</span>
+                        <span>1.42s</span>
+                      </div>
+                    </button>
+
+                    <span className="text-[#94A3B8] font-bold">→</span>
+
+                    {/* Step 4: Start Charging (Failed Trigger) */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveDagNode("forward-charging")}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[190px] shrink-0 bg-white ${
+                        activeDagNode === "forward-charging"
+                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-[10px] text-[#64748B] font-semibold">OCS:8104</span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#0A1B2E] font-bold bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
+                          <span className="material-symbols-outlined text-[13px]">cancel</span>
+                          ERR 500
+                        </span>
+                      </div>
+                      <div className="font-semibold text-[13px] text-[#0A1B2E] truncate">Start Charging</div>
+                      <div className="font-mono text-[11px] text-[#64748B] mt-1 truncate">
+                        Rating Engine Timeout
+                      </div>
+                    </button>
                   </div>
 
-                  {/* Reverse Compensation Flow Ribbon */}
-                  <div className="flex items-center gap-2 pl-6">
-                    <div className="flex items-center text-[#0A1B2E] gap-1 font-label-sm text-label-sm font-bold w-16 shrink-0 font-mono">
-                      <span className="material-symbols-outlined text-[18px]">subdirectory_arrow_right</span>
-                      <span>Rollback</span>
+                  {/* ROLLBACK COMPENSATION WAVE */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <div className="w-24 shrink-0 flex items-center gap-1 font-mono text-[11px] font-bold text-[#0A1B2E] uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[16px]">undo</span>
+                      Rollback
                     </div>
-                    {/* Compensation Node 1: Deprovision Network (HALTED) */}
-                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#0A1B2E] text-white shadow-2xs border border-[#0A1B2E]">
-                      <span className="material-symbols-outlined text-[18px] text-white animate-pulse">error</span>
-                      <div className="flex flex-col">
-                        <span className="font-label-sm text-label-sm font-bold">Deprovision Network</span>
-                        <span className="font-label-sm text-label-sm text-[#CBD5E1]">COMPENSATION_FAILED (5/5 Retries)</span>
+
+                    {/* Compensation Step 1: Deprovision Network (FAILED ROOT) */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveDagNode("rollback-deprovision")}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-xs w-[220px] shrink-0 bg-[#0A1B2E] text-white ${
+                        activeDagNode === "rollback-deprovision"
+                          ? "ring-2 ring-[#0A1B2E] ring-offset-2 border-white"
+                          : "border-[#0A1B2E] hover:bg-[#14263b]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-[10px] text-[#CBD5E1] font-semibold">HLR:8103</span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-white font-bold bg-[#14263b] px-1.5 py-0.5 rounded border border-[#334155]">
+                          <span className="material-symbols-outlined text-[13px] animate-pulse">warning</span>
+                          EXHAUSTED
+                        </span>
                       </div>
-                    </div>
-                    <span className="material-symbols-outlined text-[#64748B] text-[18px]">arrow_forward</span>
-                    {/* Compensation Node 2: Release Inventory (STALLED) */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F8FAFC] text-[#64748B] border border-[#CBD5E1]">
-                      <span className="material-symbols-outlined text-[16px]">pause_circle</span>
-                      <span className="font-label-sm text-label-sm font-medium">Release Inventory</span>
-                    </div>
-                    <span className="material-symbols-outlined text-[#64748B] text-[18px]">arrow_forward</span>
-                    {/* Compensation Node 3: Void Billing (STALLED) */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F8FAFC] text-[#64748B] border border-[#CBD5E1]">
-                      <span className="material-symbols-outlined text-[16px]">pause_circle</span>
-                      <span className="font-label-sm text-label-sm font-medium">Void Billing Acct</span>
-                    </div>
+                      <div className="font-bold text-[13px] text-white truncate">Deprovision Network</div>
+                      <div className="font-mono text-[11px] text-[#CBD5E1] mt-1 flex justify-between">
+                        <span>Retries</span>
+                        <span>5 / 5 Failed</span>
+                      </div>
+                    </button>
+
+                    <span className="text-[#94A3B8] font-bold">→</span>
+
+                    {/* Compensation Step 2: Release Inventory (STALLED) */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveDagNode("rollback-inventory")}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
+                        activeDagNode === "rollback-inventory"
+                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-[10px] text-[#94A3B8] font-semibold">SIM_INV:8102</span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#64748B] font-semibold bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
+                          <span className="material-symbols-outlined text-[13px]">pause_circle</span>
+                          STALLED
+                        </span>
+                      </div>
+                      <div className="font-medium text-[13px] text-[#475569] truncate">Release Inventory</div>
+                      <div className="font-mono text-[11px] text-[#94A3B8] mt-1">Waiting on HLR compensation</div>
+                    </button>
+
+                    <span className="text-[#94A3B8] font-bold">→</span>
+
+                    {/* Compensation Step 3: Void Billing Account (STALLED) */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveDagNode("rollback-billing")}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer shadow-2xs w-[180px] shrink-0 bg-white ${
+                        activeDagNode === "rollback-billing"
+                          ? "ring-2 ring-[#0A1B2E] border-[#0A1B2E]"
+                          : "border-[#CBD5E1] hover:border-[#0A1B2E]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-[10px] text-[#94A3B8] font-semibold">OCS:8104</span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#64748B] font-semibold bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
+                          <span className="material-symbols-outlined text-[13px]">pause_circle</span>
+                          STALLED
+                        </span>
+                      </div>
+                      <div className="font-medium text-[13px] text-[#475569] truncate">Void Billing Acct</div>
+                      <div className="font-mono text-[11px] text-[#94A3B8] mt-1">Waiting on HLR compensation</div>
+                    </button>
                   </div>
                 </div>
+              </div>
+
+              {/* Interactive Inspector Panel for Clicked Node */}
+              <div className="p-4 bg-[#F8FAFC] border-t border-[#E2E8F0]">
+                {activeDagNode === "rollback-deprovision" && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[#0A1B2E] text-white">
+                          TASK: HLR_DEPROVISION_SLICE
+                        </span>
+                        <span className="text-[12px] font-bold text-[#0A1B2E]">Compensation Failure (Halted Saga)</span>
+                      </div>
+                      <p className="text-[12px] text-[#64748B]">
+                        Attempted 5 exponential retries [1s, 2s, 4s, 8s, 16s]. Subsystem endpoint <code className="bg-white px-1 py-0.5 rounded border font-mono text-[#0A1B2E]">hlr-east-01:8103</code> unresponsive.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleRetryCompensation(selectedIncident.id)}
+                        disabled={isResolving}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white font-medium text-[12px] shadow-xs cursor-pointer disabled:opacity-75"
+                      >
+                        <span className={`material-symbols-outlined text-[14px] ${isResolving ? "animate-spin" : ""}`}>replay</span>
+                        <span>Retry Compensation Now</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {activeDagNode === "forward-charging" && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
+                          FORWARD TRIGGER: OCS_START_CHARGING
+                        </span>
+                        <span className="text-[12px] font-bold text-[#0A1B2E]">Initial Business Failure</span>
+                      </div>
+                      <p className="text-[12px] text-[#64748B]">
+                        Upstream rating microservice threw HTTP 500 internal server error. This triggered the automatic backward compensation saga.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {activeDagNode === "forward-validate" && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
+                        TASK: OMS_VALIDATE_ORDER
+                      </span>
+                      <span className="text-[12px] font-bold text-[#0A1B2E]">Forward Step 1 (Completed)</span>
+                    </div>
+                    <p className="text-[12px] text-[#64748B]">
+                      Order schema, customer KYC, and cryptographic idempotency key verified in 220ms.
+                    </p>
+                  </div>
+                )}
+
+                {activeDagNode === "forward-inventory" && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
+                        TASK: SIM_LOCK_ICCID
+                      </span>
+                      <span className="text-[12px] font-bold text-[#0A1B2E]">Parallel Branch A (Completed)</span>
+                    </div>
+                    <p className="text-[12px] text-[#64748B]">
+                      Allocated physical SIM ICCID lock. Compensation tombstone prepared for auto-release.
+                    </p>
+                  </div>
+                )}
+
+                {activeDagNode === "forward-billing" && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
+                        TASK: OCS_INSTANTIATE_ACCOUNT
+                      </span>
+                      <span className="text-[12px] font-bold text-[#0A1B2E]">Parallel Branch B (Completed)</span>
+                    </div>
+                    <p className="text-[12px] text-[#64748B]">
+                      Billing account created in pending allocation state. Inverse compensation registered with Temporal.
+                    </p>
+                  </div>
+                )}
+
+                {activeDagNode === "forward-network" && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
+                        TASK: HLR_PROVISION_SLICE
+                      </span>
+                      <span className="text-[12px] font-bold text-[#0A1B2E]">Step 3 (Completed Forward, Pending Rollback)</span>
+                    </div>
+                    <p className="text-[12px] text-[#64748B]">
+                      Network slice provisioned successfully forward in 1.42s. Requires rollback due to Step 4 failure.
+                    </p>
+                  </div>
+                )}
+
+                {(activeDagNode === "rollback-inventory" || activeDagNode === "rollback-billing") && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-white text-[#64748B] border border-[#CBD5E1]">
+                        COMPENSATION STATUS: STALLED
+                      </span>
+                      <span className="text-[12px] font-bold text-[#0A1B2E]">Linear Saga Cascade Invariant</span>
+                    </div>
+                    <p className="text-[12px] text-[#64748B]">
+                      Under strict ACID saga ordering, upstream compensations cannot fire until the network slice deprovisioning is resolved or forced.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -56,7 +56,7 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Modal Dialog Box */}
       <div
-        className={`relative z-10 w-full ${maxWidthMap[maxWidth]} rounded-xl border border-[#CBD5E1] bg-white shadow-2xl transition-all`}
+        className={`relative z-10 w-full ${maxWidthMap[maxWidth]} max-h-[90vh] flex flex-col rounded-xl border border-[#CBD5E1] bg-white shadow-2xl transition-all overflow-hidden`}
         role="dialog"
         aria-modal="true"
       >
@@ -76,7 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        <div className="px-6 py-4 text-[#0A1B2E]">{children}</div>
+        <div className="px-6 py-4 text-[#0A1B2E] overflow-y-auto flex-1">{children}</div>
 
         {footer && (
           <div className="flex items-center justify-end gap-3 border-t border-[#E2E8F0] px-6 py-3.5 bg-[#F8FAFC] rounded-b-xl">
