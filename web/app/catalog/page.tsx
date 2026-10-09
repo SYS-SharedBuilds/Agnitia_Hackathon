@@ -593,17 +593,17 @@ export default function CatalogPage() {
               <div className="flex flex-col gap-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
                   <span>Catalog</span>
-                  <span className="text-outline">/</span>
+                  <span className="text-[#000000]">/</span>
                   <span className="font-semibold text-primary">
                     {selectedProduct.name} ({selectedProduct.version})
                   </span>
-                  <span className="text-outline">•</span>
+                  <span className="text-[#000000]">•</span>
                   <span>
                     Deployed {selectedProduct.deployedAt} by{" "}
                     <code className="text-on-surface font-mono">{selectedProduct.deployedBy}</code>
                   </span>
-                  <span className="text-outline">•</span>
-                  <span className="text-outline font-label-sm font-mono">{selectedProduct.checksum}</span>
+                  <span className="text-[#000000]">•</span>
+                  <span className="text-[#000000] font-label-sm font-mono">{selectedProduct.checksum}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">
@@ -673,7 +673,7 @@ export default function CatalogPage() {
                     <div>
                       <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-semibold">
                         <span>Execution DAG (Wave Swim-lanes)</span>
-                        <span className="font-label-sm text-label-sm font-normal text-outline">
+                        <span className="font-label-sm text-label-sm font-normal text-[#000000]">
                           Deterministic Partial Order
                         </span>
                       </h3>
@@ -682,7 +682,7 @@ export default function CatalogPage() {
                         <span className="font-mono">N+1</span> dispatches only after preceding wave resolves.
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 text-outline font-label-sm text-label-sm font-mono">
+                    <div className="flex items-center gap-2 text-[#000000] font-label-sm text-label-sm font-mono">
                       <span className="flex items-center gap-1">
                         <span className="w-2 h-2 rounded bg-primary"></span> Read-Only
                       </span>
@@ -830,7 +830,7 @@ export default function CatalogPage() {
                             <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono break-all sm:break-normal">
                               verify_optical_power
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono shrink-0">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-[#000000] font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Best_Effort
                             </span>
                           </div>
@@ -897,7 +897,7 @@ export default function CatalogPage() {
                             <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono break-all sm:break-normal">
                               dispatch_welcome_notification
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono shrink-0">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-[#000000] font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Best_Effort
                             </span>
                           </div>
@@ -930,7 +930,7 @@ export default function CatalogPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-outline">
+                        <span className="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-[#000000]">
                           search
                         </span>
                         <input
@@ -971,9 +971,9 @@ export default function CatalogPage() {
                             <td className="py-2.5 px-3 font-label-sm text-label-sm font-semibold font-mono text-primary">
                               {task.id}
                             </td>
-                            <td className="py-2.5 px-3 font-mono text-[12px] text-outline">{task.system}</td>
+                            <td className="py-2.5 px-3 font-mono text-[12px] text-[#000000]">{task.system}</td>
                             <td className="py-2.5 px-3 font-mono text-[12px]">{task.actionRoutine}</td>
-                            <td className="py-2.5 px-3 font-label-sm text-label-sm text-outline font-mono">
+                            <td className="py-2.5 px-3 font-label-sm text-label-sm text-[#000000] font-mono">
                               W{task.wave} · {task.upstreamDeps.length > 0 ? `[${task.upstreamDeps.join(", ")}]` : "none"}
                             </td>
                             <td className="py-2.5 px-3 font-label-sm text-label-sm font-mono">{task.retryPolicy}</td>
@@ -982,7 +982,7 @@ export default function CatalogPage() {
                               {task.compensationAction ? (
                                 <span className="text-primary">{task.compensationAction}</span>
                               ) : (
-                                <span className="text-outline">— (None)</span>
+                                <span className="text-[#000000]">— (None)</span>
                               )}
                             </td>
                             <td className="py-2.5 px-3">
@@ -994,7 +994,7 @@ export default function CatalogPage() {
                                     ? "bg-surface-container-high text-secondary font-semibold"
                                     : task.flag === "strict_commit"
                                     ? "bg-surface-container-high text-secondary font-bold"
-                                    : "bg-surface-container-highest text-outline"
+                                    : "bg-surface-container-highest text-[#000000]"
                                 }`}
                               >
                                 {task.flag}
@@ -1017,7 +1017,7 @@ export default function CatalogPage() {
                     <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
                       {selectedProduct.name} DAG Specification
                     </span>
-                    <span className="font-label-sm text-label-sm text-outline font-mono">
+                    <span className="font-label-sm text-label-sm text-[#000000] font-mono">
                       {selectedProduct.id}_v2.4.0.yaml
                     </span>
                   </div>
@@ -1073,7 +1073,7 @@ export default function CatalogPage() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                       Topological sort completed in 0.4ms. 0 cycles detected across 7 nodes. Strict partial order guaranteed.
                     </p>
-                    <div className="pt-2 font-label-sm text-label-sm text-outline flex justify-between items-center font-mono border-t border-[#E2E8F0]">
+                    <div className="pt-2 font-label-sm text-label-sm text-[#000000] flex justify-between items-center font-mono border-t border-[#E2E8F0]">
                       <span>Cycles: 0</span>
                       <span className="font-semibold text-secondary">PASS</span>
                     </div>
@@ -1090,7 +1090,7 @@ export default function CatalogPage() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                       Task <code className="font-mono text-on-surface">activate_tariff_billing</code> strictly depends on upstream network activation ACK.
                     </p>
-                    <div className="pt-2 font-label-sm text-label-sm text-outline flex justify-between items-center font-mono border-t border-[#E2E8F0]">
+                    <div className="pt-2 font-label-sm text-label-sm text-[#000000] flex justify-between items-center font-mono border-t border-[#E2E8F0]">
                       <span>Premature Bill Risk: 0.00%</span>
                       <span className="font-semibold text-secondary">PASS</span>
                     </div>
@@ -1107,7 +1107,7 @@ export default function CatalogPage() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                       All mutating tasks (4/4) define an inverse idempotent compensation action with matching keys.
                     </p>
-                    <div className="pt-2 font-label-sm text-label-sm text-outline flex justify-between items-center font-mono border-t border-[#E2E8F0]">
+                    <div className="pt-2 font-label-sm text-label-sm text-[#000000] flex justify-between items-center font-mono border-t border-[#E2E8F0]">
                       <span>Coverage: 100% (4/4)</span>
                       <span className="font-semibold text-secondary">PASS</span>
                     </div>
@@ -1116,7 +1116,7 @@ export default function CatalogPage() {
 
                 {/* Formal Safety Matrix Log */}
                 <div className="bg-surface-container-lowest rounded-xl p-4 shadow-xs flex flex-col gap-1 border border-[#E2E8F0]">
-                  <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-mono">
+                  <span className="font-label-sm text-label-sm text-[#000000] uppercase tracking-wider font-mono">
                     Formal Model Checker Trace Log
                   </span>
                   <div className="font-mono text-[12px] text-on-surface-variant flex flex-col gap-1 pt-1">

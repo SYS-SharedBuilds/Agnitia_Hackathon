@@ -175,7 +175,7 @@ export function InteractiveActivationPercentilesChart() {
           <button
             onClick={() => setZoomLevel((prev) => Math.min(3, +(prev * 1.35).toFixed(2)))}
             title="Zoom In"
-            className="p-1 rounded text-slate-600 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
+            className="p-1 rounded text-[#000000] hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
             aria-label="Zoom in"
           >
             <ZoomIn className="w-3.5 h-3.5" />
@@ -189,7 +189,7 @@ export function InteractiveActivationPercentilesChart() {
               })
             }
             title="Zoom Out"
-            className="p-1 rounded text-slate-600 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
+            className="p-1 rounded text-[#000000] hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
             aria-label="Zoom out"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -201,7 +201,7 @@ export function InteractiveActivationPercentilesChart() {
                 setPanOffset(0);
               }}
               title="Reset Zoom"
-              className="p-1 rounded text-slate-600 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
+              className="p-1 rounded text-[#000000] hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
               aria-label="Reset zoom"
             >
               <RotateCcw className="w-3.5 h-3.5" />

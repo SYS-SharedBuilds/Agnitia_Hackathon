@@ -128,7 +128,7 @@ export default function DesignSystemReferenceBoardPage() {
               </span>
               <div className="flex flex-wrap items-center gap-3">
                 {/* PENDING */}
-                <span className="h-6 px-3 rounded-full bg-slate-500/10 text-slate-700 font-label-sm text-label-sm flex items-center gap-1.5 font-mono border border-slate-200">
+                <span className="h-6 px-3 rounded-full bg-slate-500/10 text-[#000000] font-label-sm text-label-sm flex items-center gap-1.5 font-mono border border-slate-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>PENDING
                 </span>
                 {/* IN_PROGRESS */}
@@ -273,7 +273,7 @@ export default function DesignSystemReferenceBoardPage() {
                   <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" d="M4 12a8 8 0 018-8v8H4z" fill="currentColor"></path></svg>
                   <span>Auditing...</span>
                 </button>
-                <button className="h-9 px-4 bg-surface-container-high/50 text-outline rounded font-body-md text-body-md font-medium flex items-center justify-center gap-2 cursor-not-allowed" disabled type="button">
+                <button className="h-9 px-4 bg-surface-container-high/50 text-[#000000] rounded font-body-md text-body-md font-medium flex items-center justify-center gap-2 cursor-not-allowed" disabled type="button">
                   Disabled
                 </button>
               </div>
@@ -296,7 +296,7 @@ export default function DesignSystemReferenceBoardPage() {
                   <svg className="animate-spin h-4 w-4 text-on-surface" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" d="M4 12a8 8 0 018-8v8H4z" fill="currentColor"></path></svg>
                   <span>Verifying</span>
                 </button>
-                <button className="h-9 px-4 bg-surface-container-lowest text-outline-variant rounded font-body-md text-body-md font-medium flex items-center justify-center gap-2 cursor-not-allowed border border-[#E2E8F0]" disabled type="button">
+                <button className="h-9 px-4 bg-surface-container-lowest text-[#000000]-variant rounded font-body-md text-body-md font-medium flex items-center justify-center gap-2 cursor-not-allowed border border-[#E2E8F0]" disabled type="button">
                   Disabled
                 </button>
               </div>
@@ -388,7 +388,7 @@ export default function DesignSystemReferenceBoardPage() {
                     className="w-full h-9 px-3 bg-surface-container-lowest rounded text-on-surface font-body-md text-body-md border border-[#CBD5E1] focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                     type="text"
                   />
-                  <span className="absolute right-2.5 top-2.5 material-symbols-outlined text-outline text-[16px]">search</span>
+                  <span className="absolute right-2.5 top-2.5 material-symbols-outlined text-[#000000] text-[16px]">search</span>
                 </div>
                 <span className="font-body-sm text-body-sm text-on-surface-variant">Glob syntax supported (*, ?, prefix)</span>
               </div>
@@ -441,7 +441,7 @@ export default function DesignSystemReferenceBoardPage() {
                   />
                   <button
                     onClick={() => setDemoSecretType(demoSecretType === "password" ? "text" : "password")}
-                    className="px-2.5 text-outline hover:text-on-surface cursor-pointer"
+                    className="px-2.5 text-[#000000] hover:text-on-surface cursor-pointer"
                     type="button"
                   >
                     <span className="material-symbols-outlined text-[16px]">
@@ -464,7 +464,7 @@ export default function DesignSystemReferenceBoardPage() {
                     <option>OCS_Quota_Rebalance_FastPath</option>
                     <option>Enterprise_Pool_Bulk_Allocation</option>
                   </select>
-                  <span className="absolute right-2.5 top-2.5 material-symbols-outlined text-outline pointer-events-none text-[18px]">
+                  <span className="absolute right-2.5 top-2.5 material-symbols-outlined text-[#000000] pointer-events-none text-[18px]">
                     expand_more
                   </span>
                 </div>
@@ -561,11 +561,11 @@ export default function DesignSystemReferenceBoardPage() {
                 <span className="text-on-surface-variant flex items-center gap-1 font-medium">
                   <span className="material-symbols-outlined text-[16px]">dns</span>SwitchOn
                 </span>
-                <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+                <span className="material-symbols-outlined text-[14px] text-[#000000]">chevron_right</span>
                 <span className="text-on-surface-variant">Service Orchestration</span>
-                <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+                <span className="material-symbols-outlined text-[14px] text-[#000000]">chevron_right</span>
                 <span className="text-on-surface-variant">Orders Pipeline</span>
-                <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+                <span className="material-symbols-outlined text-[14px] text-[#000000]">chevron_right</span>
                 <span className="text-on-surface font-label-sm text-label-sm font-semibold font-mono bg-surface-container-highest px-2 py-0.5 rounded border border-[#CBD5E1]">
                   ORD-20260712-004217
                 </span>
@@ -600,7 +600,7 @@ export default function DesignSystemReferenceBoardPage() {
                 <button className="pb-2 font-body-md text-body-md text-on-surface-variant hover:text-on-surface flex items-center gap-2 transition-colors cursor-pointer">
                   <span>TLA+ Safety Proofs</span>
                 </button>
-                <button className="pb-2 font-body-md text-body-md text-outline-variant cursor-not-allowed" disabled>
+                <button className="pb-2 font-body-md text-body-md text-[#000000]-variant cursor-not-allowed" disabled>
                   <span>Manual Override (Locked)</span>
                 </button>
               </div>
@@ -662,7 +662,7 @@ export default function DesignSystemReferenceBoardPage() {
                     </p>
                   </div>
                 </div>
-                <button className="text-outline hover:text-on-surface cursor-pointer">
+                <button className="text-[#000000] hover:text-on-surface cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
@@ -687,7 +687,7 @@ export default function DesignSystemReferenceBoardPage() {
                     </p>
                   </div>
                 </div>
-                <button className="text-outline hover:text-on-surface cursor-pointer">
+                <button className="text-[#000000] hover:text-on-surface cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
@@ -857,7 +857,7 @@ export default function DesignSystemReferenceBoardPage() {
                         Resource Drift Inspector
                       </span>
                     </div>
-                    <span className="material-symbols-outlined text-outline text-[16px] cursor-pointer">dock_to_left</span>
+                    <span className="material-symbols-outlined text-[#000000] text-[16px] cursor-pointer">dock_to_left</span>
                   </div>
                   <div className="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant font-mono">
                     <span>TARGET: HLR_PROFILE_310</span>
@@ -865,10 +865,10 @@ export default function DesignSystemReferenceBoardPage() {
                   </div>
                   {/* Code Diff Mockup */}
                   <div className="p-2.5 bg-surface-container-lowest rounded-lg font-label-sm text-label-sm font-mono flex flex-col gap-1 shadow-inner border border-[#E2E8F0]">
-                    <span className="text-outline">--- Expected Orchestration State</span>
+                    <span className="text-[#000000]">--- Expected Orchestration State</span>
                     <span className="text-emerald-700 font-semibold bg-emerald-500/10 px-1 rounded">+ &quot;status&quot;: &quot;ACTIVE_SUBSCRIBER&quot;</span>
                     <span className="text-emerald-700 font-semibold bg-emerald-500/10 px-1 rounded">+ &quot;imsi_pool&quot;: &quot;US_EAST_01&quot;</span>
-                    <span className="text-outline mt-1">+++ Actual Downstream Subsystem State</span>
+                    <span className="text-[#000000] mt-1">+++ Actual Downstream Subsystem State</span>
                     <span className="text-rose-700 font-semibold bg-rose-500/10 px-1 rounded">- &quot;status&quot;: &quot;HLR_UNREACHABLE_TIMEOUT&quot;</span>
                     <span className="text-rose-700 font-semibold bg-rose-500/10 px-1 rounded">- &quot;imsi_pool&quot;: null</span>
                   </div>
@@ -929,7 +929,7 @@ export default function DesignSystemReferenceBoardPage() {
                     <td className="px-4 font-label-sm text-label-sm text-on-surface-variant font-mono">142ms</td>
                     <td className="px-4 font-body-sm text-body-sm text-on-surface-variant">worker-k8s-pod-east-11</td>
                     <td className="px-4 text-right">
-                      <button className="p-1 text-outline hover:text-on-surface cursor-pointer"><span className="material-symbols-outlined text-[16px]">more_vert</span></button>
+                      <button className="p-1 text-[#000000] hover:text-on-surface cursor-pointer"><span className="material-symbols-outlined text-[16px]">more_vert</span></button>
                     </td>
                   </tr>
 
@@ -1133,7 +1133,7 @@ export default function DesignSystemReferenceBoardPage() {
                   <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold font-mono">
                     01 • QUEUED
                   </span>
-                  <span className="material-symbols-outlined text-outline text-[18px]">schedule</span>
+                  <span className="material-symbols-outlined text-[#000000] text-[18px]">schedule</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-headline-sm text-headline-sm text-on-surface font-semibold font-mono">
@@ -1141,7 +1141,7 @@ export default function DesignSystemReferenceBoardPage() {
                   </span>
                   <span className="font-label-sm text-label-sm text-on-surface-variant">Pending worker slot</span>
                 </div>
-                <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-outline border-t border-outline-variant/30 font-mono">
+                <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#000000] border-t border-outline-variant/30 font-mono">
                   <span>Priority: normal</span>
                   <span>-- ms</span>
                 </div>
@@ -1150,10 +1150,10 @@ export default function DesignSystemReferenceBoardPage() {
               {/* Node 2: SCHEDULED */}
               <div className="p-3.5 rounded-xl bg-surface-container-lowest border-2 border-slate-300 flex flex-col justify-between gap-2 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-label-sm text-label-sm text-slate-700 font-semibold font-mono">
+                  <span className="font-label-sm text-label-sm text-[#000000] font-semibold font-mono">
                     02 • SCHEDULED
                   </span>
-                  <span className="material-symbols-outlined text-slate-600 text-[18px]">assignment_turned_in</span>
+                  <span className="material-symbols-outlined text-[#000000] text-[18px]">assignment_turned_in</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-headline-sm text-headline-sm text-on-surface font-semibold font-mono">
@@ -1313,18 +1313,18 @@ export default function DesignSystemReferenceBoardPage() {
               {/* Node 10: SKIPPED / PRUNED */}
               <div className="p-3.5 rounded-xl bg-surface-container-high/40 border-2 border-dashed border-outline flex flex-col justify-between gap-2 opacity-75">
                 <div className="flex items-center justify-between">
-                  <span className="font-label-sm text-label-sm text-outline font-semibold font-mono">
+                  <span className="font-label-sm text-label-sm text-[#000000] font-semibold font-mono">
                     10 • SKIPPED
                   </span>
-                  <span className="material-symbols-outlined text-outline text-[18px]">block</span>
+                  <span className="material-symbols-outlined text-[#000000] text-[18px]">block</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-headline-sm text-headline-sm text-outline font-mono">
+                  <span className="font-headline-sm text-headline-sm text-[#000000] font-mono">
                     Notify_Customer
                   </span>
-                  <span className="font-label-sm text-label-sm text-outline">Skipped by rule</span>
+                  <span className="font-label-sm text-label-sm text-[#000000]">Skipped by rule</span>
                 </div>
-                <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-outline border-t border-outline/20 font-mono">
+                <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#000000] border-t border-outline/20 font-mono">
                   <span>Pruned branch</span>
                   <span>N/A</span>
                 </div>
@@ -1345,7 +1345,7 @@ export default function DesignSystemReferenceBoardPage() {
         <div className="w-full px-8 py-4 flex items-center justify-between text-body-sm text-on-surface-variant">
           <div className="flex items-center gap-3">
             <span>SwitchOn Core Engineering Board • WCAG AA Compliant</span>
-            <span className="text-outline">•</span>
+            <span className="text-[#000000]">•</span>
             <span>Precision Telecommunications Spec</span>
           </div>
           <div className="flex items-center gap-4">

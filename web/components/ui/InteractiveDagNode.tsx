@@ -118,7 +118,7 @@ export const InteractiveDagNode = ({
             )}
 
             {data.isBestEffort && (
-              <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+              <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-[#000000] font-medium">
                 best-effort
               </span>
             )}

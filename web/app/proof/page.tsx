@@ -358,12 +358,12 @@ export default function ScenariosProofPage() {
           <div className="flex items-center gap-1.5">
             <span className="font-mono text-on-surface font-semibold">12</span> Total Suites
           </div>
-          <span className="text-outline-variant">·</span>
+          <span className="text-[#000000]-variant">·</span>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-[#0A1B2E]"></span>
             <span className="font-mono text-on-surface font-semibold">11</span> Clean
           </div>
-          <span className="text-outline-variant">·</span>
+          <span className="text-[#000000]-variant">·</span>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-secondary-container animate-pulse"></span>
             <span className="font-mono text-primary font-semibold">1</span> In-Flight
@@ -380,9 +380,9 @@ export default function ScenariosProofPage() {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 truncate font-body-md text-body-md">
               <span className="font-semibold text-on-surface">Demo Suite in Progress</span>
-              <span className="hidden sm:inline text-outline-variant">·</span>
+              <span className="hidden sm:inline text-[#000000]-variant">·</span>
               <span className="text-on-surface-variant">7/12 completed</span>
-              <span className="hidden sm:inline text-outline-variant">·</span>
+              <span className="hidden sm:inline text-[#000000]-variant">·</span>
               <span className="text-primary font-medium truncate">
                 1 active running (S6 Compensation Failure →{" "}
                 <code className="font-label-sm text-label-sm font-semibold bg-surface-container px-1 py-0.5 rounded text-on-surface font-mono">
@@ -390,7 +390,7 @@ export default function ScenariosProofPage() {
                 </code>
                 )
               </span>
-              <span className="hidden sm:inline text-outline-variant">·</span>
+              <span className="hidden sm:inline text-[#000000]-variant">·</span>
               <span className="text-[#059669] font-medium shrink-0">0 consistency leaks</span>
             </div>
           </div>
@@ -638,7 +638,7 @@ export default function ScenariosProofPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="font-label-sm text-label-sm font-mono text-outline italic">
+                        <span className="font-label-sm text-label-sm font-mono text-[#000000] italic">
                           {row.hash}
                         </span>
                       </td>
@@ -692,7 +692,7 @@ export default function ScenariosProofPage() {
                         <code className="font-label-sm text-label-sm font-mono text-on-surface-variant group-hover:text-primary">
                           {row.hash}
                         </code>
-                        <span className="material-symbols-outlined text-[14px] text-outline opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="material-symbols-outlined text-[14px] text-[#000000] opacity-0 group-hover:opacity-100 transition-opacity">
                           {copiedHash === row.hash ? "check" : "content_copy"}
                         </span>
                       </div>
@@ -725,11 +725,11 @@ export default function ScenariosProofPage() {
         <div className="p-3.5 px-4 bg-surface-container-low border-t border-outline-variant/40 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
           <div className="flex items-center gap-2">
             <span>Showing 6 of 12 records in active session ledger</span>
-            <span className="text-outline-variant">·</span>
+            <span className="text-[#000000]-variant">·</span>
             <span className="font-mono text-label-sm text-label-sm">Merkle Root: 0x9e1200…fec4</span>
           </div>
           <div className="flex items-center gap-2">
-            <button className="px-2.5 py-1 rounded bg-surface-container text-outline hover:text-on-surface text-label-sm font-mono cursor-not-allowed">
+            <button className="px-2.5 py-1 rounded bg-surface-container text-[#000000] hover:text-on-surface text-label-sm font-mono cursor-not-allowed">
               Previous
             </button>
             <button className="px-2.5 py-1 rounded bg-surface-container-lowest border border-outline-variant/60 text-on-surface hover:bg-surface-container text-label-sm font-mono">

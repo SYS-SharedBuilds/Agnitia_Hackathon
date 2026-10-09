@@ -147,7 +147,7 @@ export default function CertificatesProofPage() {
               <span className="material-symbols-outlined text-[16px]">experiment</span>
               <span>Scenarios &amp; Proof</span>
             </Link>
-            <span className="text-outline">/</span>
+            <span className="text-[#000000]">/</span>
             <span className="font-semibold text-on-surface">Certificates</span>
           </div>
           <span className="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm flex items-center gap-1.5 border border-outline-variant/30">
@@ -166,7 +166,7 @@ export default function CertificatesProofPage() {
             <span>2026-07-12 14:22:04.182 UTC</span>
           </div>
           <div className="hidden sm:flex items-center gap-1.5 font-label-sm font-mono">
-            <span className="text-outline">Epoch:</span>
+            <span className="text-[#000000]">Epoch:</span>
             <span className="text-on-surface font-semibold">1714521600</span>
           </div>
         </div>
@@ -183,7 +183,7 @@ export default function CertificatesProofPage() {
                 Select Order
               </label>
               <div className="flex items-center bg-surface-container-lowest rounded-lg px-3 py-1.5 shadow-sm border border-outline-variant/30">
-                <span className="material-symbols-outlined text-outline text-[18px] mr-2 shrink-0">receipt_long</span>
+                <span className="material-symbols-outlined text-[#000000] text-[18px] mr-2 shrink-0">receipt_long</span>
                 <select
                   value={selectedOrder}
                   onChange={(e) => setSelectedOrder(e.target.value)}
@@ -194,7 +194,7 @@ export default function CertificatesProofPage() {
                   <option value="ORD-20260712-004189">ORD-20260712-004189 — 5G Standalone Ultra / eSIM</option>
                   <option value="ORD-20260711-003902">ORD-20260711-003902 — Multi-Gig Business DIA 2Gbps</option>
                 </select>
-                <span className="material-symbols-outlined text-outline text-[16px] pointer-events-none ml-1">
+                <span className="material-symbols-outlined text-[#000000] text-[16px] pointer-events-none ml-1">
                   expand_more
                 </span>
               </div>
@@ -239,7 +239,7 @@ export default function CertificatesProofPage() {
                 make verify-cert id={selectedOrder}
               </span>
               <span className="font-label-sm text-label-sm xl:hidden">Copy CLI</span>
-              <span className="material-symbols-outlined text-[16px] text-outline ml-1">
+              <span className="material-symbols-outlined text-[16px] text-[#000000] ml-1">
                 {copiedCmd ? "done" : "content_copy"}
               </span>
             </button>
@@ -275,7 +275,7 @@ export default function CertificatesProofPage() {
                 <span className="font-semibold text-on-surface bg-surface-container-high px-2 py-0.5 rounded font-mono">
                   CERT-20260712-4212-A89F
                 </span>
-                <span className="text-outline">•</span>
+                <span className="text-[#000000]">•</span>
                 <span className="text-on-surface-variant">NODE:</span>
                 <span className="text-on-surface font-mono">us-east-core-tx09</span>
               </div>
@@ -298,7 +298,7 @@ export default function CertificatesProofPage() {
                 </span>
               </div>
               <div className="flex items-center gap-1.5 font-label-sm text-label-sm">
-                <span className="text-outline">Verdict:</span>
+                <span className="text-[#000000]">Verdict:</span>
                 <span className={`font-semibold ${isTampered ? "text-error" : "text-secondary-container"}`}>
                   {isTampered ? "INVALID_INTEGRITY_COMPROMISED" : "VERIFIED_SOUND"}
                 </span>
@@ -456,7 +456,7 @@ export default function CertificatesProofPage() {
 
             {/* Scope Boundaries (Right) */}
             <div className="p-5 rounded-xl bg-surface-container-high/40 flex flex-col gap-3 border border-outline-variant/20">
-              <div className="flex items-center gap-2 text-outline">
+              <div className="flex items-center gap-2 text-[#000000]">
                 <span className="material-symbols-outlined text-[20px]">remove_moderator</span>
                 <span className="font-headline-sm text-headline-sm font-semibold text-on-surface">
                   Out-of-Scope Proof Bounds
@@ -467,15 +467,15 @@ export default function CertificatesProofPage() {
               </p>
               <ul className="flex flex-col gap-2.5 font-body-sm text-body-sm text-on-surface-variant">
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-[16px] text-outline mt-0.5 shrink-0">remove</span>
+                  <span className="material-symbols-outlined text-[16px] text-[#000000] mt-0.5 shrink-0">remove</span>
                   <span>Upstream physical fiber ONT hardware signal quality or photon optical attenuation (dBm).</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-[16px] text-outline mt-0.5 shrink-0">remove</span>
+                  <span className="material-symbols-outlined text-[16px] text-[#000000] mt-0.5 shrink-0">remove</span>
                   <span>End-user credit card authorization fraud checks conducted outside the telco billing gateway.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-[16px] text-outline mt-0.5 shrink-0">remove</span>
+                  <span className="material-symbols-outlined text-[16px] text-[#000000] mt-0.5 shrink-0">remove</span>
                   <span>Out-of-band manual database modifications bypassing the Temporal orchestrator worker cluster.</span>
                 </li>
               </ul>
@@ -561,7 +561,7 @@ export default function CertificatesProofPage() {
                       >
                         {evt.subsystem}
                       </span>
-                      <span className="font-label-sm text-label-sm text-outline font-mono">{evt.time}</span>
+                      <span className="font-label-sm text-label-sm text-[#000000] font-mono">{evt.time}</span>
                       <span
                         className={`font-label-sm text-label-sm font-mono ${
                           mutated ? "text-error font-bold" : "text-on-surface"
@@ -716,7 +716,7 @@ export default function CertificatesProofPage() {
           </div>
 
           {/* Certificate Footer Note & Seal */}
-          <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-outline font-label-sm text-label-sm gap-2 border-t border-outline-variant/20">
+          <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-[#000000] font-label-sm text-label-sm gap-2 border-t border-outline-variant/20">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[16px]">lock</span>
               <span>Anchored to SwitchOn Quorum Multi-Party Consensus Network</span>

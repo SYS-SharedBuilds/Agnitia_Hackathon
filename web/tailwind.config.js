@@ -82,10 +82,10 @@ module.exports = {
         "on-tertiary-fixed": "#0A1B2E",
         "on-tertiary-fixed-variant": "#14263b",
 
-        // Typography & Outlines: Crisp Navy Blue & Subtle Borders
-        "on-surface": "#0A1B2E",
-        "on-surface-variant": "#0A1B2E",
-        "on-background": "#0A1B2E",
+        // Typography & Outlines: Solid Black Typography & Subtle Borders
+        "on-surface": "#000000",
+        "on-surface-variant": "#000000",
+        "on-background": "#000000",
         outline: "#CBD5E1",
         "outline-variant": "#E2E8F0",
 
