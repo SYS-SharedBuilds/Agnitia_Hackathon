@@ -257,13 +257,13 @@ async def get_order_ai_rca(
         text("SELECT * FROM ops.tasks WHERE order_id = :id ORDER BY started_at ASC"),
         {"id": order_id},
     )
-    tasks = [dict(t) for t in tasks_res.mappings().all()]
+    tasks: list[dict[str, Any]] = [dict(t) for t in tasks_res.mappings().all()]
 
     events_res = await session.execute(
         text("SELECT * FROM ops.events WHERE order_id = :id ORDER BY seq ASC"),
         {"id": order_id},
     )
-    events = [dict(e) for e in events_res.mappings().all()]
+    events: list[dict[str, Any]] = [dict(e) for e in events_res.mappings().all()]
 
     return synthesize_ai_rca_copilot(
         order_id=order["order_id"],

@@ -1,3 +1,4 @@
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 EXPLANATION_RULES: dict[tuple[str, str], dict[str, str]] = {
@@ -69,8 +70,8 @@ def synthesize_ai_rca_copilot(
     product: str,
     state: str,
     failure_reason: str | None,
-    tasks: list[dict[str, Any]],
-    events: list[dict[str, Any]],
+    tasks: Sequence[Mapping[str, Any]],
+    events: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     """AI Root-Cause & Fallout Copilot: synthesizes deep diagnostics, telemetry correlation,
     and structured NOC remediation playbooks from cryptographic saga traces without non-deterministic execution risks.
