@@ -65,7 +65,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const handleMarkAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
@@ -96,12 +96,25 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-white font-body-md text-[#0A1B2E] antialiased flex flex-col">
+      {/* Backdrop for mobile drawer */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-[#0A1B2E]/50 backdrop-blur-xs md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar - Pure White with Crisp Border and Light Hover */}
-      <aside className="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-[#E2E8F0] z-50 flex flex-col justify-between select-none shadow-xs">
+      <aside
+        className={`fixed left-0 top-0 h-full w-[240px] 2xl:w-[260px] bg-white border-r border-[#E2E8F0] z-50 flex flex-col justify-between select-none shadow-xs transition-transform duration-200 ease-in-out ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
         <div className="flex flex-col flex-1 min-h-0">
           {/* Logo & Version */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-[#E2E8F0] shrink-0 bg-white">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 group">
               <div className="h-8 w-8 rounded-lg bg-[#0A1B2E] text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:bg-[#14263b] transition-colors">
                 ⚡
               </div>
@@ -109,9 +122,18 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 SwitchOn
               </span>
             </Link>
-            <span className="font-label-sm text-label-sm bg-white text-[#0A1B2E] px-1.5 py-0.5 rounded font-mono font-semibold border border-[#CBD5E1]">
-              v2.4
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-label-sm text-label-sm bg-white text-[#0A1B2E] px-1.5 py-0.5 rounded font-mono font-semibold border border-[#CBD5E1]">
+                v2.4
+              </span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="md:hidden p-1 text-[#64748B] hover:text-[#0A1B2E] rounded-md"
+                aria-label="Close navigation"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
           </div>
 
           {/* Navigation Links */}
@@ -122,6 +144,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
                     active
                       ? "bg-[#F8FAFC] text-[#0A1B2E] font-semibold border-l-4 border-[#0A1B2E] shadow-2xs"
@@ -178,24 +201,38 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Container */}
-      <div className="pl-[240px] flex-1 flex flex-col min-h-screen bg-white">
+      <div className="md:pl-[240px] 2xl:md:pl-[260px] flex-1 flex flex-col min-h-screen bg-white min-w-0">
         {/* Top Header - Pure White */}
-        <header className="fixed top-0 left-[240px] right-0 h-14 bg-white border-b border-[#E2E8F0] z-40 px-6 flex items-center justify-between gap-4 shadow-2xs">
-          <div className="flex items-center gap-1.5 text-body-md font-body-md text-[#64748B]">
-            <Link href="/" className="hover:text-[#0A1B2E] transition-colors cursor-pointer font-medium">
+        <header className="fixed top-0 left-0 md:left-[240px] 2xl:md:left-[260px] right-0 h-14 bg-white border-b border-[#E2E8F0] z-40 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 shadow-2xs">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Mobile hamburger menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-1.5 text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F8FAFC] rounded-lg transition-colors shrink-0"
+              aria-label="Open navigation menu"
+            >
+              <span className="material-symbols-outlined text-[22px]">menu</span>
+            </button>
+
+            <div className="hidden sm:flex items-center gap-1.5 text-body-md font-body-md text-[#64748B] min-w-0 truncate">
+              <Link href="/" className="hover:text-[#0A1B2E] transition-colors cursor-pointer font-medium shrink-0">
+                SwitchOn
+              </Link>
+              <span className="text-[#CBD5E1]">/</span>
+              <span className="hover:text-[#0A1B2E] transition-colors cursor-pointer font-medium hidden md:inline truncate">
+                Service Orchestration
+              </span>
+              <span className="text-[#CBD5E1] hidden md:inline">/</span>
+              <span className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold truncate">
+                Overview
+              </span>
+            </div>
+            <div className="sm:hidden font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">
               SwitchOn
-            </Link>
-            <span className="text-[#CBD5E1]">/</span>
-            <span className="hover:text-[#0A1B2E] transition-colors cursor-pointer font-medium">
-              Service Orchestration
-            </span>
-            <span className="text-[#CBD5E1]">/</span>
-            <span className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold">
-              Overview
-            </span>
+            </div>
           </div>
 
-          <div className="flex-1 max-w-[420px] mx-4">
+          <div className="flex-1 max-w-[420px] mx-1 sm:mx-4 hidden lg:block">
             <div className="relative flex items-center">
               <span className="material-symbols-outlined absolute left-3 text-[#94A3B8] text-[18px]">
                 search
@@ -208,14 +245,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="inline-flex items-center gap-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <div className="hidden xl:inline-flex items-center gap-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
               <span>us-east-core: HEALTHY</span>
             </div>
             <a
-              className="inline-flex items-center gap-1 text-label-sm font-label-sm text-[#0A1B2E] hover:text-[#14263b] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] px-2.5 py-1 rounded-lg transition-colors font-medium shadow-2xs"
-              href="http://localhost:8233"
+              className="hidden sm:inline-flex items-center gap-1 text-label-sm font-label-sm text-[#0A1B2E] hover:text-[#14263b] bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] px-2.5 py-1 rounded-lg transition-colors font-medium shadow-2xs"
+              href={process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}
               target="_blank"
               rel="noreferrer"
             >
@@ -236,7 +273,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-[#CBD5E1] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm sm:max-w-none bg-white rounded-xl shadow-xl border border-[#CBD5E1] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-4 py-3 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-headline-sm text-sm font-bold text-[#0A1B2E]">Notifications</span>
@@ -339,7 +376,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="relative pt-20 px-6 pb-10 min-h-[calc(100vh-56px)] bg-white flex-1 text-[#0A1B2E]">
+        <main className="relative pt-18 sm:pt-20 px-3 sm:px-6 lg:px-8 pb-10 min-h-[calc(100vh-56px)] bg-white flex-1 text-[#0A1B2E] max-w-[2400px] w-full mx-auto">
           {children}
         </main>
       </div>

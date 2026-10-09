@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { InteractiveActivationTrendChart } from "@/components/charts/InteractiveActivationTrendChart";
 import Link from "next/link";
 import { MetricsSummary, Order } from "@/lib/types";
 import { MOCK_OPERATIONAL_KPIS, MOCK_ORDERS } from "@/lib/mockData";
@@ -217,7 +218,7 @@ export default function OverviewPage() {
       </div>
 
       {/* 3. TOP ROW: EXACTLY 6 WHITE KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-3.5">
         {/* CARD 1: Orders Today */}
         <div className="bg-white border border-[#E2E8F0] rounded-xl p-3.5 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-[#64748B] mb-1">
@@ -343,74 +344,7 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* LEFT 8 COLS: Line Chart Card */}
         <div className="lg:col-span-8 bg-white border border-[#E3E8F0] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex flex-col justify-between">
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#F1F5F9]">
-              <div>
-                <h3 className="text-[15px] font-bold text-[#0F172A] tracking-tight">Activation time trend</h3>
-                <p className="text-[12px] text-[#64748B]">p50, p95, p99 over the last 60 min</p>
-              </div>
-              {/* Legends */}
-              <div className="flex items-center gap-3.5 flex-wrap text-[11.5px] font-medium font-mono">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#0A1B2E]"></span>
-                  <span className="text-[#0A1B2E]">p50 (2.8s)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#475569]"></span>
-                  <span className="text-[#0A1B2E]">p95 (5.4s)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#94A3B8]"></span>
-                  <span className="text-[#0A1B2E]">p99 (8.1s)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3.5 border-b-2 border-dashed border-[#0A1B2E]"></span>
-                  <span className="text-[#0A1B2E]">SLO 6.0s Target</span>
-                </div>
-              </div>
-            </div>
-
-            {/* SVG Chart Area */}
-            <div className="relative w-full h-[220px] mt-3">
-              <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 740 220">
-                {/* Grid horizontal lines */}
-                <line stroke="#E8ECF3" strokeWidth="1" x1="45" x2="730" y1="15" y2="15"></line>
-                <line stroke="#E8ECF3" strokeWidth="1" x1="45" x2="730" y1="51" y2="51"></line>
-                <line stroke="#E8ECF3" strokeWidth="1" x1="45" x2="730" y1="87" y2="87"></line>
-                <line stroke="#E8ECF3" strokeWidth="1" x1="45" x2="730" y1="123" y2="123"></line>
-                <line stroke="#E8ECF3" strokeWidth="1" x1="45" x2="730" y1="159" y2="159"></line>
-                <line stroke="#CBD5E1" strokeWidth="1" x1="45" x2="730" y1="195" y2="195"></line>
-                {/* Y-Axis Labels */}
-                <text className="text-[10px] fill-[#94A3B8] font-mono" textAnchor="end" x="35" y="19">10s</text>
-                <text className="text-[10px] fill-[#94A3B8] font-mono" textAnchor="end" x="35" y="55">8s</text>
-                <text className="text-[10px] fill-[#94A3B8] font-mono" textAnchor="end" x="35" y="91">6s</text>
-                <text className="text-[10px] fill-[#94A3B8] font-mono" textAnchor="end" x="35" y="127">4s</text>
-                <text className="text-[10px] fill-[#94A3B8] font-mono" textAnchor="end" x="35" y="163">2s</text>
-                <text className="text-[10px] fill-[#94A3B8] font-mono" textAnchor="end" x="35" y="198">0s</text>
-                {/* SLO 6.0s Dashed Line */}
-                <line stroke="#0A1B2E" strokeDasharray="5 4" strokeWidth="1.6" x1="45" x2="730" y1="87" y2="87"></line>
-                <rect fill="#F1F5F9" height="18" rx="3" stroke="#CBD5E1" width="95" x="635" y="74"></rect>
-                <text className="text-[9.5px] fill-[#0A1B2E] font-mono font-bold" textAnchor="middle" x="682" y="86">SLO 6.0s Target</text>
-                {/* Curves */}
-                <path d="M 45 152 Q 130 148, 215 150 T 385 142 T 555 145 T 725 144" fill="none" stroke="#0A1B2E" strokeLinecap="round" strokeWidth="2.4"></path>
-                <path d="M 45 106 Q 130 94, 215 102 T 385 92 T 555 100 T 725 98" fill="none" stroke="#475569" strokeLinecap="round" strokeWidth="2.4"></path>
-                <path d="M 45 58 Q 130 68, 215 48 T 385 52 T 555 46 T 725 49" fill="none" stroke="#94A3B8" strokeLinecap="round" strokeWidth="2.4"></path>
-                {/* Interactive Highlight Dots at Now */}
-                <circle cx="725" cy="144" fill="#0A1B2E" r="4.5" stroke="#FFFFFF" strokeWidth="2"></circle>
-                <circle cx="725" cy="98" fill="#475569" r="4.5" stroke="#FFFFFF" strokeWidth="2"></circle>
-                <circle cx="725" cy="49" fill="#94A3B8" r="4.5" stroke="#FFFFFF" strokeWidth="2"></circle>
-                <line stroke="#CBD5E1" strokeDasharray="2 2" strokeWidth="1" x1="725" x2="725" y1="20" y2="195"></line>
-              </svg>
-            </div>
-          </div>
-          {/* X-Axis Labels */}
-          <div className="flex justify-between items-center text-[10.5px] font-mono text-[#94A3B8] pt-2 pl-9 pr-2 border-t border-[#F8FAFC]">
-            <span>-60m</span>
-            <span>-45m</span>
-            <span>-30m</span>
-            <span>-15m</span>
-            <span className="font-semibold text-[#0A1B2E]">Now</span>
-          </div>
+          <InteractiveActivationTrendChart />
         </div>
 
         {/* RIGHT 4 COLS: Order Outcomes Stacked Bar Card */}
