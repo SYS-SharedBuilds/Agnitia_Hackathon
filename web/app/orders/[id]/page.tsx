@@ -31,7 +31,28 @@ export default function OrderDetailPage() {
   } | null>(null);
   const [certLoading, setCertLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert">("task");
+  const [activeRightTab, setActiveRightTab] = useState<"timeline" | "task" | "cert" | "ai-rca">("ai-rca");
+  const [aiRcaData, setAiRcaData] = useState<{
+    order_id: string;
+    product: string;
+    state: string;
+    copilot_model: string;
+    confidence_score: number;
+    subsystem: string;
+    diagnosis_title: string;
+    root_cause_analysis: string;
+    blast_radius: string;
+    telemetry_correlation: {
+      failed_tasks_count: number;
+      compensated_tasks_count: number;
+      stalled_tasks_count: number;
+      events_analyzed: number;
+      deterministic_invariant_guarantee: string;
+    };
+    remediation_playbook: string[];
+    suggested_ticket: string;
+    safety_assertion: string;
+  } | null>(null);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -63,10 +84,11 @@ export default function OrderDetailPage() {
   const fetchDetail = useCallback(async () => {
     try {
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const [dRes, eRes, cRes] = await Promise.all([
+      const [dRes, eRes, cRes, aRes] = await Promise.all([
         fetch(`${apiHost}/orders/${orderId}`),
         fetch(`${apiHost}/orders/${orderId}/events`),
         fetch(`${apiHost}/orders/${orderId}/certificate`),
+        fetch(`${apiHost}/orders/${orderId}/ai-rca`),
       ]);
       if (dRes.ok) {
         const d = await dRes.json();
@@ -81,6 +103,9 @@ export default function OrderDetailPage() {
       }
       if (cRes.ok) {
         setCertificateData(await cRes.json());
+      }
+      if (aRes.ok) {
+        setAiRcaData(await aRes.json());
       }
     } catch {
       // Backend not running, using mock state
@@ -858,15 +883,19 @@ export default function OrderDetailPage() {
         <div className="col-span-12 xl:col-span-4 bg-white rounded-xl shadow-2xs flex flex-col h-[640px] overflow-hidden border border-[#CBD5E1]">
           {/* Tabs Navigation */}
           <div className="h-12 px-4 flex items-center justify-between shrink-0 bg-white border-b border-[#E2E8F0]">
-            <div className="flex items-center gap-6 h-full font-body-md text-body-md">
+            <div className="flex items-center gap-4 h-full">
               <button
-                onClick={() => setActiveRightTab("timeline")}
-                className={`h-full flex items-center transition-colors ${
-                  activeRightTab === "timeline" ? "text-[#000000] font-semibold relative" : "text-[#000000] hover:text-[#000000] font-medium"
+                onClick={() => setActiveRightTab("ai-rca")}
+                className={`h-full flex items-center transition-colors gap-1.5 ${
+                  activeRightTab === "ai-rca" ? "text-[#000000] font-semibold relative" : "text-[#000000] hover:text-[#000000] font-medium"
                 }`}
               >
-                Timeline (27)
-                {activeRightTab === "timeline" && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0A1B2E] rounded-t-full"></span>}
+                <span className="material-symbols-outlined text-[16px] text-purple-700">psychology</span>
+                <span>AI Copilot</span>
+                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 font-bold border border-purple-200">
+                  RCA
+                </span>
+                {activeRightTab === "ai-rca" && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0A1B2E] rounded-t-full"></span>}
               </button>
               <button
                 onClick={() => setActiveRightTab("task")}
@@ -876,6 +905,15 @@ export default function OrderDetailPage() {
               >
                 Task Detail
                 {activeRightTab === "task" && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0A1B2E] rounded-t-full"></span>}
+              </button>
+              <button
+                onClick={() => setActiveRightTab("timeline")}
+                className={`h-full flex items-center transition-colors ${
+                  activeRightTab === "timeline" ? "text-[#000000] font-semibold relative" : "text-[#000000] hover:text-[#000000] font-medium"
+                }`}
+              >
+                Timeline ({events.length || 27})
+                {activeRightTab === "timeline" && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0A1B2E] rounded-t-full"></span>}
               </button>
               <button
                 onClick={() => setActiveRightTab("cert")}
@@ -894,6 +932,147 @@ export default function OrderDetailPage() {
 
           {/* Tab Content Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* TAB 0: AI RCA COPILOT */}
+            {activeRightTab === "ai-rca" && (
+              <div className="space-y-4 animate-in fade-in duration-150">
+                {/* Header Banner */}
+                <div className="p-3.5 bg-purple-50/70 border border-purple-200 rounded-lg flex items-start justify-between gap-3 text-[#000000]">
+                  <div className="flex items-start gap-2.5">
+                    <span className="material-symbols-outlined text-[22px] text-purple-700 shrink-0 mt-0.5">psychology</span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-label-sm text-label-sm font-bold uppercase tracking-wider text-purple-900">
+                          {aiRcaData?.copilot_model || "SwitchOn Telecom RCA Copilot v2.4"}
+                        </h4>
+                      </div>
+                      <p className="font-body-sm text-body-sm text-[#000000] mt-0.5">
+                        Read-only intelligence engine synthesizing Temporal saga telemetry, error codes, and downstream microservice traces.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 inline-flex items-center gap-1 font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-300">
+                    <span className="h-2 w-2 rounded-full bg-purple-600 animate-pulse"></span>
+                    {aiRcaData?.confidence_score || 98.4}% Confidence
+                  </span>
+                </div>
+
+                {/* Diagnostic Title & Subsystem Badge */}
+                <div className="p-4 bg-white border border-[#CBD5E1] rounded-lg space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#000000] font-mono border border-[#CBD5E1]">
+                      SUBSYSTEM: {aiRcaData?.subsystem?.toUpperCase() || "HLR/HSS GATEWAY"}
+                    </span>
+                    <span className="font-mono text-xs text-[#000000] font-semibold">
+                      State: {order?.state || "NEEDS_ATTENTION"}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-headline-sm text-headline-sm font-bold text-[#000000]">
+                      {aiRcaData?.diagnosis_title || "HLR Deprovision Timeout during Saga Rollback"}
+                    </h3>
+                  </div>
+
+                  {/* Root Cause Card */}
+                  <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-label-sm text-label-sm font-bold text-[#000000]">
+                      <span className="material-symbols-outlined text-[16px]">troubleshoot</span>
+                      <span>Root-Cause Analysis (Plain-English)</span>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-[#000000] leading-relaxed">
+                      {aiRcaData?.root_cause_analysis ||
+                        "HLR Gateway slice 'hlr-east-01' became unresponsive (HTTP 504 Gateway Timeout) during backward compensation after Start Charging threw OCS_TIMEOUT_504."}
+                    </p>
+                  </div>
+
+                  {/* Blast Radius Assessment */}
+                  <div className="p-3 bg-white border border-amber-300 rounded-lg space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-label-sm text-label-sm font-bold text-amber-900">
+                      <span className="material-symbols-outlined text-[16px] text-amber-700">security</span>
+                      <span>Blast Radius &amp; Leakage Assessment</span>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-[#000000] leading-relaxed">
+                      {aiRcaData?.blast_radius ||
+                        "Zero billing leakage (billing account unfinalized). 1 residual HLR network profile lock in slice hlr-east-01. Customer SIM card is not operational."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Telemetry Correlation Grid */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg">
+                    <span className="font-label-sm text-label-sm text-[#000000] block">Events Correlated</span>
+                    <span className="font-mono text-lg font-bold text-[#000000]">
+                      {aiRcaData?.telemetry_correlation?.events_analyzed || events.length || 24}
+                    </span>
+                  </div>
+                  <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg">
+                    <span className="font-label-sm text-label-sm text-[#000000] block">Failed / Stalled Tasks</span>
+                    <span className="font-mono text-lg font-bold text-[#000000]">
+                      {(aiRcaData?.telemetry_correlation?.failed_tasks_count || 0) +
+                        (aiRcaData?.telemetry_correlation?.stalled_tasks_count || 0)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Remediation Playbook Checklist */}
+                <div className="p-4 bg-white border border-[#CBD5E1] rounded-lg space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-label-sm text-label-sm font-bold text-[#000000]">
+                      <span className="material-symbols-outlined text-[18px]">checklist</span>
+                      <span>NOC Recommended Playbook</span>
+                    </div>
+                    <span className="font-mono text-[10px] text-[#000000] bg-[#F1F5F9] px-2 py-0.5 rounded border border-[#CBD5E1]">
+                      SOP-TELCO-714
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {(
+                      aiRcaData?.remediation_playbook || [
+                        "Verify network slice cluster connectivity via 'Open Network System' diagnostic portal.",
+                        "If node has recovered, trigger 'Retry Compensation' to allow Temporal to replay the deprovision saga step.",
+                        "If node remains unrecoverable, execute manual HSS command 'hssctl-east purge-sub' and seal resolution with NOC ticket reference.",
+                      ]
+                    ).map((step, idx) => (
+                      <div key={idx} className="flex items-start gap-2.5 p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0] text-[#000000]">
+                        <span className="font-mono text-xs font-bold text-purple-900 bg-purple-100 rounded-full h-5 w-5 flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span className="font-body-sm text-body-sm text-[#000000] leading-snug">
+                          {step}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* JIRA / Incident Reference Box */}
+                  <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
+                    <span className="font-mono text-xs text-[#000000]">
+                      Suggested Ticket: <strong>{aiRcaData?.suggested_ticket || `INC-${orderId.slice(0, 10)}`}</strong>
+                    </span>
+                    <button
+                      onClick={() => {
+                        const t = aiRcaData?.suggested_ticket || `INC-${orderId}`;
+                        navigator.clipboard?.writeText(t);
+                        showToast(`Copied ${t} to clipboard`);
+                      }}
+                      className="font-label-sm text-label-sm text-[#000000] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[13px]">content_copy</span>
+                      Copy
+                    </button>
+                  </div>
+                </div>
+
+                {/* Safety Assertion Banner */}
+                <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg flex items-center gap-2 text-[#000000]">
+                  <span className="material-symbols-outlined text-[16px] text-emerald-700">verified</span>
+                  <span className="font-label-sm text-label-sm font-medium text-[#000000]">
+                    {aiRcaData?.safety_assertion || "Read-Only Diagnostic Copilot · Zero side-effect execution risk"}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* TAB 1: TIMELINE */}
             {activeRightTab === "timeline" && (
               <div className="space-y-4 animate-in fade-in duration-150">

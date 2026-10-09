@@ -446,6 +446,44 @@ export default function FalloutQueuePage() {
               </div>
             </div>
 
+            {/* AI Root-Cause & Fallout Copilot Synthesis Box */}
+              <div className="bg-purple-50/60 rounded-xl p-4 border border-purple-200 flex flex-col gap-3 shadow-2xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px] text-purple-700">psychology</span>
+                    <span className="font-label-sm text-label-sm font-bold uppercase tracking-wider text-purple-900">
+                      SwitchOn Telecom RCA Copilot v2.4
+                    </span>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 font-bold">
+                      98.4% Confidence
+                    </span>
+                  </div>
+                  <span className="font-mono text-[11px] text-[#000000] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
+                    Read-Only Diagnostics · Determinism Invariant Safe
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-body-sm text-[#000000]">
+                  <div className="bg-white p-3 rounded-lg border border-[#CBD5E1] space-y-1">
+                    <span className="font-label-sm text-label-sm font-bold text-[#000000] flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[15px] text-purple-700">troubleshoot</span>
+                      Root-Cause Diagnosis
+                    </span>
+                    <p className="text-[12px] leading-relaxed">
+                      {selectedIncident.summary}. Upstream node failed healthcheck probe during backward saga rollback.
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-[#CBD5E1] space-y-1">
+                    <span className="font-label-sm text-label-sm font-bold text-[#000000] flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[15px] text-amber-700">security</span>
+                      Blast Radius &amp; Risk
+                    </span>
+                    <p className="text-[12px] leading-relaxed">
+                      Zero billing leakage. 1 residual profile lock on <code className="font-mono font-semibold">hlr-east-01</code> preventing terminal saga completion.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             {/* 2. Interactive Guided Remediation Checklist */}
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-4">
               <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">

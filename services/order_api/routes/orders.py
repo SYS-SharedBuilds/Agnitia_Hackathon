@@ -236,6 +236,45 @@ async def get_order_events(
     return [dict(e) for e in res.mappings().all()]
 
 
+@router.get("/{order_id}/ai-rca")
+async def get_order_ai_rca(
+    order_id: str,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """AI Root-Cause & Fallout Copilot (X7):
+    Synthesizes deep diagnostics, blast-radius analysis, and operator remediation playbooks.
+    """
+    from services.orchestrator.explainer import synthesize_ai_rca_copilot
+
+    res = await session.execute(
+        text("SELECT * FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+    )
+    order = res.mappings().first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    tasks_res = await session.execute(
+        text("SELECT * FROM ops.tasks WHERE order_id = :id ORDER BY started_at ASC"),
+        {"id": order_id},
+    )
+    tasks = [dict(t) for t in tasks_res.mappings().all()]
+
+    events_res = await session.execute(
+        text("SELECT * FROM ops.events WHERE order_id = :id ORDER BY seq ASC"),
+        {"id": order_id},
+    )
+    events = [dict(e) for e in events_res.mappings().all()]
+
+    return synthesize_ai_rca_copilot(
+        order_id=order["order_id"],
+        product=order["product"],
+        state=order["state"],
+        failure_reason=order.get("failure_reason"),
+        tasks=tasks,
+        events=events,
+    )
+
+
 @router.get("/{order_id}/certificate")
 async def get_order_certificate(
     order_id: str,
