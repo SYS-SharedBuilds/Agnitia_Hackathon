@@ -1,10 +1,80 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  detail: string;
+  time: string;
+  severity: "info" | "warning" | "critical" | "success";
+  orderRef?: string;
+  read: boolean;
+}
+
+const INITIAL_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: "notif-1",
+    title: "Order activation completed",
+    detail: "ORD-20260712-004216 completed activation in 4.1s. All 8 tasks verified.",
+    time: "2m ago",
+    severity: "success",
+    orderRef: "ORD-20260712-004216",
+    read: false,
+  },
+  {
+    id: "notif-2",
+    title: "Activation retry occurred",
+    detail: "ORD-20260712-004215 retrying step 4 (HLR lock) attempt #2.",
+    time: "6m ago",
+    severity: "warning",
+    orderRef: "ORD-20260712-004215",
+    read: false,
+  },
+  {
+    id: "notif-3",
+    title: "Compensation requires operator attention",
+    detail: "ORD-20260712-004217 halted at Deprovision Network (5/5 retries exhausted).",
+    time: "10m ago",
+    severity: "critical",
+    orderRef: "ORD-20260712-004217",
+    read: false,
+  },
+  {
+    id: "notif-4",
+    title: "Order rolled back cleanly",
+    detail: "ORD-20260712-004211 compensation completed. Tombstone token recorded.",
+    time: "18m ago",
+    severity: "info",
+    orderRef: "ORD-20260712-004211",
+    read: true,
+  },
+  {
+    id: "notif-5",
+    title: "Certificate verification completed",
+    detail: "Cryptographic Merkle log verified zero orphaned state records.",
+    time: "25m ago",
+    severity: "success",
+    read: true,
+  },
+];
+
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const handleMarkItemRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
 
   const navItems = [
     { name: "Overview", href: "/", pathKey: "overview", icon: "grid_view" },
@@ -152,10 +222,119 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <span>Temporal UI</span>
               <span className="material-symbols-outlined text-[14px]">north_east</span>
             </a>
-            <button className="relative p-1.5 text-[#64748B] hover:text-[#0A1B2E] rounded-lg hover:bg-[#F8FAFC] transition-colors">
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#0A1B2E] border border-white"></span>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-1.5 text-[#64748B] hover:text-[#0A1B2E] rounded-lg hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                {notifications.some((n) => !n.read) && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#0A1B2E] border border-white"></span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-[#CBD5E1] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-4 py-3 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-headline-sm text-sm font-bold text-[#0A1B2E]">Notifications</span>
+                      <span className="font-mono text-[10.5px] px-1.5 py-0.2 rounded-full bg-white text-[#0A1B2E] border border-[#CBD5E1] font-semibold">
+                        {notifications.filter((n) => !n.read).length} new
+                      </span>
+                    </div>
+                    {notifications.some((n) => !n.read) && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-[11.5px] font-medium text-[#0A1B2E] hover:underline cursor-pointer"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-[380px] overflow-y-auto divide-y divide-[#F1F5F9]">
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center text-[#64748B]">
+                        <span className="material-symbols-outlined text-3xl text-[#94A3B8] mb-1">notifications_off</span>
+                        <p className="text-body-sm font-medium">No notifications</p>
+                        <p className="text-xs text-[#94A3B8] mt-0.5">All order events are up to date</p>
+                      </div>
+                    ) : (
+                      notifications.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`p-3.5 transition-colors hover:bg-[#F8FAFC] flex items-start gap-3 ${
+                            item.read ? "bg-white opacity-80" : "bg-[#F8FAFC]/50"
+                          }`}
+                        >
+                          <span
+                            className={`p-1.5 rounded-lg shrink-0 ${
+                              item.severity === "critical"
+                                ? "bg-[#FEE2E2] text-[#DC2626]"
+                                : item.severity === "warning"
+                                ? "bg-[#FEF3C7] text-[#D97706]"
+                                : "bg-[#F1F5F9] text-[#0A1B2E]"
+                            }`}
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              {item.severity === "critical"
+                                ? "warning"
+                                : item.severity === "warning"
+                                ? "refresh"
+                                : item.severity === "success"
+                                ? "verified"
+                                : "info"}
+                            </span>
+                          </span>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                              <span className="text-body-sm font-semibold text-[#0A1B2E] truncate">
+                                {item.title}
+                              </span>
+                              <span className="font-mono text-[10px] text-[#94A3B8] shrink-0">
+                                {item.time}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#64748B] leading-snug mb-1.5">
+                              {item.detail}
+                            </p>
+                            <div className="flex items-center justify-between text-[11px]">
+                              {item.orderRef ? (
+                                <Link
+                                  href={`/orders/${item.orderRef}`}
+                                  onClick={() => setShowNotifications(false)}
+                                  className="font-mono text-[#0A1B2E] font-medium hover:underline flex items-center gap-0.5"
+                                >
+                                  <span>{item.orderRef}</span>
+                                  <span className="material-symbols-outlined text-[12px]">north_east</span>
+                                </Link>
+                              ) : <span />}
+                              {!item.read && (
+                                <button
+                                  onClick={() => handleMarkItemRead(item.id)}
+                                  className="text-[#64748B] hover:text-[#0A1B2E] text-[10.5px]"
+                                >
+                                  Mark read
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="p-2.5 bg-[#F8FAFC] border-t border-[#E2E8F0] text-center">
+                    <span className="font-mono text-[10.5px] text-[#64748B]">
+                      Demo Notification Stream · Sync: 2026-07-12
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

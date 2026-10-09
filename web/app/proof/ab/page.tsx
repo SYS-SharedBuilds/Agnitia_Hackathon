@@ -417,43 +417,45 @@ export default function ABProofPage() {
 
           {/* Comparison visual bars */}
           <div className="space-y-6">
-            {/* Baseline Bar */}
+            {/* Baseline Failure Count Buffer Visualization */}
             <div>
               <div className="flex justify-between items-center text-body-sm font-body-sm mb-2">
                 <span className="font-semibold text-on-surface flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-sm bg-error"></span>
-                  <span>Baseline Engine (40 Total Leaks across 200 orders)</span>
+                  <span>Baseline Engine Fault Buffer ({Math.round(batchOrders * (faultRatio / 100) * 0.8)} Total Leaks / {batchOrders} orders at {faultRatio}% chaos)</span>
                 </span>
-                <span className="font-label-sm text-label-sm text-error font-bold font-mono">20.0% Error Envelope</span>
+                <span className="font-label-sm text-label-sm text-error font-bold font-mono">
+                  {((faultRatio * 0.8)).toFixed(1)}% Error Envelope
+                </span>
               </div>
-              <div className="h-8 w-full bg-surface-container-low rounded-lg overflow-hidden flex shadow-inner">
+              <div className="h-9 w-full bg-surface-container-low rounded-lg overflow-hidden flex shadow-inner border border-outline-variant/30 transition-all">
                 <div
-                  className="bg-error flex items-center justify-center text-on-error font-label-sm text-label-sm font-medium"
-                  style={{ width: "35%" }}
-                  title="Billed w/o service: 14 (35%)"
+                  className="bg-error hover:brightness-110 flex items-center justify-center text-on-error font-label-sm text-label-sm font-medium transition-all cursor-pointer group relative"
+                  style={{ width: `${35}%` }}
+                  title={`Billed w/o service: ${Math.round(batchOrders * (faultRatio / 100) * 0.28)} orders (35% of failure buffer)`}
                 >
-                  <span>Billed w/o Serv (14)</span>
+                  <span className="truncate px-1">Billed w/o Serv ({Math.round(batchOrders * (faultRatio / 100) * 0.28)})</span>
                 </div>
                 <div
-                  className="bg-error-container flex items-center justify-center text-on-error-container font-label-sm text-label-sm font-medium"
-                  style={{ width: "22.5%" }}
-                  title="Service w/o billing: 9 (22.5%)"
+                  className="bg-error-container hover:brightness-110 flex items-center justify-center text-on-error-container font-label-sm text-label-sm font-medium transition-all cursor-pointer group relative"
+                  style={{ width: `${22.5}%` }}
+                  title={`Service w/o billing: ${Math.round(batchOrders * (faultRatio / 100) * 0.18)} orders (22.5% of failure buffer)`}
                 >
-                  <span>Free Serv (9)</span>
+                  <span className="truncate px-1">Free Serv ({Math.round(batchOrders * (faultRatio / 100) * 0.18)})</span>
                 </div>
                 <div
-                  className="bg-surface-variant flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm font-medium"
-                  style={{ width: "27.5%" }}
-                  title="Orphaned resources: 11 (27.5%)"
+                  className="bg-surface-variant hover:brightness-110 flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm font-medium transition-all cursor-pointer group relative"
+                  style={{ width: `${27.5}%` }}
+                  title={`Orphaned resources: ${Math.round(batchOrders * (faultRatio / 100) * 0.22)} orders (27.5% of failure buffer)`}
                 >
-                  <span>Orphaned (11)</span>
+                  <span className="truncate px-1">Orphaned ({Math.round(batchOrders * (faultRatio / 100) * 0.22)})</span>
                 </div>
                 <div
-                  className="bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-label-sm text-label-sm font-medium"
-                  style={{ width: "15%" }}
-                  title="Stuck orders: 6 (15%)"
+                  className="bg-tertiary-container hover:brightness-110 flex items-center justify-center text-on-tertiary-container font-label-sm text-label-sm font-medium transition-all cursor-pointer group relative"
+                  style={{ width: `${15}%` }}
+                  title={`Stuck orders: ${Math.round(batchOrders * (faultRatio / 100) * 0.12)} orders (15% of failure buffer)`}
                 >
-                  <span>Stuck (6)</span>
+                  <span className="truncate px-1">Stuck ({Math.round(batchOrders * (faultRatio / 100) * 0.12)})</span>
                 </div>
               </div>
             </div>

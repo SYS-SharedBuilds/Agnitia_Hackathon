@@ -33,6 +33,8 @@ export interface Order {
   failure_reason?: string;
   workflow_id: string;
   current_step?: string;
+  msisdn?: string;
+  iccid?: string;
   payload?: Record<string, unknown>;
 }
 

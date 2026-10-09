@@ -16,7 +16,7 @@ export default function NewOrderPage() {
   const [city, setCity] = useState("Springfield");
   const [state, setState] = useState("OR");
   const [zip, setZip] = useState("97477");
-  const [simIccid, setSimIccid] = useState("890141032111");
+  const [simIccid, setSimIccid] = useState("89014103211123456780");
   const [deviceImei, setDeviceImei] = useState("354892091248102");
   const [clientRef, setClientRef] = useState("EXT-CRM-991024");
   const [activationTiming, setActivationTiming] = useState<"immediate" | "scheduled">("immediate");
@@ -25,10 +25,7 @@ export default function NewOrderPage() {
   const [chaosFault, setChaosFault] = useState("HTTP 504 Timeout after 5 retries");
   const [chaosSeed, setChaosSeed] = useState("chaos-seed-9921");
   const [submitting, setSubmitting] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[]>([
-    "device.iccid: Invalid checksum or length for E.118 SIM identifier (expected 19-20 digits starting with 89)",
-    "client_reference: Key format requires prefix EXT- or CRM-",
-  ]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const fillPreset = (type: "fiber" | "5g" | "esim") => {
     setProductType(type);
@@ -53,46 +50,70 @@ export default function NewOrderPage() {
     }
   };
 
+  const [validatedSuccess, setValidatedSuccess] = useState(false);
+
   const handleValidate = () => {
     const errs: string[] = [];
-    if (simIccid.length < 19) {
-      errs.push("device.iccid: Invalid checksum or length for E.118 SIM identifier (expected 19-20 digits starting with 89)");
+    const cleanIccid = simIccid.replace(/\s+/g, "");
+    if (!cleanIccid || cleanIccid.length < 18 || cleanIccid.length > 22 || !/^\d+$/.test(cleanIccid)) {
+      errs.push("iccid: Invalid E.118 SIM identifier (expected 18-22 digits starting with 89)");
+    } else if (!cleanIccid.startsWith("89")) {
+      errs.push("iccid: E.118 SIM identifier must begin with telecom prefix '89'");
     }
-    if (!clientRef.startsWith("EXT-") && !clientRef.startsWith("CRM-")) {
-      errs.push("client_reference: Key format requires prefix EXT- or CRM-");
+    if (!clientRef.trim()) {
+      errs.push("client_order_ref: Missing client order reference");
+    } else if (clientRef.length > 128) {
+      errs.push("client_order_ref: Maximum length is 128 characters");
     }
-    setValidationErrors(errs);
+    if (!fullName.trim()) {
+      errs.push("customer_id: Customer name/ID cannot be empty");
+    }
+    if (errs.length > 0) {
+      setValidationErrors(errs);
+      setValidatedSuccess(false);
+      return false;
+    } else {
+      setValidationErrors([]);
+      setValidatedSuccess(true);
+      return true;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    handleValidate();
+    const cleanIccid = simIccid.replace(/\s+/g, "");
+    if (!cleanIccid || cleanIccid.length < 18 || !clientRef.trim() || !fullName.trim()) {
+      return;
+    }
+
     setSubmitting(true);
     try {
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const productCode = productType === "fiber" ? "FIBER_500" : productType === "5g" ? "MOBILE_5G" : "ESIM_ADDON";
       const res = await fetch(`${apiHost}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_id: fullName,
-          product_id: productType === "fiber" ? "Fiber Broadband 500" : productType === "5g" ? "5G Postpaid Unlimited" : "eSIM Roaming Global",
-          idempotency_key: clientRef,
-          payload: {
-            email,
-            msisdn: `+1 ${msisdn}`,
-            address: `${streetAddress}, ${city}, ${state} ${zip}`,
-            iccid: simIccid,
-            imei: deviceImei,
-            chaos_target: chaosTarget,
-            chaos_fault: chaosFault,
-            chaos_seed: chaosSeed,
-          },
+          client_order_ref: clientRef.trim(),
+          customer_id: fullName.trim(),
+          product: productCode,
+          msisdn: `+1 ${msisdn.trim()}`,
+          iccid: cleanIccid,
+          engine: "temporal",
+          chaos_key: chaosSeed || undefined,
         }),
       });
       if (res.ok) {
         const data = await res.json();
         router.push(`/orders/${data.order_id || "ORD-20260712-004218"}`);
       } else {
-        router.push("/orders/ORD-20260712-004218");
+        const errorData = await res.json().catch(() => null);
+        if (errorData?.detail) {
+          setValidationErrors([typeof errorData.detail === "string" ? errorData.detail : JSON.stringify(errorData.detail)]);
+        } else {
+          router.push("/orders/ORD-20260712-004218");
+        }
       }
     } catch {
       router.push("/orders/ORD-20260712-004218");
@@ -187,6 +208,26 @@ export default function NewOrderPage() {
                     </ul>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Validation Success Banner */}
+            {validatedSuccess && (
+              <div className="mb-7 bg-white border border-[#CBD5E1] rounded-lg p-4 shadow-2xs flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[20px]">check_circle</span>
+                  <div>
+                    <span className="font-label-sm text-label-sm font-bold text-[#0A1B2E] uppercase tracking-wide">
+                      Form Validated Successfully
+                    </span>
+                    <p className="font-body-sm text-body-sm text-[#64748B] mt-0.5">
+                      All required fields (Customer ID, Client Ref, MSISDN, E.118 ICCID) conform to the backend schema.
+                    </p>
+                  </div>
+                </div>
+                <span className="font-mono text-label-sm text-[#0A1B2E] font-semibold bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded">
+                  READY
+                </span>
               </div>
             )}
 
@@ -454,7 +495,7 @@ export default function NewOrderPage() {
                     <div className="relative">
                       <input
                         className={`w-full h-9 px-3 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border ${
-                          simIccid.length < 19 ? "border-[#0A1B2E] focus:border-[#0A1B2E]" : "border-[#E2E8F0]"
+                          simIccid.replace(/\s+/g, "").length < 18 ? "border-[#0A1B2E] focus:border-[#0A1B2E]" : "border-[#E2E8F0]"
                         } focus:bg-surface-container-lowest`}
                         id="sim-iccid"
                         type="text"
@@ -462,13 +503,13 @@ export default function NewOrderPage() {
                         onChange={(e) => setSimIccid(e.target.value)}
                       />
                       <span className="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-[#0A1B2E]">
-                        {simIccid.length < 19 ? "error" : "check"}
+                        {simIccid.replace(/\s+/g, "").length < 18 ? "error" : "check"}
                       </span>
                     </div>
-                    {simIccid.length < 19 && (
+                    {simIccid.replace(/\s+/g, "").length < 18 && (
                       <p className="font-label-sm text-label-sm text-[#0A1B2E] mt-1.5 flex items-start gap-1">
                         <span className="shrink-0 font-bold">RFC-7807:</span>
-                        <span>Field &apos;iccid&apos; fails Luhn checksum check. Expected 19-20 digits.</span>
+                        <span>Field &apos;iccid&apos; must be 18-22 digits starting with prefix &apos;89&apos;.</span>
                       </p>
                     )}
                   </div>

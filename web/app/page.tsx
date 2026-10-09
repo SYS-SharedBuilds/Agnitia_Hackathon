@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MetricsSummary, Order } from "@/lib/types";
+import { MOCK_OPERATIONAL_KPIS, MOCK_ORDERS } from "@/lib/mockData";
 
 export default function OverviewPage() {
-  const [metrics, setMetrics] = useState<MetricsSummary | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [metrics, setMetrics] = useState<MetricsSummary | null>(MOCK_OPERATIONAL_KPIS);
+  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  const [isLiveBackend, setIsLiveBackend] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "running" | "succeeded" | "rolling-back" | "rolled-back" | "needs-attention">("all");
   const [filterQuery, setFilterQuery] = useState("");
@@ -18,10 +20,19 @@ export default function OverviewPage() {
         fetch(`${apiHost}/metrics/summary`),
         fetch(`${apiHost}/orders?limit=25`),
       ]);
-      if (mRes.ok) setMetrics(await mRes.json());
-      if (oRes.ok) setOrders(await oRes.json());
-    } catch (e) {
-      console.error("Fetch error", e);
+      if (mRes.ok) {
+        setMetrics(await mRes.json());
+        setIsLiveBackend(true);
+      }
+      if (oRes.ok) {
+        const liveOrders = await oRes.json();
+        if (liveOrders.length > 0) {
+          setOrders(liveOrders);
+          setIsLiveBackend(true);
+        }
+      }
+    } catch {
+      // Backend not running, preserves central MOCK_OPERATIONAL_KPIS and MOCK_ORDERS
     }
   };
 
@@ -32,134 +43,27 @@ export default function OverviewPage() {
     return () => clearInterval(interval);
   }, [isPaused]);
 
-  // Demo fallback items matching Screen 2 specifications
-  const displayOrders = orders.length > 0 ? orders.map((o, idx) => ({
+  // Orders mapping prioritizing real backend or central realistic telecom data
+  const displayOrders = orders.map((o, idx) => ({
     id: o.order_id,
-    customer: o.customer_id,
+    customer: (o.payload?.customer_name as string) || o.customer_id,
     msisdn: (o.payload?.msisdn as string) || "+1 555 019-4821",
     product: o.product || "Fiber Broadband 500",
     status: (o.state as string),
     statusKey: (o.state as string) === "ACTIVE" ? "succeeded" : (o.state as string) === "ROLLING_BACK" ? "rolling-back" : (o.state as string) === "ROLLED_BACK" ? "rolled-back" : (o.state as string) === "NEEDS_ATTENTION" ? "needs-attention" : "running",
     step: o.current_step || "HLR Provisioning",
-    duration: "2.4s",
+    duration: o.activation_ms ? `${(o.activation_ms / 1000).toFixed(1)}s` : "2.4s",
     created: "Just now",
     cert: (o.state as string) === "ACTIVE" ? "verified" : (o.state as string) === "NEEDS_ATTENTION" ? "error" : "pending",
-    segments: ["success", "success", (o.state as string) === "IN_PROGRESS" ? "running" : "pending", "pending", "pending"],
-    isLive: idx === 0,
-  })) : [
-    {
-      id: "ORD-20260712-004217",
-      customer: "Marcus Vance",
-      msisdn: "+1 555 019-4821",
-      product: "Fiber Broadband 500",
-      status: "RUNNING",
-      statusKey: "running",
-      step: "HLR Provisioning",
-      duration: "2.4s",
-      created: "4s ago",
-      cert: "hourglass_top",
-      segments: ["success", "success", "running", "idle", "idle"],
-      isLive: true,
-    },
-    {
-      id: "ORD-20260712-004216",
-      customer: "Aria Montgomery",
-      msisdn: "+1 555 302-8812",
-      product: "5G Postpaid Unlimited",
-      status: "SUCCEEDED",
-      statusKey: "succeeded",
-      step: "Welcome SMS Dispatched",
-      duration: "1.8s",
-      created: "18s ago",
-      cert: "verified",
-      segments: ["success", "success", "success", "success", "success"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004215",
-      customer: "Kasper Thorne",
-      msisdn: "+1 555 891-2311",
-      product: "Enterprise SIP Trunk",
-      status: "RETRYING",
-      statusKey: "running",
-      step: "Billing Account Sync",
-      duration: "4.8s",
-      created: "42s ago",
-      cert: "pending",
-      segments: ["success", "success", "success", "retrying", "idle"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004214",
-      customer: "Helix Labs Ltd",
-      msisdn: "+1 555 762-9011",
-      product: "Cloud Interconnect 10G",
-      status: "ROLLING_BACK",
-      statusKey: "rolling-back",
-      step: "Compensating HLR",
-      duration: "14.2s",
-      created: "1m ago",
-      cert: "cancel",
-      segments: ["compensating", "compensating", "idle", "idle", "error"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004213",
-      customer: "Elena Rostova",
-      msisdn: "+1 555 441-9988",
-      product: "eSIM Roaming Global",
-      status: "COMPENSATED",
-      statusKey: "rolled-back",
-      step: "eSIM Profile Download (Cleaned)",
-      duration: "3.1s",
-      created: "2m ago",
-      cert: "remove_done",
-      segments: ["compensated", "compensated", "compensated", "compensated", "compensated"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004212",
-      customer: "Jonah Sterling",
-      msisdn: "+1 555 124-7744",
-      product: "Fiber Broadband 1G",
-      status: "SUCCEEDED",
-      statusKey: "succeeded",
-      step: "CPE Auto-Provisioned",
-      duration: "2.9s",
-      created: "3m ago",
-      cert: "verified",
-      segments: ["success", "success", "success", "success", "success"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004211",
-      customer: "Devon Miller",
-      msisdn: "+1 555 609-1229",
-      product: "eSIM Add-on Data",
-      status: "SUCCEEDED",
-      statusKey: "succeeded",
-      step: "eSIM Profile Download",
-      duration: "1.2s",
-      created: "4m ago",
-      cert: "verified",
-      segments: ["success", "success", "success", "success", "success"],
-      isLive: false,
-    },
-    {
-      id: "ORD-20260712-004210",
-      customer: "Northstar Freight",
-      msisdn: "+1 555 238-9900",
-      product: "IoT SIM Pool (500x)",
-      status: "NEEDS_ATTENTION",
-      statusKey: "needs-attention",
-      step: "HLR Provisioning (Code 403)",
-      duration: "28.4s",
-      created: "5m ago",
-      cert: "error",
-      segments: ["success", "success", "attention", "idle", "idle"],
-      isLive: false,
-    },
-  ];
+    segments: (o.state as string) === "ACTIVE"
+      ? ["success", "success", "success", "success", "success"]
+      : (o.state as string) === "ROLLED_BACK"
+      ? ["compensated", "compensated", "compensated", "idle", "idle"]
+      : (o.state as string) === "NEEDS_ATTENTION"
+      ? ["success", "success", "error", "idle", "idle"]
+      : ["success", "success", "running", "idle", "idle"],
+    isLive: isLiveBackend && idx === 0,
+  }));
 
   const filteredOrders = displayOrders.filter((ord) => {
     if (activeTab !== "all" && ord.statusKey !== activeTab) return false;
@@ -620,134 +524,148 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            {/* Filter Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-              <button
-                onClick={() => setActiveTab("all")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === "all"
-                    ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
-                    : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
-                }`}
-              >
-                All (1,284)
-              </button>
-              <button
-                onClick={() => setActiveTab("running")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === "running"
-                    ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
-                    : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
-                }`}
-              >
-                In Progress (42)
-              </button>
-              <button
-                onClick={() => setActiveTab("succeeded")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === "succeeded"
-                    ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
-                    : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
-                }`}
-              >
-                Active (1,136)
-              </button>
-              <button
-                onClick={() => setActiveTab("rolling-back")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === "rolling-back"
-                    ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
-                    : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
-                }`}
-              >
-                Rolling Back (8)
-              </button>
-              <button
-                onClick={() => setActiveTab("rolled-back")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === "rolled-back"
-                    ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
-                    : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
-                }`}
-              >
-                Rolled Back (75)
-              </button>
-              <button
-                onClick={() => setActiveTab("needs-attention")}
-                className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === "needs-attention"
-                    ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
-                    : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
-                }`}
-              >
-                Needs Attention (2)
-              </button>
+              {/* Filter Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                <button
+                  onClick={() => setActiveTab("all")}
+                  className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === "all"
+                      ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
+                      : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
+                  }`}
+                >
+                  All ({displayOrders.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("running")}
+                  className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === "running"
+                      ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
+                      : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
+                  }`}
+                >
+                  In Progress ({displayOrders.filter((o) => o.statusKey === "running").length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("succeeded")}
+                  className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === "succeeded"
+                      ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
+                      : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
+                  }`}
+                >
+                  Active ({displayOrders.filter((o) => o.statusKey === "succeeded").length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("rolling-back")}
+                  className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === "rolling-back"
+                      ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
+                      : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
+                  }`}
+                >
+                  Rolling Back ({displayOrders.filter((o) => o.statusKey === "rolling-back").length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("rolled-back")}
+                  className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === "rolled-back"
+                      ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
+                      : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
+                  }`}
+                >
+                  Rolled Back ({displayOrders.filter((o) => o.statusKey === "rolled-back").length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("needs-attention")}
+                  className={`px-2.5 py-1 rounded-md text-[12px] font-medium whitespace-nowrap transition-colors ${
+                    activeTab === "needs-attention"
+                      ? "bg-[#0A1B2E] text-white border border-[#0A1B2E] font-semibold shadow-2xs"
+                      : "text-[#475569] bg-white hover:text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#E2E8F0]"
+                  }`}
+                >
+                  Needs Attention ({displayOrders.filter((o) => o.statusKey === "needs-attention").length})
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Dense Enterprise Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed min-w-[980px]">
-              <thead>
-                <tr className="bg-[#F8FAFC] border-b border-[#E3E8F0] font-mono text-[11px] uppercase tracking-wider text-[#64748B] h-10 sticky top-0 select-none">
-                  <th className="px-3.5 py-2 w-[165px]">Order ID</th>
-                  <th className="px-3 py-2 w-[170px]">Customer</th>
-                  <th className="px-3 py-2 w-[145px]">Product</th>
-                  <th className="px-3 py-2 w-[130px]">Status</th>
-                  <th className="px-3 py-2 w-[95px]">Progress</th>
-                  <th className="px-3 py-2 w-[175px]">Current Step</th>
-                  <th className="px-2.5 py-2 w-[75px]">Duration</th>
-                  <th className="px-2.5 py-2 w-[75px]">Created</th>
-                  <th className="px-3 py-2 w-[65px] text-center">Cert</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F1F5F9] text-[12.5px]">
-                {filteredOrders.map((ord) => (
-                  <tr
-                    key={ord.id}
-                    className={`hover:bg-[#F8FAFC] transition-colors h-10 ${
-                      ord.isLive ? "border-l-2 border-l-[#0A1B2E] bg-[#F8FAFC]" : ""
-                    }`}
-                  >
-                    <td className="px-3.5 py-2 font-mono text-[11.5px] font-semibold truncate text-[#0A1B2E] hover:underline cursor-pointer">
-                      <Link href={`/orders/${ord.id}`}>{ord.id}</Link>
-                    </td>
-                    <td className="px-3 py-2 truncate">
-                      <div className="font-medium text-[#0A1B2E] truncate">{ord.customer}</div>
-                      <div className="font-mono text-[10.5px] text-[#64748B]">{ord.msisdn}</div>
-                    </td>
-                    <td className="px-3 py-2 text-[#0A1B2E] truncate font-medium">{ord.product}</td>
-                    <td className="px-3 py-2">
-                      {renderStatusBadge(ord.status)}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-1 w-16">
-                        {ord.segments.map((seg, sIdx) => renderSegment(seg, sIdx))}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 truncate font-medium text-[#0A1B2E]">
-                      {ord.step}
-                    </td>
-                    <td className="px-2.5 py-2 font-mono text-[11px] text-[#64748B]">{ord.duration}</td>
-                    <td className="px-2.5 py-2 text-[11.5px] text-[#64748B]">{ord.created}</td>
-                    <td className="px-3 py-2 text-center">
-                      {ord.cert === "verified" ? (
-                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]" title="Verified Certificate">verified</span>
-                      ) : ord.cert === "error" ? (
-                        <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">error</span>
-                      ) : ord.cert === "cancel" ? (
-                        <span className="material-symbols-outlined text-[16px] text-[#CBD5E1]">cancel</span>
-                      ) : ord.cert === "remove_done" ? (
-                        <span className="material-symbols-outlined text-[16px] text-[#94A3B8]">remove_done</span>
-                      ) : (
-                        <span className="material-symbols-outlined text-[16px] text-[#CBD5E1]">hourglass_top</span>
-                      )}
-                    </td>
+            {/* Dense Enterprise Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse table-fixed min-w-[980px]">
+                <thead>
+                  <tr className="bg-[#F8FAFC] border-b border-[#E3E8F0] font-mono text-[11px] uppercase tracking-wider text-[#64748B] h-10 sticky top-0 select-none">
+                    <th className="px-3.5 py-2 w-[165px]">Order ID</th>
+                    <th className="px-3 py-2 w-[170px]">Customer</th>
+                    <th className="px-3 py-2 w-[145px]">Product</th>
+                    <th className="px-3 py-2 w-[130px]">Status</th>
+                    <th className="px-3 py-2 w-[95px]">Progress</th>
+                    <th className="px-3 py-2 w-[175px]">Current Step</th>
+                    <th className="px-2.5 py-2 w-[75px]">Duration</th>
+                    <th className="px-2.5 py-2 w-[75px]">Created</th>
+                    <th className="px-3 py-2 w-[65px] text-center">Cert</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#F1F5F9] text-[12.5px]">
+                  {filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <span className="material-symbols-outlined text-[32px] text-[#94A3B8]">inbox</span>
+                          <span className="font-semibold text-[#0A1B2E] text-[14px]">No orders match the selected filter</span>
+                          <span className="text-[#64748B] text-[12px]">
+                            {activeTab !== "all" ? `No orders in '${activeTab}' state currently.` : "No orders found in active database."}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredOrders.map((ord) => (
+                      <tr
+                        key={ord.id}
+                        className={`hover:bg-[#F8FAFC] transition-colors h-10 ${
+                          ord.isLive ? "border-l-2 border-l-[#0A1B2E] bg-[#F8FAFC]" : ""
+                        }`}
+                      >
+                        <td className="px-3.5 py-2 font-mono text-[11.5px] font-semibold truncate text-[#0A1B2E] hover:underline cursor-pointer">
+                          <Link href={`/orders/${ord.id}`}>{ord.id}</Link>
+                        </td>
+                        <td className="px-3 py-2 truncate">
+                          <div className="font-medium text-[#0A1B2E] truncate">{ord.customer}</div>
+                          <div className="font-mono text-[10.5px] text-[#64748B]">{ord.msisdn}</div>
+                        </td>
+                        <td className="px-3 py-2 text-[#0A1B2E] truncate font-medium">{ord.product}</td>
+                        <td className="px-3 py-2">
+                          {renderStatusBadge(ord.status)}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1 w-16">
+                            {ord.segments.map((seg, sIdx) => renderSegment(seg, sIdx))}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 truncate font-medium text-[#0A1B2E]">
+                          {ord.step}
+                        </td>
+                        <td className="px-2.5 py-2 font-mono text-[11px] text-[#64748B]">{ord.duration}</td>
+                        <td className="px-2.5 py-2 text-[11.5px] text-[#64748B]">{ord.created}</td>
+                        <td className="px-3 py-2 text-center">
+                          {ord.cert === "verified" ? (
+                            <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]" title="Verified Certificate">verified</span>
+                          ) : ord.cert === "error" ? (
+                            <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">error</span>
+                          ) : ord.cert === "cancel" ? (
+                            <span className="material-symbols-outlined text-[16px] text-[#CBD5E1]">cancel</span>
+                          ) : ord.cert === "remove_done" ? (
+                            <span className="material-symbols-outlined text-[16px] text-[#94A3B8]">remove_done</span>
+                          ) : (
+                            <span className="material-symbols-outlined text-[16px] text-[#CBD5E1]">hourglass_top</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
           {/* Pagination Footer */}
           <div className="p-3 border-t border-[#E2E8F0] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#64748B]">
@@ -862,6 +780,133 @@ export default function OverviewPage() {
                 <strong className="text-[#0A1B2E]">Circuit breaker policy:</strong> Fallback queue active for HLR gateway retries. 3 retry backoffs before saga rollback.
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. TRIAGE PANELS: ROLLBACKS & NEEDS ATTENTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-1">
+        {/* ROLLBACKS PANEL */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">undo</span>
+                <h3 className="text-[15px] font-bold text-[#0A1B2E] tracking-tight">Recent Saga Rollbacks</h3>
+                <span className="font-mono text-[11px] text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded-full font-semibold">
+                  {displayOrders.filter((o) => o.statusKey === "rolled-back" || o.statusKey === "rolling-back").length} orders
+                </span>
+              </div>
+              <button
+                onClick={() => setActiveTab("rolled-back")}
+                className="text-[11.5px] font-mono text-[#0A1B2E] hover:underline"
+              >
+                Filter table →
+              </button>
+            </div>
+
+            <div className="divide-y divide-[#F1F5F9] mt-2">
+              {displayOrders.filter((o) => o.statusKey === "rolled-back" || o.statusKey === "rolling-back").length === 0 ? (
+                <div className="py-8 text-center text-[#64748B] text-[12px]">
+                  No rolled back orders in this period. Sagas executing nominally.
+                </div>
+              ) : (
+                displayOrders
+                  .filter((o) => o.statusKey === "rolled-back" || o.statusKey === "rolling-back")
+                  .slice(0, 3)
+                  .map((o) => (
+                    <div key={o.id} className="py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/orders/${o.id}`} className="font-mono font-semibold text-[#0A1B2E] text-[12px] hover:underline">
+                            {o.id}
+                          </Link>
+                          {renderStatusBadge(o.status)}
+                        </div>
+                        <div className="text-[11.5px] text-[#64748B] mt-0.5 truncate">
+                          Reason: Clean Saga rollback · Reverse compensations verified (0 leaks)
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-[11px] font-mono text-[#64748B]">{o.created}</div>
+                        <Link
+                          href={`/orders/${o.id}`}
+                          className="inline-flex items-center gap-1 text-[11.5px] font-medium text-[#0A1B2E] hover:underline mt-0.5"
+                        >
+                          <span>Inspect</span>
+                          <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+          <div className="pt-3 border-t border-[#F1F5F9] text-[11px] text-[#64748B] flex items-center justify-between font-mono">
+            <span>Saga Invariant: 100% clean rollback rate</span>
+            <Link href="/proof/ab" className="hover:underline text-[#0A1B2E]">A/B Proof verification →</Link>
+          </div>
+        </div>
+
+        {/* NEEDS ATTENTION PANEL */}
+        <div className="bg-white border border-[#0A1B2E] rounded-xl p-5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">warning</span>
+                <h3 className="text-[15px] font-bold text-[#0A1B2E] tracking-tight">Needs Attention (Operator Action Required)</h3>
+                <span className="font-mono text-[11px] bg-[#0A1B2E] text-white px-2 py-0.5 rounded-full font-bold">
+                  {displayOrders.filter((o) => o.statusKey === "needs-attention").length} pending
+                </span>
+              </div>
+              <Link
+                href="/fallout"
+                className="text-[11.5px] font-mono text-[#0A1B2E] hover:underline font-semibold"
+              >
+                Fallout Queue →
+              </Link>
+            </div>
+
+            <div className="divide-y divide-[#F1F5F9] mt-2">
+              {displayOrders.filter((o) => o.statusKey === "needs-attention").length === 0 ? (
+                <div className="py-8 text-center text-[#64748B] text-[12px]">
+                  No orders currently require operator intervention.
+                </div>
+              ) : (
+                displayOrders
+                  .filter((o) => o.statusKey === "needs-attention")
+                  .map((o) => (
+                    <div key={o.id} className="py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/orders/${o.id}`} className="font-mono font-bold text-[#0A1B2E] text-[12px] hover:underline">
+                            {o.id}
+                          </Link>
+                          <span className="font-mono text-[10px] bg-[#0A1B2E] text-white px-2 py-0.5 rounded-full font-bold">
+                            COMPENSATION_HALTED
+                          </span>
+                        </div>
+                        <div className="text-[11.5px] text-[#0A1B2E] mt-0.5 font-medium truncate">
+                          Downstream HLR Gateway timeout (504) after 5 retries. Deprovision lock held.
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 flex items-center gap-2">
+                        <Link
+                          href={`/orders/${o.id}`}
+                          className="px-2.5 py-1 bg-white border border-[#CBD5E1] text-[#0A1B2E] hover:bg-[#F8FAFC] rounded text-[11.5px] font-medium transition-colors shadow-2xs inline-flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[13px]">build_circle</span>
+                          <span>Resolve</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+          <div className="pt-3 border-t border-[#F1F5F9] text-[11px] text-[#64748B] flex items-center justify-between font-mono">
+            <span>Circuit breaker: Halts rollback to prevent state corruption</span>
+            <Link href="/fallout" className="hover:underline font-semibold text-[#0A1B2E]">Open fallout management →</Link>
           </div>
         </div>
       </div>

@@ -145,8 +145,8 @@ const INITIAL_ORDERS: DisplayOrder[] = [
 
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<"all" | "failed" | "slow" | "attention">("all");
-  const [searchQuery, setSearchQuery] = useState("ORD-");
-  const [onlySignedCert, setOnlySignedCert] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [onlySignedCert, setOnlySignedCert] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>(["ORD-20260712-004217", "ORD-20260712-004214"]);
   const [orders, setOrders] = useState<DisplayOrder[]>(INITIAL_ORDERS);
 
@@ -159,21 +159,32 @@ export default function OrdersPage() {
         if (res.ok) {
           const apiData: Order[] = await res.json();
           if (apiData.length > 0) {
-            const mapped: DisplayOrder[] = apiData.map((o) => ({
-              id: o.order_id,
-              clientRef: `EXT-CRM-${o.order_id.slice(-6)}`,
-              customer: o.customer_id,
-              msisdn: String(o.payload?.msisdn || "+1 555 019-4821"),
-              product: o.product || "Fiber Broadband 500",
-              status: ((o.state as string) === "ACTIVE" ? "SUCCEEDED" : (o.state as string) === "ROLLED_BACK" ? "ROLLED_BACK" : (o.state as string) === "ROLLING_BACK" ? "ROLLING_BACK" : (o.state as string) === "NEEDS_ATTENTION" ? "NEEDS_ATTENTION" : "RUNNING") as DisplayOrder["status"],
-              tasksCompleted: (o.state as string) === "ACTIVE" ? 8 : 4,
-              totalTasks: 8,
-              taskDetail: (o.state as string) === "ACTIVE" ? "100%" : "50%",
-              retries: "0",
-              activationTime: "2.8s",
-              created: "Just now",
-              certStatus: (o.state as string) === "ACTIVE" ? "verified" : "pending",
-            }));
+            const mapped: DisplayOrder[] = apiData.map((o) => {
+              const stateStr = String(o.state);
+              let statusMapped: DisplayOrder["status"] = "RUNNING";
+              if (stateStr === "ACTIVE") statusMapped = "SUCCEEDED";
+              else if (stateStr === "ROLLED_BACK") statusMapped = "COMPENSATED";
+              else if (stateStr === "ROLLING_BACK") statusMapped = "COMPENSATING";
+              else if (stateStr === "NEEDS_ATTENTION") statusMapped = "NEEDS_ATTENTION";
+              else if (stateStr === "FAILED") statusMapped = "FAILED";
+              else if (stateStr === "RECEIVED") statusMapped = "PENDING";
+
+              return {
+                id: o.order_id,
+                clientRef: o.client_order_ref || `EXT-CRM-${o.order_id.slice(-6)}`,
+                customer: o.customer_id,
+                msisdn: String(o.payload?.msisdn || o.msisdn || "+1 555 019-4821"),
+                product: o.product === "FIBER_500" ? "Fiber Broadband 500" : o.product === "MOBILE_5G" ? "5G Postpaid Unlimited" : o.product === "ESIM_ADDON" ? "eSIM Roaming Global" : (o.product || "Fiber Broadband 500"),
+                status: statusMapped,
+                tasksCompleted: stateStr === "ACTIVE" ? 8 : stateStr === "ROLLED_BACK" ? 5 : 4,
+                totalTasks: 8,
+                taskDetail: stateStr === "ACTIVE" ? "100%" : stateStr === "ROLLED_BACK" ? "Compensated" : "In Flight",
+                retries: "0",
+                activationTime: o.activation_ms ? `${(o.activation_ms / 1000).toFixed(1)}s` : "2.8s",
+                created: "Just now",
+                certStatus: stateStr === "ACTIVE" ? "verified" : "pending",
+              };
+            });
             setOrders(mapped);
           }
         }
