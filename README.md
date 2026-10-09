@@ -1,4 +1,4 @@
-# SwitchOn — Automated Telecom Service Activation Orchestrator
+  # SwitchOn — Automated Telecom Service Activation Orchestrator
 
 Durable, dependency-aware telecom service activation orchestrator powered by **Temporal Python SDK**, **FastAPI**, **Redis Streams**, and **Next.js**.
 
