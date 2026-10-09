@@ -358,7 +358,7 @@ async def get_order_certificate(
     }
 
 
-@router.post("/{order_id}/cancel")
+@router.post("/{order_id}/cancel", status_code=status.HTTP_202_ACCEPTED)
 async def cancel_order(
     order_id: str,
     reason: str = Query(default="Operator signal", max_length=256),
@@ -367,17 +367,25 @@ async def cancel_order(
     res = await session.execute(
         text("SELECT state FROM ops.orders WHERE order_id = :id"), {"id": order_id}
     )
-    if not res.mappings().first():
+    row = res.mappings().first()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+
+    order_state = row["state"]
+    if order_state in ("ACTIVE", "ROLLED_BACK", "NEEDS_ATTENTION", "CANCELLED"):
+        raise HTTPException(status_code=409, detail=f"Order already terminal: {order_state}")
+
     try:
         temporal_client = await get_temporal_client()
         handle = temporal_client.get_workflow_handle(f"order-{order_id}")
         await handle.signal("cancel_order", reason)
         return {"status": "cancel_signaled", "order_id": order_id}
     except Exception as exc:
-        logger.error("cancel_workflow_failed", order_id=order_id, error=str(exc))
+        logger.error("cancel_workflow_failed", order_id=order_id, error=str(exc), exc_info=True)
+        if "completed" in str(exc).lower() or "not found" in str(exc).lower():
+            raise HTTPException(status_code=409, detail=f"Order workflow already completed: {exc}") from exc
         raise HTTPException(
-            status_code=500, detail="Failed to signal workflow cancellation"
+            status_code=500, detail=f"Failed to signal workflow cancellation: {exc}"
         ) from exc
 
 

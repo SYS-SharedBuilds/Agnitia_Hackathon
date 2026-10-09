@@ -125,6 +125,8 @@ Fallback for any beat: pre-recorded clip; keep narrating.
 | Docs + report | ☑ | Docs, architecture, and report data aligned |
 | Rehearsal ×3 | ☐ | Rehearsal demo script ready |
 
+> **Cancellation Policy:** Cancel is honored at wave boundaries; a cancel that arrives after billing has started returns 409 or completes the order, per the chosen policy.
+
 ## 13. Decision Log (append-only)
 | Date | Decision | Why | Who |
 |---|---|---|---|
@@ -132,4 +134,5 @@ Fallback for any beat: pre-recorded clip; keep narrating.
 | 2026-10-08 | Use Temporal server start-dev with persistent db | Resolves compose template postgres dialect restriction cleanly | Agent |
 | 2026-10-08 | Invariant checker queries ops.orders where engine='temporal' | Preserves invariant audit distinction from intentional baseline engine leaks | Agent |
 | 2026-10-08 | Truncate read-model ops tables in scripts/reset_data.py | Ensures PostgreSQL state matches mock stores on reset-data | Agent |
+| 2026-10-09 | Cancel evaluated at wave boundaries, 409 on terminal orders | Prevents racing cancellations against completed sagas, ensuring deterministic rollback | Agent |
 

@@ -1,290 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { SWEEP_DATASETS, SweepIntervalDataset, DriftRecord } from "@/lib/reconcilerDatasets";
 
-interface DriftRecord {
-  id: string;
-  resourceId: string;
-  subsystem: string;
-  port: string;
-  expectedState: string;
-  actualState: string;
-  driftType: "Orphan" | "Mismatch" | "Missing";
-  linkedOrder: string;
-  remediationAction: string;
-  remediationStatus: "success" | "warning";
-  timestamp: string;
-  diffDetails: {
-    msisdn?: string;
-    imsi?: string;
-    subsystemNode?: string;
-    hypothesis: string;
-    actualLines: string[];
-    expectedLines: string[];
-    traces: Array<{ time: string; text: string; status: "normal" | "error" | "info" | "success" }>;
-  };
-}
-
-const DRIFT_RECORDS: DriftRecord[] = [
-  {
-    id: "drift-1",
-    resourceId: "hlr-profile-500mbps-9182",
-    subsystem: "HLR/HSS Gateway",
-    port: ":8443",
-    expectedState: "TERMINATED / DEPROVISIONED",
-    actualState: "ACTIVE (Leaked HLR slice)",
-    driftType: "Orphan",
-    linkedOrder: "ORD-20260712-004217",
-    remediationAction: "Inverse Saga #419",
-    remediationStatus: "success",
-    timestamp: "14:28:43 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-hlr-node-04b",
-      msisdn: "+14155552671",
-      imsi: "310410091824701",
-      hypothesis: "HLR deprovision gRPC call timed out at stage 4 of saga compensation",
-      actualLines: [
-        'status: "PROVISIONED_ACTIVE"',
-        'slice_qos: "5QI-9_500M"',
-        "locked: false",
-        'active_tunnels: [ "tun_hlr_880", "tun_hlr_881" ]',
-      ],
-      expectedLines: [
-        'status: "DECOMMISSIONED_TOMBSTONE"',
-        "slice_qos: null",
-        "locked: true",
-        "active_tunnels: []",
-        'deprovision_tx_hash: "0x7c9be309f44ea1d9"',
-      ],
-      traces: [
-        { time: "14:28:43.012", text: "Subsystem state polled via HLR Gateway gRPC", status: "normal" },
-        { time: "14:28:43.418", text: "Drift identified: Subsystem ACTIVE, OMS intent TERMINATED", status: "error" },
-        { time: "14:28:43.890", text: "Invoked Compensating Saga #419 with Safe Invariant Guard", status: "info" },
-        { time: "14:28:44.215", text: "HLR profile deprovision confirmed: ACK 200 OK", status: "success" },
-      ],
-    },
-  },
-  {
-    id: "drift-2",
-    resourceId: "sim-iccid-8901410321",
-    subsystem: "SIM Inventory",
-    port: ":9001",
-    expectedState: "RESERVED (IMSI 310410091)",
-    actualState: "UNALLOCATED (Missing lock)",
-    driftType: "Mismatch",
-    linkedOrder: "ORD-20260712-004212",
-    remediationAction: "Saga Re-lock #420",
-    remediationStatus: "success",
-    timestamp: "14:28:39 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-sim-db-01",
-      msisdn: "+14155552199",
-      imsi: "310410091",
-      hypothesis: "Transient DB deadlock released optimistic lock during concurrent batch update",
-      actualLines: [
-        'lock_state: "UNLOCKED"',
-        'allocated_to: null',
-        'reservation_lease: 0',
-      ],
-      expectedLines: [
-        'lock_state: "LOCKED_RESERVED"',
-        'allocated_to: "ORD-20260712-004212"',
-        'reservation_lease: 3600',
-        'lease_signature: "0xa841b9c2"',
-      ],
-      traces: [
-        { time: "14:28:39.102", text: "Polled SIM registry partition key 890141", status: "normal" },
-        { time: "14:28:39.314", text: "Drift identified: Lock released prematurely", status: "error" },
-        { time: "14:28:39.521", text: "Acquiring idempotent lock lease with 1hr TTL", status: "info" },
-        { time: "14:28:39.802", text: "SIM lock restored and confirmed in SIM pool", status: "success" },
-      ],
-    },
-  },
-  {
-    id: "drift-3",
-    resourceId: "ocs-balance-acct-88201",
-    subsystem: "OCS Billing",
-    port: ":8082",
-    expectedState: "PLAN: Fiber_500 (ACTIVE)",
-    actualState: "SUSPENDED (Billing mismatch)",
-    driftType: "Mismatch",
-    linkedOrder: "ORD-20260712-003980",
-    remediationAction: "Fallout #FL-1092",
-    remediationStatus: "warning",
-    timestamp: "14:28:31 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-ocs-cluster-02",
-      msisdn: "+14155558820",
-      hypothesis: "Credit check hold conflict triggered circuit breaker, preventing auto-resume",
-      actualLines: [
-        'tariff_status: "SUSPENDED"',
-        'quota_balance_mb: 0',
-        'lock_cause: "CREDIT_COLLISION_409"',
-      ],
-      expectedLines: [
-        'tariff_status: "ACTIVE"',
-        'quota_balance_mb: 512000',
-        'plan_code: "FIBER_500_UNLIMITED"',
-      ],
-      traces: [
-        { time: "14:28:31.004", text: "Polled OCS Diameter credit control interface", status: "normal" },
-        { time: "14:28:31.250", text: "State divergence: Expected ACTIVE, found SUSPENDED", status: "error" },
-        { time: "14:28:31.600", text: "Safety invariant circuit breaker triggered (Manual review required)", status: "error" },
-        { time: "14:28:31.810", text: "Dispatched to Fallout Queue as FL-1092", status: "info" },
-      ],
-    },
-  },
-  {
-    id: "drift-4",
-    resourceId: "gis-ont-port-14/b",
-    subsystem: "Physical Inventory",
-    port: ":7040",
-    expectedState: "LOCKED_FOR_ROLLBACK",
-    actualState: "AVAILABLE (Orphaned)",
-    driftType: "Orphan",
-    linkedOrder: "ORD-20260712-003975",
-    remediationAction: "Inverse Saga #416",
-    remediationStatus: "success",
-    timestamp: "14:28:22 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-gis-splitter-14",
-      hypothesis: "Field ONT assignment reverted before rollback completed in OMS",
-      actualLines: [
-        'port_state: "AVAILABLE_POOLED"',
-        'optical_path_id: null',
-      ],
-      expectedLines: [
-        'port_state: "LOCKED_FOR_ROLLBACK"',
-        'optical_path_id: "OPT-PORT-14B"',
-        'rollback_token: "0x416-ont-drain"',
-      ],
-      traces: [
-        { time: "14:28:22.019", text: "Polled GIS physical fiber inventory DB", status: "normal" },
-        { time: "14:28:22.311", text: "Detected orphan port release", status: "error" },
-        { time: "14:28:22.618", text: "Executing Inverse Saga #416 to acquire rollback quarantine", status: "info" },
-        { time: "14:28:22.990", text: "Port successfully locked for rollback completion", status: "success" },
-      ],
-    },
-  },
-  {
-    id: "drift-5",
-    resourceId: "oms-order-intent-4217",
-    subsystem: "OMS Core",
-    port: ":8080",
-    expectedState: "STATUS: COMPENSATED",
-    actualState: "STATUS: RUNNING (Ghost lock)",
-    driftType: "Missing",
-    linkedOrder: "ORD-20260712-004217",
-    remediationAction: "Temporal Sync #882",
-    remediationStatus: "success",
-    timestamp: "14:28:18 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-oms-kernel-01",
-      hypothesis: "Temporal workflow completed compensation but worker crash delayed DB status projection",
-      actualLines: [
-        'saga_status: "RUNNING"',
-        'active_activities: [ "deprovision_hlr" ]',
-        'db_version: 14',
-      ],
-      expectedLines: [
-        'saga_status: "COMPENSATED"',
-        'active_activities: []',
-        'db_version: 15',
-        'temporal_execution_status: "COMPLETED_REVERTED"',
-      ],
-      traces: [
-        { time: "14:28:18.110", text: "Auditing OMS local ledger vs Temporal workflow history", status: "normal" },
-        { time: "14:28:18.412", text: "Discrepancy: Temporal closed but DB reports RUNNING", status: "error" },
-        { time: "14:28:18.700", text: "Replaying projection stream from Temporal history", status: "info" },
-        { time: "14:28:19.015", text: "State synchronized to COMPENSATED (v15)", status: "success" },
-      ],
-    },
-  },
-  {
-    id: "drift-6",
-    resourceId: "hlr-profile-voice-qos-904",
-    subsystem: "HLR/HSS Gateway",
-    port: ":8443",
-    expectedState: "QOS_5QI: 1 (VoLTE priority)",
-    actualState: "QOS_5QI: 9 (Default Best-Effort)",
-    driftType: "Mismatch",
-    linkedOrder: "ORD-20260712-003890",
-    remediationAction: "Fallout #FL-1089",
-    remediationStatus: "warning",
-    timestamp: "14:28:11 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-hlr-node-02a",
-      msisdn: "+14155553890",
-      hypothesis: "HLR fallback provisioned default QoS template after 5G QoS parameter syntax reject",
-      actualLines: [
-        'qos_5qi: 9',
-        'qos_label: "BEST_EFFORT_DEFAULT"',
-        'override_reason: "SYNTAX_PARAM_REJECT"',
-      ],
-      expectedLines: [
-        'qos_5qi: 1',
-        'qos_label: "MISSION_CRITICAL_VOICE"',
-        'gbr_dl_mbps: 100',
-      ],
-      traces: [
-        { time: "14:28:11.002", text: "Queried HLR active slice QoS telemetry", status: "normal" },
-        { time: "14:28:11.319", text: "QoS class mismatch: Expected 5QI 1, observed 5QI 9", status: "error" },
-        { time: "14:28:11.644", text: "Syntax flag prevents auto-repair without plan schema patch", status: "error" },
-        { time: "14:28:11.902", text: "Escalated to Fallout Queue as FL-1089", status: "info" },
-      ],
-    },
-  },
-  {
-    id: "drift-7",
-    resourceId: "imsi-binding-310410099",
-    subsystem: "SIM Inventory",
-    port: ":9001",
-    expectedState: "ALLOCATED (MSISDN +14155552671)",
-    actualState: "STALE_QUARANTINE",
-    driftType: "Orphan",
-    linkedOrder: "ORD-20260712-003844",
-    remediationAction: "State Flush #384",
-    remediationStatus: "success",
-    timestamp: "14:28:02 UTC",
-    diffDetails: {
-      subsystemNode: "us-east-sim-db-02",
-      msisdn: "+14155552671",
-      hypothesis: "Quarantine cleanup cron missed tombstoned IMSI after rapid order swap",
-      actualLines: [
-        'status: "STALE_QUARANTINE"',
-        'quarantine_entered: "2026-07-12T13:40:00Z"',
-        'bound_msisdn: "+14155552671"',
-      ],
-      expectedLines: [
-        'status: "ALLOCATED"',
-        'active_binding: true',
-        'quarantine_entered: null',
-        'flush_digest: "0x9812af"',
-      ],
-      traces: [
-        { time: "14:28:02.120", text: "Scanning SIM inventory quarantine partition", status: "normal" },
-        { time: "14:28:02.404", text: "Found stale quarantine entry for active subscription", status: "error" },
-        { time: "14:28:02.690", text: "Flushing stale quarantine flag via State Flush #384", status: "info" },
-        { time: "14:28:03.012", text: "IMSI binding cleared and verified ALLOCATED", status: "success" },
-      ],
-    },
-  },
-];
 
 export default function ReconcilerPage() {
-  const [selectedDrift, setSelectedDrift] = useState<DriftRecord>(DRIFT_RECORDS[0]);
+  const [sweepInterval, setSweepInterval] = useState<"1m" | "5m" | "15m" | "1h">("5m");
+  const currentDataset = SWEEP_DATASETS[sweepInterval];
+
+  const [selectedDrift, setSelectedDrift] = useState<DriftRecord>(currentDataset.records[0]);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [isSweeping, setIsSweeping] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [subsystemFilter, setSubsystemFilter] = useState("all");
   const [driftTypeFilter, setDriftTypeFilter] = useState<"All" | "Orphan" | "Mismatch" | "Missing">("All");
   const [autoRepair, setAutoRepair] = useState(true);
-  const [sweepInterval, setSweepInterval] = useState("5m");
   const [copiedId, setCopiedId] = useState(false);
 
-  // Filtered records
-  const filteredRecords = DRIFT_RECORDS.filter((item) => {
+  // When sweepInterval changes, keep selectedDrift pointing to a valid record in the active dataset
+  useEffect(() => {
+    const exists = currentDataset.records.some((r) => r.id === selectedDrift.id);
+    if (!exists && currentDataset.records.length > 0) {
+      setSelectedDrift(currentDataset.records[0]);
+    }
+  }, [sweepInterval, currentDataset, selectedDrift.id]);
+
+  // Filtered records from the current active sweep interval dataset
+  const filteredRecords = currentDataset.records.filter((item) => {
     const matchesSearch =
       searchTerm === "" ||
       item.resourceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -314,21 +57,23 @@ export default function ReconcilerPage() {
   const handleExportAudit = () => {
     const auditData = {
       auditTimestamp: new Date().toISOString(),
-      epoch: 8941,
+      sweepInterval: currentDataset.interval,
+      epoch: currentDataset.epoch,
       cluster: "us-east-core",
-      targetConsensus: "100.0%",
+      targetConsensus: currentDataset.consensusTarget,
       autoRepairEnabled: autoRepair,
-      scannedResources: 14280,
-      driftCount: DRIFT_RECORDS.length,
-      autoRepaired: 5,
-      escalatedToFallout: 2,
-      records: DRIFT_RECORDS,
+      scannedResources: currentDataset.scannedResources,
+      driftCount: currentDataset.driftCount,
+      driftRate: currentDataset.driftRate,
+      autoRepaired: currentDataset.autoRepaired,
+      escalatedToFallout: currentDataset.escalatedToFallout,
+      records: currentDataset.records,
     };
     const blob = new Blob([JSON.stringify(auditData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `switchon-reconciler-audit-epoch8941.json`;
+    a.download = `switchon-reconciler-audit-${currentDataset.interval}-epoch${currentDataset.epoch}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -392,10 +137,10 @@ export default function ReconcilerPage() {
               <span className="material-symbols-outlined text-[18px] text-[#94A3B8]">schedule</span>
               <span>Last Sweep:</span>
               <span className="font-label-md text-label-md text-[#0A1B2E] font-semibold font-mono">
-                2026-07-12 14:28:45 UTC
+                {currentDataset.lastSweep}
               </span>
               <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#64748B]">
-                (2m 14s ago)
+                ({currentDataset.elapsedAgo})
               </span>
             </div>
             <div className="hidden lg:block h-4 w-[1px] bg-[#E2E8F0]"></div>
@@ -406,7 +151,7 @@ export default function ReconcilerPage() {
               <div className="relative inline-block">
                 <select
                   value={sweepInterval}
-                  onChange={(e) => setSweepInterval(e.target.value)}
+                  onChange={(e) => setSweepInterval(e.target.value as "1m" | "5m" | "15m" | "1h")}
                   className="h-8 pl-2.5 pr-8 bg-[#F8FAFC] border border-[#CBD5E1] rounded-md font-label-md text-label-md text-[#0A1B2E] focus:outline-none focus:border-[#0A1B2E] focus:ring-1 focus:ring-[#0A1B2E] appearance-none cursor-pointer"
                 >
                   <option value="1m">Every 1m</option>
@@ -425,7 +170,7 @@ export default function ReconcilerPage() {
             <div className="flex items-center gap-1.5 font-label-sm text-label-sm text-[#475569]">
               <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">verified</span>
               <span>
-                Target Consensus: <strong className="text-[#0A1B2E] font-mono font-semibold">100.0%</strong>
+                Target Consensus: <strong className="text-[#0A1B2E] font-mono font-semibold">{currentDataset.consensusTarget}</strong>
               </span>
             </div>
           </div>
@@ -463,9 +208,9 @@ export default function ReconcilerPage() {
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">14,280</span>
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">{currentDataset.scannedResources}</span>
               <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                4 Subsystems
+                {currentDataset.subsystemCount} Subsystems
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-[#64748B] mt-1">OMS, Inventory, HLR, OCS active states</p>
@@ -485,15 +230,18 @@ export default function ReconcilerPage() {
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">7</span>
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">{currentDataset.driftCount}</span>
               <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                0.049% Drift Rate
+                {currentDataset.driftRate} Drift Rate
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-[#64748B] mt-1">State divergences requiring intervention</p>
           </div>
           <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#475569] h-full rounded-full" style={{ width: "7%" }}></div>
+            <div
+              className="bg-[#475569] h-full rounded-full"
+              style={{ width: `${Math.min(100, Math.max(5, (currentDataset.driftCount / 40) * 100))}%` }}
+            ></div>
           </div>
         </div>
 
@@ -507,15 +255,20 @@ export default function ReconcilerPage() {
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">5</span>
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">{currentDataset.autoRepaired}</span>
               <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                100% Compensated
+                {currentDataset.autoRepairedRate} Compensated
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-[#64748B] mt-1">Self-healed via deterministic sagas</p>
           </div>
           <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#0A1B2E] h-full rounded-full" style={{ width: "71.4%" }}></div>
+            <div
+              className="bg-[#0A1B2E] h-full rounded-full"
+              style={{
+                width: `${currentDataset.driftCount > 0 ? (currentDataset.autoRepaired / currentDataset.driftCount) * 100 : 100}%`,
+              }}
+            ></div>
           </div>
         </div>
 
@@ -529,15 +282,20 @@ export default function ReconcilerPage() {
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">2</span>
+              <span className="font-label-lg text-[28px] font-bold text-[#0A1B2E] leading-tight font-mono">{currentDataset.escalatedToFallout}</span>
               <span className="font-label-sm text-label-sm font-semibold text-[#0A1B2E] bg-[#F1F5F9] px-1.5 py-0.5 rounded border border-[#CBD5E1]">
-                Needs Manual Review
+                {currentDataset.escalatedToFallout > 0 ? "Needs Manual Review" : "Zero Fallout"}
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-[#64748B] mt-1">Safety circuit-breaker halted compensation</p>
           </div>
           <div className="w-full bg-[#F1F5F9] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#94A3B8] h-full rounded-full" style={{ width: "28.6%" }}></div>
+            <div
+              className="bg-[#94A3B8] h-full rounded-full"
+              style={{
+                width: `${currentDataset.driftCount > 0 ? (currentDataset.escalatedToFallout / currentDataset.driftCount) * 100 : 0}%`,
+              }}
+            ></div>
           </div>
         </div>
       </div>
@@ -555,12 +313,12 @@ export default function ReconcilerPage() {
                 </h2>
               </div>
               <span className="font-label-sm text-label-sm font-mono px-2 py-0.5 rounded bg-white text-[#0A1B2E] border border-[#CBD5E1]">
-                Sweep Epoch #8,941 Complete
+                Sweep Epoch #{currentDataset.epoch.toLocaleString()} Complete
               </span>
             </div>
             <div className="flex items-center gap-2 text-label-sm font-mono text-[#64748B]">
               <span className="inline-block w-2 h-2 rounded-full bg-[#0A1B2E]"></span>
-              <span>Next Audit: in 2m 46s</span>
+              <span>Next Audit: {currentDataset.nextAuditIn}</span>
             </div>
           </div>
 
@@ -721,7 +479,7 @@ export default function ReconcilerPage() {
             <div className="flex items-center gap-2">
               <span>Page 1 of 1</span>
               <span className="text-[#CBD5E1]">·</span>
-              <span>Showing {filteredRecords.length} of {DRIFT_RECORDS.length} total state divergences</span>
+              <span>Showing {filteredRecords.length} of {currentDataset.records.length} total state divergences</span>
             </div>
             <div className="flex items-center gap-2">
               <button className="px-2.5 py-1 text-label-sm text-[#94A3B8] border border-[#E2E8F0] rounded bg-[#F8FAFC] cursor-not-allowed" disabled>
@@ -808,7 +566,7 @@ export default function ReconcilerPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[#64748B]">Sweep Divergence Window:</span>
                   <span className="font-mono text-label-sm text-[#475569]">
-                    Detected {selectedDrift.timestamp} · Epoch #8,941
+                    Detected {selectedDrift.timestamp} · Epoch #{currentDataset.epoch.toLocaleString()}
                   </span>
                 </div>
               </div>
