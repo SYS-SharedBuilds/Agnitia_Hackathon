@@ -145,36 +145,75 @@ const INITIAL_ORDERS: DisplayOrder[] = [
 
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<"all" | "failed" | "slow" | "attention">("all");
-  const [searchQuery, setSearchQuery] = useState("ORD-");
-  const [onlySignedCert, setOnlySignedCert] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [onlySignedCert, setOnlySignedCert] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>(["ORD-20260712-004217", "ORD-20260712-004214"]);
   const [orders, setOrders] = useState<DisplayOrder[]>(INITIAL_ORDERS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  // Dropdown states
+  const [openDropdown, setOpenDropdown] = useState<"status" | "product" | "timerange" | "systems" | null>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+    "RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"
+  ]);
+  const [selectedProduct, setSelectedProduct] = useState<string>("All Plans");
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>("Last 24 Hours");
+  const [selectedSystem, setSelectedSystem] = useState<string>("All (OMS, HLR, OCS…)");
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".filter-dropdown-container")) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     // Optionally fetch dynamic orders from API
     const loadApiOrders = async () => {
       try {
         const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiHost}/orders?limit=50`);
+        const res = await fetch(`${apiHost}/orders?limit=100`);
         if (res.ok) {
           const apiData: Order[] = await res.json();
           if (apiData.length > 0) {
-            const mapped: DisplayOrder[] = apiData.map((o) => ({
-              id: o.order_id,
-              clientRef: `EXT-CRM-${o.order_id.slice(-6)}`,
-              customer: o.customer_id,
-              msisdn: String(o.payload?.msisdn || "+1 555 019-4821"),
-              product: o.product || "Fiber Broadband 500",
-              status: ((o.state as string) === "ACTIVE" ? "SUCCEEDED" : (o.state as string) === "ROLLED_BACK" ? "ROLLED_BACK" : (o.state as string) === "ROLLING_BACK" ? "ROLLING_BACK" : (o.state as string) === "NEEDS_ATTENTION" ? "NEEDS_ATTENTION" : "RUNNING") as DisplayOrder["status"],
-              tasksCompleted: (o.state as string) === "ACTIVE" ? 8 : 4,
-              totalTasks: 8,
-              taskDetail: (o.state as string) === "ACTIVE" ? "100%" : "50%",
-              retries: "0",
-              activationTime: "2.8s",
-              created: "Just now",
-              certStatus: (o.state as string) === "ACTIVE" ? "verified" : "pending",
-            }));
-            setOrders(mapped);
+            const mapped: DisplayOrder[] = apiData.map((o) => {
+              const stateStr = String(o.state);
+              let statusMapped: DisplayOrder["status"] = "RUNNING";
+              if (stateStr === "ACTIVE") statusMapped = "SUCCEEDED";
+              else if (stateStr === "ROLLED_BACK") statusMapped = "COMPENSATED";
+              else if (stateStr === "ROLLING_BACK") statusMapped = "COMPENSATING";
+              else if (stateStr === "NEEDS_ATTENTION") statusMapped = "NEEDS_ATTENTION";
+              else if (stateStr === "FAILED") statusMapped = "FAILED";
+              else if (stateStr === "RECEIVED") statusMapped = "PENDING";
+
+              return {
+                id: o.order_id,
+                clientRef: o.client_order_ref || `EXT-CRM-${o.order_id.slice(-6)}`,
+                customer: o.customer_id,
+                msisdn: String(o.payload?.msisdn || o.msisdn || "+1 555 019-4821"),
+                product: o.product === "FIBER_500" ? "Fiber Broadband 500" : o.product === "MOBILE_5G" ? "5G Postpaid Unlimited" : o.product === "ESIM_ADDON" ? "eSIM Roaming Global" : (o.product || "Fiber Broadband 500"),
+                status: statusMapped,
+                tasksCompleted: stateStr === "ACTIVE" ? 8 : stateStr === "ROLLED_BACK" ? 5 : 4,
+                totalTasks: 8,
+                taskDetail: stateStr === "ACTIVE" ? "100%" : stateStr === "ROLLED_BACK" ? "Compensated" : "In Flight",
+                retries: "0",
+                activationTime: o.activation_ms ? `${(o.activation_ms / 1000).toFixed(1)}s` : "2.8s",
+                created: "Just now",
+                certStatus: stateStr === "ACTIVE" ? "verified" : "pending",
+              };
+            });
+            // Merge or set
+            setOrders((prev) => {
+              const existingIds = new Set(apiData.map(d => d.order_id));
+              const nonDuplicated = prev.filter(p => !existingIds.has(p.id));
+              return [...mapped, ...nonDuplicated];
+            });
           }
         }
       } catch {
@@ -184,6 +223,11 @@ export default function OrdersPage() {
     loadApiOrders();
   }, []);
 
+  // Reset page when any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab, onlySignedCert, selectedStatuses, selectedProduct, selectedTimeRange, selectedSystem, rowsPerPage]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -191,11 +235,29 @@ export default function OrdersPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filteredOrders.length) {
+    if (selectedIds.length === paginatedOrders.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredOrders.map((o) => o.id));
+      setSelectedIds(paginatedOrders.map((o) => o.id));
     }
+  };
+
+  const toggleStatusOption = (status: string) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+    );
+  };
+
+  const resetAllFilters = () => {
+    setSearchQuery("");
+    setActiveTab("all");
+    setOnlySignedCert(false);
+    setSelectedStatuses(["RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"]);
+    setSelectedProduct("All Plans");
+    setSelectedTimeRange("Last 24 Hours");
+    setSelectedSystem("All (OMS, HLR, OCS…)");
+    setCurrentPage(1);
+    setOpenDropdown(null);
   };
 
   const filteredOrders = orders.filter((o) => {
@@ -203,6 +265,26 @@ export default function OrdersPage() {
     if (activeTab === "slow" && !o.activationTime.includes("12.") && !o.activationTime.includes("18.") && !o.activationTime.includes("15.")) return false;
     if (activeTab === "attention" && o.status !== "NEEDS_ATTENTION") return false;
     if (onlySignedCert && o.certStatus !== "verified") return false;
+
+    // Status filter
+    if (selectedStatuses.length > 0 && !selectedStatuses.includes(o.status)) {
+      return false;
+    }
+
+    // Product filter
+    if (selectedProduct !== "All Plans") {
+      if (selectedProduct === "Fiber Broadband" && !o.product.toLowerCase().includes("fiber")) return false;
+      if (selectedProduct === "5G Postpaid" && !o.product.toLowerCase().includes("5g")) return false;
+      if (selectedProduct === "eSIM Add-on" && !o.product.toLowerCase().includes("esim")) return false;
+      if (selectedProduct === "IoT / SIP Trunk" && !o.product.toLowerCase().includes("iot") && !o.product.toLowerCase().includes("sip")) return false;
+    }
+
+    // Systems filter
+    if (selectedSystem !== "All (OMS, HLR, OCS…)") {
+      if (selectedSystem === "HLR / Network only" && !o.taskDetail.toLowerCase().includes("hlr") && o.status !== "RETRYING" && o.status !== "NEEDS_ATTENTION") return false;
+      if (selectedSystem === "OCS / Billing only" && !o.taskDetail.toLowerCase().includes("ocs") && o.status !== "FAILED") return false;
+      if (selectedSystem === "Inventory (SIM) only" && !o.product.toLowerCase().includes("sim")) return false;
+    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -217,65 +299,71 @@ export default function OrdersPage() {
     return true;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / rowsPerPage));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (validCurrentPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredOrders.length);
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+
   const renderStatusBadge = (status: DisplayOrder["status"]) => {
     switch (status) {
       case "RUNNING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-blue-50 text-[#2563EB] font-label-sm text-label-sm font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#000000] border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#000000] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#000000]"></span>
             </span>
             RUNNING
           </span>
         );
       case "SUCCEEDED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-emerald-50 text-[#16A34A] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#000000] border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#000000]"></span>
             SUCCEEDED
           </span>
         );
       case "RETRYING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-amber-50 text-[#D97706] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#D97706]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#000000] border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#000000]"></span>
             RETRYING
           </span>
         );
       case "NEEDS_ATTENTION":
         return (
-          <span className="inline-flex items-center gap-1 px-2 h-6 rounded-full bg-orange-50 text-[#EA580C] font-label-sm text-label-sm font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 h-6 rounded-full bg-[#000000] text-white border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
             <span className="material-symbols-outlined text-[14px]">warning</span>
             NEEDS_ATTENTION
           </span>
         );
       case "FAILED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-error-container text-error font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-error"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-[#000000] text-white border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-white"></span>
             FAILED
           </span>
         );
       case "COMPENSATING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-purple-50 text-[#9333EA] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#9333EA] animate-pulse"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#000000] border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#000000] animate-pulse"></span>
             COMPENSATING
           </span>
         );
       case "COMPENSATED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-slate-100 text-[#5B7087] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#5B7087]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#000000] border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#000000]"></span>
             COMPENSATED
           </span>
         );
       case "PENDING":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-slate-100 text-[#64748B] font-label-sm text-label-sm font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#64748B]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-white text-[#000000] border border-[#000000] font-label-sm text-label-sm font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#000000]"></span>
             PENDING
           </span>
         );
@@ -287,17 +375,17 @@ export default function OrdersPage() {
       {/* PAGE HEADER & PRIMARY ACTIONS */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Orders</h1>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium bg-surface-container text-on-surface-variant">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="font-headline-lg text-headline-lg text-[#000000] tracking-tight font-bold">Orders</h1>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold bg-white text-[#000000] border border-[#CBD5E1]">
               1,284 total orders
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-sm text-label-sm text-secondary bg-surface-container-high">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-sm text-label-sm text-[#000000] bg-white border border-[#CBD5E1] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#000000]"></span>
               Cluster: prod-us-east-4
             </span>
           </div>
-          <p className="font-body-md text-body-md text-outline">
+          <p className="font-body-md text-body-md text-[#000000]">
             Telecom provisioning orchestrations, saga lifecycles, and cryptographic execution proofs
           </p>
         </div>
@@ -314,37 +402,30 @@ export default function OrdersPage() {
               a.download = `orders-export-${Date.now()}.csv`;
               a.click();
             }}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors font-body-md text-body-md font-medium shadow-sm border border-[#E3E8F0]"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded bg-white text-[#000000] hover:bg-[#F8FAFC] transition-colors font-body-md text-body-md font-semibold shadow-2xs border border-[#CBD5E1]"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px] text-outline">download</span>
+            <span className="material-symbols-outlined text-[18px] text-[#000000]">download</span>
             <span>Export CSV</span>
           </button>
-          <Link
-            href="/new"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-primary-container text-on-primary hover:bg-primary transition-colors font-body-md text-body-md font-medium shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            <span>New Order</span>
-          </Link>
         </div>
       </section>
 
       {/* SAVED VIEW TABS */}
-      <div className="flex items-center justify-between bg-surface-container-lowest px-4 rounded-xl shadow-sm border border-[#E3E8F0]">
+      <div className="flex items-center justify-between bg-white px-4 rounded-xl shadow-2xs border border-[#E2E8F0]">
         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
           {/* Tab: All */}
           <button
             onClick={() => setActiveTab("all")}
-            className={`relative py-3.5 font-body-md text-body-md flex items-center gap-2 shrink-0 ${
+            className={`relative py-3.5 font-body-md text-body-md flex items-center gap-2 shrink-0 transition-colors ${
               activeTab === "all"
-                ? "font-semibold text-primary-container border-b-2 border-primary-container"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-bold text-[#000000] border-b-2 border-[#000000]"
+                : "font-semibold text-[#000000] hover:text-[#000000]"
             }`}
             type="button"
           >
             <span>All Orchestrations</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-surface-container-high text-primary-container">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
               1,284
             </span>
           </button>
@@ -354,13 +435,13 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("failed")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "failed"
-                ? "font-semibold text-error border-b-2 border-error"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-bold text-[#000000] border-b-2 border-[#000000]"
+                : "font-semibold text-[#000000] hover:text-[#000000]"
             }`}
             type="button"
           >
             <span>Failed last 24h</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-error-container text-error font-semibold">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
               14
             </span>
           </button>
@@ -370,13 +451,13 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("slow")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "slow"
-                ? "font-semibold text-tertiary border-b-2 border-tertiary"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-bold text-[#000000] border-b-2 border-[#000000]"
+                : "font-semibold text-[#000000] hover:text-[#000000]"
             }`}
             type="button"
           >
             <span>Slow (&gt;p95)</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-surface-container-highest text-tertiary font-semibold">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
               48
             </span>
           </button>
@@ -386,41 +467,41 @@ export default function OrdersPage() {
             onClick={() => setActiveTab("attention")}
             className={`py-3.5 font-body-md text-body-md flex items-center gap-2 transition-colors shrink-0 ${
               activeTab === "attention"
-                ? "font-semibold text-error border-b-2 border-error"
-                : "font-medium text-outline hover:text-on-surface"
+                ? "font-bold text-[#000000] border-b-2 border-[#000000]"
+                : "font-semibold text-[#000000] hover:text-[#000000]"
             }`}
             type="button"
           >
             <span>Needs Attention</span>
-            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-error-container text-error font-bold">
+            <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
               2
             </span>
           </button>
         </div>
 
         {/* Auxiliary view selector */}
-        <div className="hidden lg:flex items-center gap-3 font-label-sm text-label-sm text-outline">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>SLA 99.98%
+        <div className="hidden lg:flex items-center gap-3 font-label-sm text-label-sm text-[#000000] font-semibold">
+          <span className="flex items-center gap-1 font-mono">
+            <span className="w-2 h-2 rounded-full bg-[#000000]"></span>SLA 99.98%
           </span>
           <span>•</span>
-          <span>Latency p95: 4.8s</span>
+          <span className="font-mono">Latency p95: 4.8s</span>
         </div>
       </div>
 
       {/* TABLE CONTAINER CARD */}
-      <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col border border-[#E3E8F0]">
+      <section className="bg-white rounded-xl shadow-2xs overflow-hidden flex flex-col border border-[#CBD5E1]">
         {/* HIGH-DENSITY FILTER TOOLBAR */}
-        <div className="p-3.5 bg-surface-container-lowest flex flex-wrap items-center justify-between gap-2.5 border-b border-[#EDF0F5]">
+        <div className="p-3.5 bg-white flex flex-wrap items-center justify-between gap-2.5 border-b border-[#CBD5E1]">
           {/* Left Filters */}
           <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
             {/* Search Input */}
             <div className="relative w-full max-w-[290px]">
-              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#000000] text-[18px]">
                 search
               </span>
               <input
-                className="w-full h-8 pl-8 pr-7 bg-surface-container-low rounded font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary-container border border-[#E2E8F0]"
+                className="w-full h-8 pl-8 pr-7 bg-white rounded font-body-sm text-body-sm text-[#000000] placeholder:text-[#000000]/60 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#000000] border border-[#CBD5E1]"
                 placeholder="Filter Order ID, Client Ref, MSISDN… ⌘F"
                 type="text"
                 value={searchQuery}
@@ -429,7 +510,7 @@ export default function OrdersPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#000000] hover:text-[#000000]"
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[14px]">close</span>
@@ -438,44 +519,185 @@ export default function OrdersPage() {
             </div>
 
             {/* Status Filter Dropdown */}
-            <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
-              type="button"
-            >
-              <span className="text-outline">Status:</span>
-              <span className="font-medium text-on-surface">All (7 selected)</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "status" ? null : "status");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#000000] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer font-bold"
+                type="button"
+              >
+                <span className="text-[#000000] font-bold">Status:</span>
+                <span className="font-bold text-[#000000]">
+                  {selectedStatuses.length === 7 ? "All (7 selected)" : `${selectedStatuses.length} selected`}
+                </span>
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">
+                  {openDropdown === "status" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "status" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-56 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#000000] uppercase tracking-wider flex items-center justify-between">
+                    <span>Filter by Status</span>
+                    <button
+                      onClick={() => setSelectedStatuses(selectedStatuses.length === 7 ? [] : ["RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"])}
+                      className="text-[#000000] hover:underline normal-case font-bold"
+                      type="button"
+                    >
+                      {selectedStatuses.length === 7 ? "Deselect All" : "Select All"}
+                    </button>
+                  </div>
+                  {(["RUNNING", "SUCCEEDED", "RETRYING", "NEEDS_ATTENTION", "FAILED", "COMPENSATING", "COMPENSATED"] as const).map((st) => (
+                    <label
+                      key={st}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[#F8FAFC] cursor-pointer text-body-sm font-body-sm text-[#000000]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedStatuses.includes(st)}
+                        onChange={() => toggleStatusOption(st)}
+                        className="rounded border-[#CBD5E1] text-[#000000] focus:ring-0 w-3.5 h-3.5"
+                      />
+                      <span className="font-mono text-xs font-semibold text-[#000000]">{st}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Product / Plan Filter */}
-            <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
-              type="button"
-            >
-              <span className="text-outline">Product:</span>
-              <span className="font-medium text-on-surface">All Plans</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "product" ? null : "product");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#000000] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer font-bold"
+                type="button"
+              >
+                <span className="text-[#000000] font-bold">Product:</span>
+                <span className="font-bold text-[#000000]">{selectedProduct}</span>
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">
+                  {openDropdown === "product" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "product" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-52 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#000000] uppercase tracking-wider">
+                    Catalog Product
+                  </div>
+                  {["All Plans", "Fiber Broadband", "5G Postpaid", "eSIM Add-on", "IoT / SIP Trunk"].map((prod) => (
+                    <button
+                      key={prod}
+                      onClick={() => {
+                        setSelectedProduct(prod);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-body-sm font-body-sm transition-colors flex items-center justify-between ${
+                        selectedProduct === prod ? "bg-[#F1F5F9] font-bold text-[#000000]" : "hover:bg-[#F8FAFC] text-[#000000] font-medium"
+                      }`}
+                      type="button"
+                    >
+                      <span>{prod}</span>
+                      {selectedProduct === prod && (
+                        <span className="material-symbols-outlined text-[16px] text-[#000000]">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Date Range Filter */}
-            <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
-              <span className="font-medium text-on-surface">Last 24 Hours</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "timerange" ? null : "timerange");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#000000] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer font-bold"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">calendar_today</span>
+                <span className="font-bold text-[#000000]">{selectedTimeRange}</span>
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">
+                  {openDropdown === "timerange" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "timerange" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-48 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#000000] uppercase tracking-wider">
+                    Time Window
+                  </div>
+                  {["Last 1 Hour", "Last 6 Hours", "Last 24 Hours", "Last 7 Days", "All History"].map((tr) => (
+                    <button
+                      key={tr}
+                      onClick={() => {
+                        setSelectedTimeRange(tr);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-body-sm font-body-sm transition-colors flex items-center justify-between ${
+                        selectedTimeRange === tr ? "bg-[#F1F5F9] font-bold text-[#000000]" : "hover:bg-[#F8FAFC] text-[#000000] font-medium"
+                      }`}
+                      type="button"
+                    >
+                      <span>{tr}</span>
+                      {selectedTimeRange === tr && (
+                        <span className="material-symbols-outlined text-[16px] text-[#000000]">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Systems Involved */}
-            <button
-              className="h-8 px-2.5 rounded bg-surface-container-low hover:bg-surface-container flex items-center gap-1.5 font-label-md text-label-md text-on-surface transition-colors border border-[#E2E8F0]"
-              type="button"
-            >
-              <span className="text-outline">Systems:</span>
-              <span className="font-medium text-on-surface">All (OMS, HLR, OCS…)</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
-            </button>
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDropdown(prev => prev === "systems" ? null : "systems");
+                }}
+                className="h-8 px-2.5 rounded bg-white hover:bg-[#F8FAFC] flex items-center gap-1.5 font-label-md text-label-md text-[#000000] transition-colors border border-[#CBD5E1] shadow-2xs cursor-pointer font-bold"
+                type="button"
+              >
+                <span className="text-[#000000] font-bold">Systems:</span>
+                <span className="font-bold text-[#000000]">{selectedSystem}</span>
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">
+                  {openDropdown === "systems" ? "expand_less" : "expand_more"}
+                </span>
+              </button>
+
+              {openDropdown === "systems" && (
+                <div className="absolute left-0 top-full mt-1.5 z-40 w-56 bg-white rounded-lg shadow-lg border border-[#CBD5E1] p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 text-[11px] font-bold text-[#000000] uppercase tracking-wider">
+                    Subsystem Filter
+                  </div>
+                  {["All (OMS, HLR, OCS…)", "HLR / Network only", "OCS / Billing only", "Inventory (SIM) only"].map((sys) => (
+                    <button
+                      key={sys}
+                      onClick={() => {
+                        setSelectedSystem(sys);
+                        setOpenDropdown(null);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-body-sm font-body-sm transition-colors flex items-center justify-between ${
+                        selectedSystem === sys ? "bg-[#F1F5F9] font-bold text-[#000000]" : "hover:bg-[#F8FAFC] text-[#000000] font-medium"
+                      }`}
+                      type="button"
+                    >
+                      <span className="truncate">{sys}</span>
+                      {selectedSystem === sys && (
+                        <span className="material-symbols-outlined text-[16px] text-[#000000] shrink-0">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Certificate Toggle Switch */}
             <div className="flex items-center gap-2 pl-1 py-1">
@@ -486,10 +708,10 @@ export default function OrdersPage() {
                   className="sr-only peer"
                   type="checkbox"
                 />
-                <div className="w-7 h-4 bg-surface-container-highest peer-checked:bg-primary-container rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
+                <div className="w-7 h-4 bg-[#CBD5E1] peer-checked:bg-[#000000] rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
               </label>
-              <span className="font-label-sm text-label-sm text-on-surface flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px] text-[#16A34A]">verified_user</span>
+              <span className="font-label-sm text-label-sm text-[#000000] font-bold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[15px] text-[#000000]">verified_user</span>
                 <span>Signed Cert</span>
               </span>
             </div>
@@ -498,18 +720,14 @@ export default function OrdersPage() {
           {/* Right Toolbar Controls */}
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => {
-                setSearchQuery("");
-                setActiveTab("all");
-                setOnlySignedCert(false);
-              }}
-              className="font-label-sm text-label-sm text-primary-container hover:underline"
+              onClick={resetAllFilters}
+              className="font-label-sm text-label-sm text-[#000000] hover:underline cursor-pointer font-bold"
               type="button"
             >
               Clear filters
             </button>
-            <span className="font-label-sm text-label-sm text-outline">
-              Showing {filteredOrders.length} of 1,284
+            <span className="font-label-sm text-label-sm text-[#000000] font-semibold">
+              Showing {filteredOrders.length} of {orders.length}
             </span>
           </div>
         </div>
@@ -518,66 +736,66 @@ export default function OrdersPage() {
         <div className="w-full overflow-x-auto">
           <table className="w-full text-left table-fixed border-collapse min-w-[1240px]">
             <thead>
-              <tr className="h-10 bg-surface-container-low text-tertiary font-body-sm text-body-sm uppercase tracking-wider select-none font-semibold border-b border-[#E3E8F0]">
+              <tr className="h-10 bg-[#F8FAFC] text-[#000000] font-body-sm text-body-sm uppercase tracking-wider select-none font-bold border-b border-[#CBD5E1]">
                 <th className="w-10 px-3 text-center">
                   <input
                     checked={filteredOrders.length > 0 && selectedIds.length === filteredOrders.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded bg-surface-container-lowest text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    className="w-4 h-4 rounded bg-white text-[#000000] focus:ring-0 focus:ring-offset-0 cursor-pointer"
                     type="checkbox"
                   />
                 </th>
-                <th className="w-44 px-3">Order ID</th>
-                <th className="w-36 px-3">Client Ref</th>
-                <th className="w-48 px-3">Customer &amp; MSISDN</th>
-                <th className="w-44 px-3">Product / Plan</th>
-                <th className="w-40 px-3">Status</th>
-                <th className="w-28 px-3">Tasks</th>
-                <th className="w-28 px-3">Retries</th>
-                <th className="w-28 px-3 text-right">Activation</th>
-                <th className="w-24 px-3 text-right">Created</th>
-                <th className="w-24 px-3 text-center">Actions</th>
+                <th className="w-44 px-3 font-bold text-[#000000]">Order ID</th>
+                <th className="w-36 px-3 font-bold text-[#000000]">Client Ref</th>
+                <th className="w-48 px-3 font-bold text-[#000000]">Customer &amp; MSISDN</th>
+                <th className="w-44 px-3 font-bold text-[#000000]">Product / Plan</th>
+                <th className="w-40 px-3 font-bold text-[#000000]">Status</th>
+                <th className="w-28 px-3 font-bold text-[#000000]">Tasks</th>
+                <th className="w-28 px-3 font-bold text-[#000000]">Retries</th>
+                <th className="w-28 px-3 text-right font-bold text-[#000000]">Activation</th>
+                <th className="w-24 px-3 text-right font-bold text-[#000000]">Created</th>
+                <th className="w-24 px-3 text-center font-bold text-[#000000]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-container-high/40 font-body-sm text-body-sm">
-              {filteredOrders.map((ord) => {
+            <tbody className="divide-y divide-[#E2E8F0] font-body-sm text-body-sm">
+              {paginatedOrders.map((ord) => {
                 const isSelected = selectedIds.includes(ord.id);
                 return (
                   <tr
                     key={ord.id}
                     className={`h-12 transition-colors ${
                       isSelected
-                        ? "bg-surface-container hover:bg-surface-container-high/60"
-                        : "bg-surface-container-lowest hover:bg-surface-container-low"
+                        ? "bg-[#F8FAFC] hover:bg-[#F1F5F9]/70"
+                        : "bg-white hover:bg-[#F8FAFC]"
                     }`}
                   >
                     <td className="px-3 text-center">
                       <input
                         checked={isSelected}
                         onChange={() => toggleSelect(ord.id)}
-                        className="w-4 h-4 rounded bg-surface-container-lowest text-primary-container focus:ring-0 cursor-pointer"
+                        className="w-4 h-4 rounded bg-white text-[#000000] focus:ring-0 cursor-pointer"
                         type="checkbox"
                       />
                     </td>
                     <td className="px-3">
                       <Link
-                        className="font-label-md text-label-md font-semibold text-primary-container hover:underline"
+                        className="font-label-md text-label-md font-bold text-[#000000] hover:underline"
                         href={`/orders/${ord.id}`}
                       >
                         {ord.id}
                       </Link>
                     </td>
                     <td className="px-3">
-                      <span className="font-label-sm text-label-sm text-outline">{ord.clientRef}</span>
+                      <span className="font-label-sm text-label-sm font-semibold text-[#000000]">{ord.clientRef}</span>
                     </td>
                     <td className="px-3">
                       <div className="flex flex-col min-w-0">
-                        <span className="font-medium text-on-surface truncate">{ord.customer}</span>
-                        <span className="font-label-sm text-label-sm text-outline truncate">{ord.msisdn}</span>
+                        <span className="font-bold text-[#000000] truncate">{ord.customer}</span>
+                        <span className="font-label-sm text-label-sm font-semibold text-[#000000] truncate">{ord.msisdn}</span>
                       </div>
                     </td>
                     <td className="px-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-surface-container text-on-surface font-medium text-body-sm truncate">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-white text-[#000000] border border-[#CBD5E1] font-semibold text-body-sm truncate">
                         {ord.product}
                       </span>
                     </td>
@@ -586,31 +804,27 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-3">
                       <div className="flex flex-col gap-1">
-                        <div className="flex items-center justify-between font-label-sm text-label-sm text-on-surface">
+                        <div className="flex items-center justify-between font-label-sm text-label-sm text-[#000000] font-bold">
                           <span>{ord.tasksCompleted}/{ord.totalTasks}</span>
-                          <span className={ord.status === "FAILED" ? "text-error" : ord.status === "SUCCEEDED" ? "text-[#16A34A]" : "text-outline"}>
+                          <span className={ord.status === "FAILED" ? "text-[#000000] font-extrabold" : "text-[#000000] font-semibold"}>
                             {ord.taskDetail}
                           </span>
                         </div>
-                        <div className="flex gap-0.5 h-1.5 w-full bg-surface-container-highest rounded overflow-hidden">
+                        <div className="flex gap-0.5 h-1.5 w-full bg-[#E2E8F0] rounded overflow-hidden">
                           {Array.from({ length: ord.totalTasks }).map((_, tIdx) => {
                             const isFilled = tIdx < ord.tasksCompleted;
                             const barColor =
                               ord.status === "SUCCEEDED"
-                                ? "bg-[#16A34A]"
-                                : ord.status === "FAILED"
-                                ? "bg-error"
-                                : ord.status === "NEEDS_ATTENTION"
-                                ? "bg-[#EA580C]"
-                                : ord.status === "COMPENSATING"
-                                ? "bg-[#9333EA]"
-                                : ord.status === "COMPENSATED"
-                                ? "bg-[#5B7087]"
-                                : "bg-primary-container";
+                                ? "bg-[#000000]"
+                                : ord.status === "FAILED" || ord.status === "NEEDS_ATTENTION"
+                                ? "bg-[#000000]"
+                                : ord.status === "COMPENSATING" || ord.status === "COMPENSATED"
+                                ? "bg-[#000000]"
+                                : "bg-[#000000]";
                             return (
                               <div
                                 key={tIdx}
-                                className={`flex-1 ${isFilled ? barColor : "bg-surface-container-highest"}`}
+                                className={`flex-1 ${isFilled ? barColor : "bg-[#E2E8F0]"}`}
                               />
                             );
                           })}
@@ -620,41 +834,39 @@ export default function OrdersPage() {
                     <td className="px-3">
                       <span className={`font-label-sm text-label-sm ${
                         ord.retries.includes("exhausted")
-                          ? "px-1.5 py-0.5 rounded bg-error-container text-error font-medium"
+                          ? "px-1.5 py-0.5 rounded bg-[#000000] text-white font-bold"
                           : ord.retries.includes("backoff")
-                          ? "px-1.5 py-0.5 rounded bg-amber-50 text-[#D97706] font-medium"
-                          : "text-outline"
+                          ? "px-1.5 py-0.5 rounded bg-white text-[#000000] font-bold border border-[#000000]"
+                          : "text-[#000000] font-semibold"
                       }`}>
                         {ord.retries}
                       </span>
                     </td>
                     <td className="px-3 text-right">
-                      <span className={`font-label-md text-label-md font-medium ${
-                        ord.activationTime.includes("12.") || ord.activationTime.includes("18.") ? "text-[#D97706] font-semibold" : "text-on-surface"
-                      }`}>
+                      <span className="font-label-md text-label-md font-bold text-[#000000]">
                         {ord.activationTime}
                       </span>
                     </td>
                     <td className="px-3 text-right">
-                      <span className="text-outline font-label-sm text-label-sm">{ord.created}</span>
+                      <span className="text-[#000000] font-label-sm text-label-sm font-semibold">{ord.created}</span>
                     </td>
                     <td className="px-3 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         {ord.certStatus === "verified" ? (
-                          <span className="material-symbols-outlined text-[18px] text-[#16A34A]" title="Cryptographic Certificate Verified">
+                          <span className="material-symbols-outlined text-[18px] text-[#000000]" title="Cryptographic Certificate Verified">
                             verified_user
                           </span>
                         ) : ord.certStatus === "revoked" ? (
-                          <span className="material-symbols-outlined text-[18px] text-error" title="Certificate Revoked / Failed">
+                          <span className="material-symbols-outlined text-[18px] text-[#000000]" title="Certificate Revoked / Failed">
                             gpp_bad
                           </span>
                         ) : (
-                          <span className="material-symbols-outlined text-[18px] text-outline" title="Pending / In-Progress">
+                          <span className="material-symbols-outlined text-[18px] text-[#000000]" title="Pending / In-Progress">
                             shield
                           </span>
                         )}
                         <button
-                          className="p-1 text-outline hover:text-on-surface rounded hover:bg-surface-container-low"
+                          className="p-1 text-[#000000] hover:text-[#000000] rounded hover:bg-[#F1F5F9]"
                           title="Row Actions"
                           type="button"
                         >
@@ -670,37 +882,90 @@ export default function OrdersPage() {
         </div>
 
         {/* PAGINATION FOOTER */}
-        <div className="px-4 py-3 bg-surface-container-lowest flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-body-sm text-body-sm border-t border-[#EDF0F5]">
-          <div className="flex items-center gap-4 text-outline">
-            <span>Showing <strong className="text-on-surface font-medium">1-{filteredOrders.length}</strong> of <strong className="text-on-surface font-medium">1,284</strong> orders</span>
+        <div className="px-4 py-3 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-body-sm text-body-sm border-t border-[#CBD5E1]">
+          <div className="flex items-center gap-4 text-[#000000] font-semibold">
+            <span>
+              Showing <strong className="text-[#000000] font-bold">{filteredOrders.length === 0 ? 0 : startIndex + 1}-{endIndex}</strong> of <strong className="text-[#000000] font-bold">{filteredOrders.length}</strong> orders
+            </span>
             <div className="flex items-center gap-1">
-              <label className="font-label-sm text-label-sm" htmlFor="rowsPerPage">Rows:</label>
-              <select className="h-7 py-0 pl-2 pr-6 rounded bg-surface-container-low font-label-sm text-label-sm text-on-surface border-0 focus:ring-1 focus:ring-primary-container" id="rowsPerPage">
-                <option>25 per page</option>
-                <option>50 per page</option>
-                <option>100 per page</option>
+              <label className="font-label-sm text-label-sm text-[#000000] font-semibold" htmlFor="rowsPerPage">Rows:</label>
+              <select
+                className="h-7 py-0 pl-2 pr-6 rounded bg-white font-label-sm text-label-sm text-[#000000] font-bold border border-[#CBD5E1] focus:ring-1 focus:ring-[#000000] cursor-pointer"
+                id="rowsPerPage"
+                value={rowsPerPage}
+                onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              >
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={25}>25 per page</option>
+                <option value={50}>50 per page</option>
               </select>
             </div>
           </div>
           {/* Pagination Buttons */}
-          <div className="flex items-center gap-1">
-            <button className="px-2.5 h-7 rounded text-outline hover:bg-surface-container-low disabled:opacity-40 font-medium font-body-sm" disabled type="button">
+          <div className="flex items-center gap-1 select-none">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={validCurrentPage <= 1}
+              className="px-2.5 h-7 rounded text-[#000000] hover:bg-[#F8FAFC] disabled:text-[#000000]/40 disabled:cursor-not-allowed font-bold font-body-sm transition-colors cursor-pointer"
+              type="button"
+            >
               Previous
             </button>
-            <button className="w-7 h-7 rounded bg-primary-container text-on-primary font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
-              1
-            </button>
-            <button className="w-7 h-7 rounded hover:bg-surface-container-low text-on-surface font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
-              2
-            </button>
-            <button className="w-7 h-7 rounded hover:bg-surface-container-low text-on-surface font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
-              3
-            </button>
-            <span className="px-1 text-outline font-label-sm text-label-sm">…</span>
-            <button className="w-7 h-7 rounded hover:bg-surface-container-low text-on-surface font-medium font-label-sm text-label-sm flex items-center justify-center" type="button">
-              161
-            </button>
-            <button className="px-2.5 h-7 rounded text-on-surface hover:bg-surface-container-low font-medium font-body-sm" type="button">
+
+            {/* Dynamic page numbers calculation */}
+            {(() => {
+              const pages: (number | string)[] = [];
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+              } else {
+                pages.push(1);
+                if (validCurrentPage > 3) {
+                  pages.push("…");
+                }
+                const startMiddle = Math.max(2, validCurrentPage - 1);
+                const endMiddle = Math.min(totalPages - 1, validCurrentPage + 1);
+                for (let i = startMiddle; i <= endMiddle; i++) {
+                  if (!pages.includes(i)) pages.push(i);
+                }
+                if (validCurrentPage < totalPages - 2) {
+                  pages.push("…");
+                }
+                if (!pages.includes(totalPages)) pages.push(totalPages);
+              }
+
+              return pages.map((p, idx) => {
+                if (p === "…") {
+                  return (
+                    <span key={`dots-${idx}`} className="px-1 text-[#94A3B8] font-label-sm text-label-sm">
+                      …
+                    </span>
+                  );
+                }
+                const isCurrent = p === validCurrentPage;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(Number(p))}
+                    className={`w-7 h-7 rounded font-medium font-label-sm text-label-sm flex items-center justify-center transition-colors cursor-pointer ${
+                      isCurrent
+                        ? "bg-[#0A1B2E] text-white shadow-2xs"
+                        : "hover:bg-[#F8FAFC] text-[#0A1B2E]"
+                    }`}
+                    type="button"
+                  >
+                    {p}
+                  </button>
+                );
+              });
+            })()}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={validCurrentPage >= totalPages}
+              className="px-2.5 h-7 rounded text-[#000000] hover:bg-[#F8FAFC] disabled:text-[#94A3B8] disabled:cursor-not-allowed font-medium font-body-sm transition-colors cursor-pointer"
+              type="button"
+            >
               Next
             </button>
           </div>
@@ -710,14 +975,14 @@ export default function OrdersPage() {
       {/* FLOATING / BOTTOM BULK-SELECTION BAR */}
       {selectedIds.length > 0 && (
         <section className="sticky bottom-4 z-30">
-          <div className="bg-surface-container-lowest rounded-xl shadow-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 border border-[#E3E8F0]">
+          <div className="bg-white rounded-xl shadow-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 border border-[#CBD5E1]">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-bold">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#000000] text-white font-label-md text-label-md font-bold">
                 {selectedIds.length} orders selected
               </span>
               <button
                 onClick={toggleSelectAll}
-                className="font-body-sm text-body-sm text-primary-container hover:underline font-medium"
+                className="font-body-sm text-body-sm text-[#000000] hover:underline font-bold"
                 type="button"
               >
                 Select all 1,284 orders across pages
@@ -725,25 +990,25 @@ export default function OrdersPage() {
             </div>
             {/* Bulk Actions */}
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
-                <span className="material-symbols-outlined text-[16px] text-primary-container">sync</span>
+              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] text-[#000000] font-body-sm text-body-sm font-semibold transition-colors cursor-pointer" type="button">
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">sync</span>
                 <span>Bulk Re-trigger / Retry</span>
               </button>
-              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
-                <span className="material-symbols-outlined text-[16px] text-outline">download</span>
+              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] text-[#000000] font-body-sm text-body-sm font-semibold transition-colors cursor-pointer" type="button">
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">download</span>
                 <span>Export Selected (CSV)</span>
               </button>
-              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium transition-colors" type="button">
-                <span className="material-symbols-outlined text-[16px] text-[#16A34A]">verified_user</span>
+              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] text-[#000000] font-body-sm text-body-sm font-semibold transition-colors cursor-pointer" type="button">
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">verified_user</span>
                 <span>Download Certs (ZIP)</span>
               </button>
-              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-error-container hover:bg-error/20 text-error font-body-sm text-body-sm font-medium transition-colors" type="button">
+              <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded bg-white hover:bg-rose-50 border border-rose-300 text-rose-700 font-body-sm text-body-sm font-semibold transition-colors cursor-pointer" type="button">
                 <span className="material-symbols-outlined text-[16px]">cancel</span>
                 <span>Cancel / Terminate</span>
               </button>
               <button
                 onClick={() => setSelectedIds([])}
-                className="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors ml-1"
+                className="p-1 rounded text-[#000000] hover:bg-neutral-100 transition-colors ml-1 cursor-pointer"
                 title="Deselect all"
                 type="button"
               >
@@ -757,43 +1022,43 @@ export default function OrdersPage() {
       {/* COLLAPSIBLE PREVIEW STATES */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
         {/* State Preview 1: Skeleton Loading Pattern */}
-        <details className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden group border border-[#E3E8F0]">
-          <summary className="px-4 py-3 bg-surface-container-lowest cursor-pointer flex items-center justify-between text-on-surface font-body-md text-body-md font-semibold select-none hover:bg-surface-container-low transition-colors">
+        <details className="bg-white rounded-xl shadow-sm overflow-hidden group border border-[#CBD5E1]">
+          <summary className="px-4 py-3 bg-white cursor-pointer flex items-center justify-between text-[#000000] font-body-md text-body-md font-bold select-none hover:bg-[#F8FAFC] transition-colors">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-outline">view_stream</span>
+              <span className="material-symbols-outlined text-[18px] text-[#000000]">view_stream</span>
               <span>Inspect Skeleton Shimmer State</span>
-              <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-outline">Telecom Data Pipeline</span>
+              <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#000000] border border-[#CBD5E1] font-semibold">Telecom Data Pipeline</span>
             </div>
-            <span className="material-symbols-outlined text-outline transition-transform group-open:rotate-180">expand_more</span>
+            <span className="material-symbols-outlined text-[#000000] transition-transform group-open:rotate-180">expand_more</span>
           </summary>
-          <div className="p-4 space-y-3 bg-surface-container-lowest border-t border-[#EDF0F5]">
-            <p className="font-body-sm text-body-sm text-outline">Zero-layout-shift data shimmer matching tabular widths:</p>
+          <div className="p-4 space-y-3 bg-white border-t border-[#CBD5E1]">
+            <p className="font-body-sm text-body-sm text-[#000000] font-medium">Zero-layout-shift data shimmer matching tabular widths:</p>
             <div className="space-y-2 animate-pulse">
-              <div className="h-8 bg-surface-container-high rounded w-full"></div>
-              <div className="h-8 bg-surface-container rounded w-full"></div>
-              <div className="h-8 bg-surface-container-high rounded w-5/6"></div>
-              <div className="h-8 bg-surface-container rounded w-11/12"></div>
+              <div className="h-8 bg-[#E2E8F0] rounded w-full"></div>
+              <div className="h-8 bg-[#CBD5E1] rounded w-full"></div>
+              <div className="h-8 bg-[#E2E8F0] rounded w-5/6"></div>
+              <div className="h-8 bg-[#CBD5E1] rounded w-11/12"></div>
             </div>
           </div>
         </details>
 
         {/* State Preview 2: Filter Empty State */}
-        <details className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden group border border-[#E3E8F0]">
-          <summary className="px-4 py-3 bg-surface-container-lowest cursor-pointer flex items-center justify-between text-on-surface font-body-md text-body-md font-semibold select-none hover:bg-surface-container-low transition-colors">
+        <details className="bg-white rounded-xl shadow-sm overflow-hidden group border border-[#CBD5E1]">
+          <summary className="px-4 py-3 bg-white cursor-pointer flex items-center justify-between text-[#000000] font-body-md text-body-md font-bold select-none hover:bg-[#F8FAFC] transition-colors">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-outline">filter_alt_off</span>
+              <span className="material-symbols-outlined text-[18px] text-[#000000]">filter_alt_off</span>
               <span>Inspect Empty Filter State</span>
-              <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-outline">Zero Matches</span>
+              <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#F1F5F9] text-[#000000] border border-[#CBD5E1] font-semibold">Zero Matches</span>
             </div>
-            <span className="material-symbols-outlined text-outline transition-transform group-open:rotate-180">expand_more</span>
+            <span className="material-symbols-outlined text-[#000000] transition-transform group-open:rotate-180">expand_more</span>
           </summary>
-          <div className="p-6 flex flex-col items-center justify-center text-center space-y-2.5 bg-surface-container-lowest border-t border-[#EDF0F5]">
-            <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline">
+          <div className="p-6 flex flex-col items-center justify-center text-center space-y-2.5 bg-white border-t border-[#CBD5E1]">
+            <div className="w-10 h-10 rounded-full bg-[#F1F5F9] border border-[#CBD5E1] flex items-center justify-center text-[#000000]">
               <span className="material-symbols-outlined text-[22px]">inbox</span>
             </div>
             <div className="space-y-0.5">
-              <h4 className="font-headline-sm text-headline-sm text-on-surface">No orders match these filters</h4>
-              <p className="font-body-sm text-body-sm text-outline max-w-sm">
+              <h4 className="font-headline-sm text-headline-sm text-[#000000] font-bold">No orders match these filters</h4>
+              <p className="font-body-sm text-body-sm text-[#000000] font-medium max-w-sm">
                 Try adjusting status filters, date range, or clear search queries to view orders.
               </p>
             </div>
@@ -803,7 +1068,7 @@ export default function OrdersPage() {
                 setActiveTab("all");
                 setOnlySignedCert(false);
               }}
-              className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 rounded bg-primary-container text-on-primary font-body-sm text-body-sm font-medium hover:bg-primary transition-colors"
+              className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 rounded bg-[#000000] text-white font-body-sm text-body-sm font-semibold hover:bg-neutral-800 transition-colors cursor-pointer"
               type="button"
             >
               <span className="material-symbols-outlined text-[16px]">restart_alt</span>

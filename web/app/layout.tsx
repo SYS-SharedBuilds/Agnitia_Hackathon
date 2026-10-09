@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthProvider } from "@/lib/auth";
 import Shell from "./Shell";
 import "./globals.css";
 
@@ -14,8 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-[#F2F6FB] font-body-md text-[#0A1B2E] antialiased">
-        <Shell>{children}</Shell>
+      <body className="bg-white font-body-md text-[#0A1B2E] antialiased">
+        <AuthProvider>
+          <Shell>{children}</Shell>
+        </AuthProvider>
       </body>
     </html>
   );

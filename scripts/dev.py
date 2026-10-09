@@ -258,6 +258,21 @@ def main() -> NoReturn:
                 "DEMO_MODE": "true",
             },
         ),
+        # Event Projector
+        ServiceConfig(
+            name="projector",
+            color=CYAN,
+            cmd=[sys.executable, "-m", "services.orchestrator.projector"],
+            env={
+                **dict(os.environ),
+                "PYTHONPATH": ".",
+                "DATABASE_URL": os.getenv(
+                    "DATABASE_URL",
+                    "postgresql+asyncpg://postgres:postgres@localhost:5432/switchon",
+                ),
+                "REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            },
+        ),
         # Next.js Operator Console (web)
         ServiceConfig(
             name="web",

@@ -436,19 +436,19 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="flex flex-col w-full -m-6">
-      {/* Top Context Header Bar */}
-      <div className="px-6 py-4 bg-surface-container-lowest flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-sm border-b border-[#E3E8F0]">
+    <div className="flex flex-col w-full space-y-6">
+      {/* Top Context Header Card */}
+      <div className="bg-white rounded-xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xs border border-[#CBD5E1]">
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
+            <span className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E] flex items-center justify-center">
               <span className="material-symbols-outlined text-[20px]">account_tree</span>
             </span>
-            <h1 className="font-headline-md text-headline-md text-on-surface tracking-tight font-semibold truncate">
+            <h1 className="font-headline-md text-headline-md text-[#0A1B2E] tracking-tight font-bold truncate">
               Service Catalog &amp; DAG Orchestration
             </h1>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+          <p className="font-body-sm text-body-sm text-[#64748B] max-w-3xl">
             Formal saga workflow definitions, dependency DAGs, and compensation guarantees across telecommunication subsystems.
           </p>
         </div>
@@ -457,7 +457,7 @@ export default function CatalogPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => alert("Upload YAML specification dialog opened.")}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface border border-[#E2E8F0] hover:bg-surface-container-low rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] hover:bg-[#F8FAFC] rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[16px] text-[#64748B]">file_upload</span>
@@ -465,7 +465,7 @@ export default function CatalogPage() {
           </button>
           <button
             onClick={handleExportPackage}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface border border-[#E2E8F0] hover:bg-surface-container-low rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0A1B2E] border border-[#CBD5E1] hover:bg-[#F8FAFC] rounded-lg transition-colors font-body-sm text-body-sm font-medium shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[16px] text-[#64748B]">download</span>
@@ -473,7 +473,7 @@ export default function CatalogPage() {
           </button>
           <button
             onClick={() => alert("Initiate new service specification builder wizard.")}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-container hover:bg-primary text-white rounded-lg transition-colors font-body-sm text-body-sm font-semibold shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg transition-colors font-body-sm text-body-sm font-semibold shadow-2xs cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
@@ -483,7 +483,7 @@ export default function CatalogPage() {
       </div>
 
       {/* Main Multi-Column Console Area */}
-      <div className="p-6 flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* LEFT SIDEBAR: Service Specifications List (w-80 / 320px) */}
         <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4">
           <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 flex flex-col gap-3 border border-[#E3E8F0]">
@@ -593,17 +593,17 @@ export default function CatalogPage() {
               <div className="flex flex-col gap-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
                   <span>Catalog</span>
-                  <span className="text-outline">/</span>
+                  <span className="text-[#000000]">/</span>
                   <span className="font-semibold text-primary">
                     {selectedProduct.name} ({selectedProduct.version})
                   </span>
-                  <span className="text-outline">•</span>
+                  <span className="text-[#000000]">•</span>
                   <span>
                     Deployed {selectedProduct.deployedAt} by{" "}
                     <code className="text-on-surface font-mono">{selectedProduct.deployedBy}</code>
                   </span>
-                  <span className="text-outline">•</span>
-                  <span className="text-outline font-label-sm font-mono">{selectedProduct.checksum}</span>
+                  <span className="text-[#000000]">•</span>
+                  <span className="text-[#000000] font-label-sm font-mono">{selectedProduct.checksum}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">
@@ -673,7 +673,7 @@ export default function CatalogPage() {
                     <div>
                       <h3 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 font-semibold">
                         <span>Execution DAG (Wave Swim-lanes)</span>
-                        <span className="font-label-sm text-label-sm font-normal text-outline">
+                        <span className="font-label-sm text-label-sm font-normal text-[#000000]">
                           Deterministic Partial Order
                         </span>
                       </h3>
@@ -682,7 +682,7 @@ export default function CatalogPage() {
                         <span className="font-mono">N+1</span> dispatches only after preceding wave resolves.
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 text-outline font-label-sm text-label-sm font-mono">
+                    <div className="flex items-center gap-2 text-[#000000] font-label-sm text-label-sm font-mono">
                       <span className="flex items-center gap-1">
                         <span className="w-2 h-2 rounded bg-primary"></span> Read-Only
                       </span>
@@ -696,9 +696,9 @@ export default function CatalogPage() {
                   </div>
 
                   {/* Wave Swim-lane Canvas */}
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 pt-2">
                     {/* WAVE 1 */}
-                    <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0]">
+                    <div className="bg-surface-container-low rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0] min-w-0">
                       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-primary text-white font-label-sm text-label-sm flex items-center justify-center font-bold">
@@ -714,22 +714,22 @@ export default function CatalogPage() {
                       </div>
                       <div className="flex flex-col gap-2.5">
                         {/* Node 1.1 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-primary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-primary font-mono break-all sm:break-normal">
                               validate_customer_eligibility
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Read_Only
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">dns</span> OMS (8101)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">VerifyAddressAndCredit</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">VerifyAddressAndCredit</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
                             <span>Timeout: 1,500ms</span>
                             <span className="text-tertiary">Comp: None</span>
                           </div>
@@ -741,31 +741,31 @@ export default function CatalogPage() {
                         </div>
 
                         {/* Node 1.2 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               reserve_terminal_port
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Mutating
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">inventory_2</span> Inventory (8102)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">LockGponPortAndSplitter</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">LockGponPortAndSplitter</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
                             <span>Timeout: 3,000ms</span>
-                            <span className="text-primary font-mono">↩ release_terminal_port</span>
+                            <span className="text-primary font-mono truncate" title="release_terminal_port">↩ release_terminal_port</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* WAVE 2 */}
-                    <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0]">
+                    <div className="bg-surface-container-low rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0] min-w-0">
                       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-secondary text-white font-label-sm text-label-sm flex items-center justify-center font-bold">
@@ -781,75 +781,75 @@ export default function CatalogPage() {
                       </div>
                       <div className="flex flex-col gap-2.5">
                         {/* Node 2.1 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               provision_ont_bridge
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Mutating
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">router</span> Network (8103)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">ConfigureCpeBridge</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">ConfigureCpeBridge</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [reserve_terminal_port]</span>
-                            <span className="text-primary font-mono">↩ deprovision_ont_bridge</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [reserve_terminal_port]</span>
+                            <span className="text-primary font-mono truncate" title="deprovision_ont_bridge">↩ deprovision_ont_bridge</span>
                           </div>
                         </div>
 
                         {/* Node 2.2 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               bind_qos_profile
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Mutating
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">speed</span> Network (8103)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">SetBandwidthSlice (500M)</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">SetBandwidthSlice (500M)</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [reserve_terminal_port]</span>
-                            <span className="text-primary font-mono">↩ unbind_qos_profile</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [reserve_terminal_port]</span>
+                            <span className="text-primary font-mono truncate" title="unbind_qos_profile">↩ unbind_qos_profile</span>
                           </div>
                         </div>
 
                         {/* Node 2.3 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono break-all sm:break-normal">
                               verify_optical_power
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-[#000000] font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Best_Effort
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">sensors</span> Network (8103)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">SampleOtdrTelemetry</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">SampleOtdrTelemetry</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [provision_ont_bridge]</span>
-                            <span className="text-tertiary">Comp: None</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [provision_ont_bridge]</span>
+                            <span className="text-tertiary shrink-0">Comp: None</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* WAVE 3 */}
-                    <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0]">
+                    <div className="bg-surface-container-low rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-xs border border-[#E2E8F0] min-w-0 md:col-span-2 2xl:col-span-1">
                       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                         <div className="flex items-center gap-2">
                           <span className="w-5 h-5 rounded-full bg-tertiary-container text-white font-label-sm text-label-sm flex items-center justify-center font-bold">
@@ -865,24 +865,24 @@ export default function CatalogPage() {
                       </div>
                       <div className="flex flex-col gap-2.5">
                         {/* Node 3.1 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-secondary font-mono break-all sm:break-normal">
                               activate_tariff_billing
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-semibold font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase font-semibold font-mono shrink-0">
                               Strict_Commit
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">receipt_long</span> Billing (8104)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">InstantiateChargeLedger</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">InstantiateChargeLedger</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [bind_qos, provision_ont]</span>
-                            <span className="text-primary font-mono">↩ revoke_charge_ledger</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [bind_qos, provision_ont]</span>
+                            <span className="text-primary font-mono truncate" title="revoke_charge_ledger">↩ revoke_charge_ledger</span>
                           </div>
                         </div>
 
@@ -892,23 +892,23 @@ export default function CatalogPage() {
                         </div>
 
                         {/* Node 3.2 */}
-                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono">
+                        <div className="p-3 bg-surface-container-lowest rounded-xl shadow-xs hover:shadow-md transition-shadow flex flex-col gap-1 border border-[#E2E8F0] min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-label-sm text-label-sm font-semibold text-on-surface font-mono break-all sm:break-normal">
                               dispatch_welcome_notification
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-label-sm text-label-sm uppercase font-mono">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-[#000000] font-label-sm text-label-sm uppercase font-mono shrink-0">
                               Best_Effort
                             </span>
                           </div>
-                          <div className="flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pt-1">
-                            <span className="flex items-center gap-1 font-mono text-[#64748B]">
+                          <div className="flex flex-wrap items-center justify-between gap-1 font-body-sm text-body-sm text-on-surface-variant pt-1">
+                            <span className="flex items-center gap-1 font-mono text-[#64748B] shrink-0">
                               <span className="material-symbols-outlined text-[14px]">send</span> Notify (8105)
                             </span>
-                            <span className="font-mono text-on-surface text-[12px]">SendSmsAndEmail</span>
+                            <span className="font-mono text-on-surface text-[12px] truncate">SendSmsAndEmail</span>
                           </div>
-                          <div className="pt-2 flex items-center justify-between font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
-                            <span>Deps: [activate_tariff_billing]</span>
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-1 font-label-sm text-label-sm text-[#94A3B8] font-mono border-t border-[#F1F5F9]">
+                            <span className="truncate">Deps: [activate_tariff_billing]</span>
                             <span className="text-tertiary">Comp: None</span>
                           </div>
                         </div>
@@ -930,7 +930,7 @@ export default function CatalogPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-outline">
+                        <span className="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-[#000000]">
                           search
                         </span>
                         <input
@@ -971,9 +971,9 @@ export default function CatalogPage() {
                             <td className="py-2.5 px-3 font-label-sm text-label-sm font-semibold font-mono text-primary">
                               {task.id}
                             </td>
-                            <td className="py-2.5 px-3 font-mono text-[12px] text-outline">{task.system}</td>
+                            <td className="py-2.5 px-3 font-mono text-[12px] text-[#000000]">{task.system}</td>
                             <td className="py-2.5 px-3 font-mono text-[12px]">{task.actionRoutine}</td>
-                            <td className="py-2.5 px-3 font-label-sm text-label-sm text-outline font-mono">
+                            <td className="py-2.5 px-3 font-label-sm text-label-sm text-[#000000] font-mono">
                               W{task.wave} · {task.upstreamDeps.length > 0 ? `[${task.upstreamDeps.join(", ")}]` : "none"}
                             </td>
                             <td className="py-2.5 px-3 font-label-sm text-label-sm font-mono">{task.retryPolicy}</td>
@@ -982,7 +982,7 @@ export default function CatalogPage() {
                               {task.compensationAction ? (
                                 <span className="text-primary">{task.compensationAction}</span>
                               ) : (
-                                <span className="text-outline">— (None)</span>
+                                <span className="text-[#000000]">— (None)</span>
                               )}
                             </td>
                             <td className="py-2.5 px-3">
@@ -994,7 +994,7 @@ export default function CatalogPage() {
                                     ? "bg-surface-container-high text-secondary font-semibold"
                                     : task.flag === "strict_commit"
                                     ? "bg-surface-container-high text-secondary font-bold"
-                                    : "bg-surface-container-highest text-outline"
+                                    : "bg-surface-container-highest text-[#000000]"
                                 }`}
                               >
                                 {task.flag}
@@ -1017,7 +1017,7 @@ export default function CatalogPage() {
                     <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
                       {selectedProduct.name} DAG Specification
                     </span>
-                    <span className="font-label-sm text-label-sm text-outline font-mono">
+                    <span className="font-label-sm text-label-sm text-[#000000] font-mono">
                       {selectedProduct.id}_v2.4.0.yaml
                     </span>
                   </div>
@@ -1073,7 +1073,7 @@ export default function CatalogPage() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                       Topological sort completed in 0.4ms. 0 cycles detected across 7 nodes. Strict partial order guaranteed.
                     </p>
-                    <div className="pt-2 font-label-sm text-label-sm text-outline flex justify-between items-center font-mono border-t border-[#E2E8F0]">
+                    <div className="pt-2 font-label-sm text-label-sm text-[#000000] flex justify-between items-center font-mono border-t border-[#E2E8F0]">
                       <span>Cycles: 0</span>
                       <span className="font-semibold text-secondary">PASS</span>
                     </div>
@@ -1090,7 +1090,7 @@ export default function CatalogPage() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                       Task <code className="font-mono text-on-surface">activate_tariff_billing</code> strictly depends on upstream network activation ACK.
                     </p>
-                    <div className="pt-2 font-label-sm text-label-sm text-outline flex justify-between items-center font-mono border-t border-[#E2E8F0]">
+                    <div className="pt-2 font-label-sm text-label-sm text-[#000000] flex justify-between items-center font-mono border-t border-[#E2E8F0]">
                       <span>Premature Bill Risk: 0.00%</span>
                       <span className="font-semibold text-secondary">PASS</span>
                     </div>
@@ -1107,7 +1107,7 @@ export default function CatalogPage() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                       All mutating tasks (4/4) define an inverse idempotent compensation action with matching keys.
                     </p>
-                    <div className="pt-2 font-label-sm text-label-sm text-outline flex justify-between items-center font-mono border-t border-[#E2E8F0]">
+                    <div className="pt-2 font-label-sm text-label-sm text-[#000000] flex justify-between items-center font-mono border-t border-[#E2E8F0]">
                       <span>Coverage: 100% (4/4)</span>
                       <span className="font-semibold text-secondary">PASS</span>
                     </div>
@@ -1116,7 +1116,7 @@ export default function CatalogPage() {
 
                 {/* Formal Safety Matrix Log */}
                 <div className="bg-surface-container-lowest rounded-xl p-4 shadow-xs flex flex-col gap-1 border border-[#E2E8F0]">
-                  <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-mono">
+                  <span className="font-label-sm text-label-sm text-[#000000] uppercase tracking-wider font-mono">
                     Formal Model Checker Trace Log
                   </span>
                   <div className="font-mono text-[12px] text-on-surface-variant flex flex-col gap-1 pt-1">
@@ -1139,7 +1139,7 @@ export default function CatalogPage() {
                   Cluster Deployment Verification Checklist
                 </h3>
               </div>
-              <span className="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold font-mono border border-[#C7D2FE]">
+              <span className="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded font-semibold font-mono border border-[#CBD5E1]">
                 ALL GATES CLEARED
               </span>
             </div>

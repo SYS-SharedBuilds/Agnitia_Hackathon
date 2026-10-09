@@ -32,7 +32,9 @@ services:
   temporal:
     image: temporalio/server:1.24.2
     container_name: switchon-temporal
-    entrypoint: ["temporal", "server", "start-dev", "--ip", "0.0.0.0", "--ui-port", "8233", "--db-filename", "/tmp/temporal.db"]
+    entrypoint: ["temporal", "server", "start-dev", "--ip", "0.0.0.0", "--ui-port", "8233", "--db-filename", "/var/lib/temporal/temporal.db"]
+    volumes:
+      - temporaldata:/var/lib/temporal
     ports:
       - "7233:7233"
       - "8233:8233"

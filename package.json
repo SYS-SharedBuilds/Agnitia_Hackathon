@@ -5,6 +5,11 @@
   "description": "SwitchOn Telecom Service Activation Orchestrator",
   "scripts": {
     "dev": "node scripts/run-dev.js",
+    "build": "npm run build --prefix web",
+    "lint": "npm run lint --prefix web",
+    "test": "npm run test --prefix web",
+    "typecheck": "npm run typecheck --prefix web",
+    "check": "npm run check --prefix web",
     "web:dev": "npm run dev --prefix web",
     "web:build": "npm run build --prefix web",
     "web:lint": "npm run lint --prefix web"

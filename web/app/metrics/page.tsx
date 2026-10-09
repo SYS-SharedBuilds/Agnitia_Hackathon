@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import { InteractiveActivationPercentilesChart } from "@/components/charts/InteractiveActivationPercentilesChart";
 
 export default function MetricsPage() {
   const [timeRange, setTimeRange] = useState<"15m" | "1h" | "24h" | "7d">("24h");
@@ -293,152 +293,25 @@ export default function MetricsPage() {
             </div>
           </div>
 
-          {/* Rich SVG Telemetry Chart Container */}
-          <div className="relative w-full h-[290px] pt-4 select-none">
-            <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 240">
-              <defs>
-                <linearGradient id="p50Grad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#0051d5" stopOpacity="0.25"></stop>
-                  <stop offset="100%" stopColor="#0051d5" stopOpacity="0.0"></stop>
-                </linearGradient>
-                <linearGradient id="p95Grad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#3525cd" stopOpacity="0.20"></stop>
-                  <stop offset="100%" stopColor="#3525cd" stopOpacity="0.0"></stop>
-                </linearGradient>
-              </defs>
-
-              {/* Horizontal Reference Gridlines & Y-Axis Labels */}
-              {/* 6s (SLO) */}
-              <line stroke="#ba1a1a" strokeDasharray="4 4" strokeWidth="1.5" x1="40" x2="780" y1="36"></line>
-              <text className="font-mono text-[10px]" fill="#ba1a1a" fontWeight="600" textAnchor="end" x="34" y="40">
-                6.0s (SLO)
-              </text>
-              {/* 4.5s */}
-              <line stroke="#eaedff" strokeWidth="1" x1="40" x2="780" y1="80"></line>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="end" x="34" y="84">
-                4.5s
-              </text>
-              {/* 3.0s */}
-              <line stroke="#eaedff" strokeWidth="1" x1="40" x2="780" y1="125"></line>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="end" x="34" y="129">
-                3.0s
-              </text>
-              {/* 1.5s */}
-              <line stroke="#eaedff" strokeWidth="1" x1="40" x2="780" y1="170"></line>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="end" x="34" y="174">
-                1.5s
-              </text>
-              {/* 0.0s */}
-              <line stroke="#dae2fd" strokeWidth="1" x1="40" x2="780" y1="215"></line>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="end" x="34" y="219">
-                0.0s
-              </text>
-
-              {/* Vertical Time Guides */}
-              <line stroke="#f2f3ff" strokeWidth="1" x1="163" x2="163" y1="36" y2="215"></line>
-              <line stroke="#f2f3ff" strokeWidth="1" x1="286" x2="286" y1="36" y2="215"></line>
-              <line stroke="#f2f3ff" strokeWidth="1" x1="410" x2="410" y1="36" y2="215"></line>
-              <line stroke="#f2f3ff" strokeWidth="1" x1="533" x2="533" y1="36" y2="215"></line>
-              <line stroke="#f2f3ff" strokeWidth="1" x1="656" x2="656" y1="36" y2="215"></line>
-
-              {/* Area Fills */}
-              <path
-                d="M 40,172 Q 100,174 163,169 T 286,173 T 410,165 T 533,168 T 656,170 T 780,168 L 780,215 L 40,215 Z"
-                fill="url(#p50Grad)"
-              ></path>
-
-              {/* Curve: p99 */}
-              <path
-                d="M 40,65 C 100,62 163,60 220,68 C 286,74 340,56 410,50 C 470,44 520,58 580,52 C 640,46 700,56 780,50"
-                fill="none"
-                stroke="#316bf3"
-                strokeWidth="2.2"
-              ></path>
-              {/* Curve: p95 */}
-              <path
-                d="M 40,94 C 100,90 163,98 220,92 C 286,88 340,82 410,88 C 470,95 520,84 580,82 C 640,80 700,85 780,84"
-                fill="none"
-                stroke="#3525cd"
-                strokeWidth="2.5"
-              ></path>
-              {/* Curve: p50 */}
-              <path
-                d="M 40,172 C 100,174 163,169 220,170 C 286,173 340,166 410,165 C 470,167 520,169 580,168 C 640,171 700,169 780,168"
-                fill="none"
-                stroke="#0051d5"
-                strokeWidth="2.2"
-              ></path>
-
-              {/* Highlighted Point Indicator at 14:00 (X=460) */}
-              <line stroke="#3525cd" strokeDasharray="2 2" strokeWidth="1.2" x1="460" x2="460" y1="36" y2="215"></line>
-              <circle cx="460" cy="51" fill="#316bf3" r="4.5" stroke="#ffffff" strokeWidth="2"></circle>
-              <circle cx="460" cy="89" fill="#3525cd" r="4.5" stroke="#ffffff" strokeWidth="2"></circle>
-              <circle cx="460" cy="166" fill="#0051d5" r="4.5" stroke="#ffffff" strokeWidth="2"></circle>
-
-              {/* X-Axis Labels */}
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="middle" x="40" y="232">
-                00:00
-              </text>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="middle" x="163" y="232">
-                04:00
-              </text>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="middle" x="286" y="232">
-                08:00
-              </text>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="middle" x="410" y="232">
-                12:00
-              </text>
-              <text className="font-mono text-[10px]" fill="#3525cd" fontWeight="600" textAnchor="middle" x="533" y="232">
-                16:00 (Peak)
-              </text>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="middle" x="656" y="232">
-                20:00
-              </text>
-              <text className="font-mono text-[10px]" fill="#777587" textAnchor="middle" x="780" y="232">
-                24:00
-              </text>
-            </svg>
-
-            {/* Floating Inspection Tooltip for 14:00 Point */}
-            <div className="absolute top-4 left-[53%] -translate-x-1/2 rounded-xl bg-on-surface text-surface px-3 py-2 shadow-xl pointer-events-none z-10 w-60 border border-outline/30">
-              <div className="flex items-center justify-between pb-1 bg-surface/10 px-1 rounded mb-1">
-                <span className="font-label-sm text-label-sm font-semibold text-secondary-fixed">14:00 UTC Sampling</span>
-                <span className="font-label-sm text-label-sm text-surface-variant">482 tx</span>
-              </div>
-              <div className="space-y-0.5 font-label-sm text-label-sm">
-                <div className="flex justify-between items-center text-secondary-fixed">
-                  <span>p50 (Median):</span>
-                  <span className="font-bold">1.38s</span>
-                </div>
-                <div className="flex justify-between items-center text-primary-fixed">
-                  <span>p95 (Tail):</span>
-                  <span className="font-bold">4.12s</span>
-                </div>
-                <div className="flex justify-between items-center text-secondary-container">
-                  <span>p99 (Outlier):</span>
-                  <span className="font-bold">5.65s</span>
-                </div>
-                <div className="pt-1 flex items-center justify-between text-secondary">
-                  <span>SLO Status:</span>
-                  <span className="font-semibold">Compliant (-0.35s headroom)</span>
-                </div>
-              </div>
-            </div>
+          {/* Rich Interactive Telemetry Chart */}
+          <div className="w-full pt-2">
+            <InteractiveActivationPercentilesChart />
           </div>
 
           {/* Footer Info */}
-          <div className="flex items-center justify-between pt-2 border-t border-outline-variant/20 mt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-outline-variant/20 mt-2">
             <span className="font-body-sm text-body-sm text-on-surface-variant">
               Measured via 100% trace sampling across distributed Temporal workers.
             </span>
-            <Link
-              href="http://localhost:8233"
+            <a
+              href={`${process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || "http://localhost:8233"}/namespaces/default/workflows`}
               target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center gap-1 font-label-sm text-label-sm font-semibold text-primary hover:text-primary-container"
             >
               <span>View temporal trace tree</span>
               <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-            </Link>
+            </a>
           </div>
         </div>
 

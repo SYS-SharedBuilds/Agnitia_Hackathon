@@ -236,6 +236,45 @@ async def get_order_events(
     return [dict(e) for e in res.mappings().all()]
 
 
+@router.get("/{order_id}/ai-rca")
+async def get_order_ai_rca(
+    order_id: str,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """AI Root-Cause & Fallout Copilot (X7):
+    Synthesizes deep diagnostics, blast-radius analysis, and operator remediation playbooks.
+    """
+    from services.orchestrator.explainer import synthesize_ai_rca_copilot
+
+    res = await session.execute(
+        text("SELECT * FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+    )
+    order = res.mappings().first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    tasks_res = await session.execute(
+        text("SELECT * FROM ops.tasks WHERE order_id = :id ORDER BY started_at ASC"),
+        {"id": order_id},
+    )
+    tasks: list[dict[str, Any]] = [dict(t) for t in tasks_res.mappings().all()]
+
+    events_res = await session.execute(
+        text("SELECT * FROM ops.events WHERE order_id = :id ORDER BY seq ASC"),
+        {"id": order_id},
+    )
+    events: list[dict[str, Any]] = [dict(e) for e in events_res.mappings().all()]
+
+    return synthesize_ai_rca_copilot(
+        order_id=order["order_id"],
+        product=order["product"],
+        state=order["state"],
+        failure_reason=order.get("failure_reason"),
+        tasks=tasks,
+        events=events,
+    )
+
+
 @router.get("/{order_id}/certificate")
 async def get_order_certificate(
     order_id: str,
@@ -358,7 +397,7 @@ async def get_order_certificate(
     }
 
 
-@router.post("/{order_id}/cancel")
+@router.post("/{order_id}/cancel", status_code=status.HTTP_202_ACCEPTED)
 async def cancel_order(
     order_id: str,
     reason: str = Query(default="Operator signal", max_length=256),
@@ -367,17 +406,25 @@ async def cancel_order(
     res = await session.execute(
         text("SELECT state FROM ops.orders WHERE order_id = :id"), {"id": order_id}
     )
-    if not res.mappings().first():
+    row = res.mappings().first()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+
+    order_state = row["state"]
+    if order_state in ("ACTIVE", "ROLLED_BACK", "NEEDS_ATTENTION", "CANCELLED"):
+        raise HTTPException(status_code=409, detail=f"Order already terminal: {order_state}")
+
     try:
         temporal_client = await get_temporal_client()
         handle = temporal_client.get_workflow_handle(f"order-{order_id}")
         await handle.signal("cancel_order", reason)
         return {"status": "cancel_signaled", "order_id": order_id}
     except Exception as exc:
-        logger.error("cancel_workflow_failed", order_id=order_id, error=str(exc))
+        logger.error("cancel_workflow_failed", order_id=order_id, error=str(exc), exc_info=True)
+        if "completed" in str(exc).lower() or "not found" in str(exc).lower():
+            raise HTTPException(status_code=409, detail=f"Order workflow already completed: {exc}") from exc
         raise HTTPException(
-            status_code=500, detail="Failed to signal workflow cancellation"
+            status_code=500, detail=f"Failed to signal workflow cancellation: {exc}"
         ) from exc
 
 

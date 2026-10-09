@@ -21,21 +21,21 @@ export function Button({
 
   switch (variant) {
     case "primary":
-      variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] shadow-xs";
+      variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] shadow-xs active:bg-[#06111f]";
       break;
     case "secondary":
       variantCls =
-        "bg-[#eef3f9] text-[#0A1B2E] hover:bg-[#e4ecf5] border border-[#557392]/30";
+        "bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#CBD5E1] active:bg-[#E2E8F0]";
       break;
     case "outline":
       variantCls =
-        "bg-white text-[#0A1B2E] hover:bg-[#eef3f9] border border-[#557392]/40 shadow-2xs";
+        "bg-white text-[#0A1B2E] hover:bg-[#F8FAFC] border border-[#0A1B2E] shadow-2xs";
       break;
     case "destructive":
       variantCls = "bg-[#0A1B2E] text-white hover:bg-[#14263b] border border-[#0A1B2E] shadow-xs";
       break;
     case "ghost":
-      variantCls = "text-[#557392] hover:bg-[#eef3f9] hover:text-[#0A1B2E]";
+      variantCls = "text-[#0A1B2E] hover:bg-[#F8FAFC]";
       break;
   }
 

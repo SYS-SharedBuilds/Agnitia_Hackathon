@@ -21,19 +21,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative flex items-center">
           {icon && (
-            <span className="material-symbols-outlined absolute left-3 text-[#557392] text-lg pointer-events-none select-none">
+            <span className="material-symbols-outlined absolute left-3 text-[#64748B] text-lg pointer-events-none select-none">
               {icon}
             </span>
           )}
           <input
             id={inputId}
             ref={ref}
-            className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#0A1B2E] placeholder:text-[#557392]/60 transition-colors focus:outline-none focus:ring-1 ${
+            className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-[#0A1B2E] placeholder:text-[#94A3B8] transition-colors focus:outline-none focus:ring-1 ${
               icon ? "pl-9" : ""
             } ${rightElement ? "pr-10" : ""} ${
               error
                 ? "border-[#0A1B2E] focus:border-[#0A1B2E] focus:ring-[#0A1B2E]/20"
-                : "border-[#557392]/30 focus:border-[#0A1B2E] focus:ring-[#0A1B2E]/20"
+                : "border-[#CBD5E1] focus:border-[#0A1B2E] focus:ring-[#0A1B2E]/20"
             } ${className}`}
             {...props}
           />
@@ -44,9 +44,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error ? (
-          <p className="text-xs text-[#0A1B2E] font-medium">{error}</p>
+          <p className="text-xs text-[#DC2626] font-medium">{error}</p>
         ) : helperText ? (
-          <p className="text-xs text-[#557392]">{helperText}</p>
+          <p className="text-xs text-[#64748B]">{helperText}</p>
         ) : null}
       </div>
     );

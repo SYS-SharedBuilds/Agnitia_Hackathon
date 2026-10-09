@@ -23,9 +23,29 @@ async def reset_all() -> None:
         async with engine.begin() as conn:
             await conn.execute(
                 text(
-                    "TRUNCATE TABLE ops.certificates, ops.events, ops.tasks, ops.orders CASCADE;"
+                    """
+                    TRUNCATE TABLE
+                        ops.certificates, ops.events, ops.tasks, ops.orders, ops.drift, ops.system_calls,
+                        oms.orders, oms.idempotency, oms.tombstones,
+                        inventory.resources, inventory.idempotency, inventory.tombstones,
+                        network.services, network.idempotency, network.tombstones,
+                        billing.charges, billing.accounts, billing.idempotency, billing.tombstones,
+                        notify.messages, notify.idempotency, notify.tombstones
+                    CASCADE;
+                    """
                 )
             )
+        await engine.dispose()
+
+        # Clear Redis streams
+        try:
+            import redis.asyncio as aioredis
+
+            r = aioredis.from_url(settings.REDIS_URL)
+            await r.delete("order.events", "order.events.dlq")
+            await r.close()
+        except Exception as r_exc:
+            print(f"Warning: could not clear Redis streams: {r_exc}")
         await engine.dispose()
     except Exception as exc:
         print(f"Warning: could not truncate DB tables: {exc}")

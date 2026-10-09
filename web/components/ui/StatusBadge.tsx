@@ -24,16 +24,16 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
   const norm = status.toUpperCase().replace(/\s+/g, "_");
 
   let content: React.ReactNode = norm;
-  let style = "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]/30";
+  let style = "bg-white text-[#0A1B2E] border-[#CBD5E1]";
 
   switch (norm) {
     case "PENDING":
     case "DRAFT":
     case "DRAFT_/_PENDING":
-      style = "bg-[#eef3f9] text-[#557392] border-[#557392]/30";
+      style = "bg-[#FEFCE8] text-[#EEB930] border-[#EEB930]";
       content = (
         <>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#557392]"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#EEB930]"></span>
           <span>{status}</span>
         </>
       );
@@ -41,12 +41,12 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "RUNNING":
     case "IN_PROGRESS":
-      style = "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]";
+      style = "bg-[#EFF6FF] text-[#2563EB] border-[#2563EB]";
       content = (
         <>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#557392] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#557392]"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]"></span>
           </span>
           <span className="font-semibold tracking-wide">RUNNING</span>
         </>
@@ -55,57 +55,70 @@ export function StatusBadge({ status, size = "md", pulse = false, className = ""
 
     case "SUCCEEDED":
     case "COMPLETED":
-      style = "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]/40";
+    case "ACTIVE":
+      style = "bg-[#F0FDF4] text-[#22C55E] border-[#22C55E]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#0A1B2E]">check_circle</span>
+          <span className="material-symbols-outlined text-[13px] text-[#22C55E]">check_circle</span>
           <span className="font-semibold">SUCCEEDED</span>
         </>
       );
       break;
 
-    case "FAILED":
-      style = "bg-[#0A1B2E] text-[#ffffff] border-[#0A1B2E]";
+    case "RETRYING":
+      style = "bg-[#FEFCE8] text-[#EEB930] border-[#EEB930]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#ffffff]">cancel</span>
-          <span className="font-semibold text-white">FAILED</span>
+          <span className="material-symbols-outlined text-[13px] text-[#EEB930] animate-spin">refresh</span>
+          <span className="font-semibold">RETRYING</span>
+        </>
+      );
+      break;
+
+    case "FAILED":
+      style = "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C]";
+      content = (
+        <>
+          <span className="material-symbols-outlined text-[13px] text-[#ED2C2C]">cancel</span>
+          <span className="font-semibold text-[#ED2C2C]">FAILED</span>
         </>
       );
       break;
 
     case "NEEDS_ATTENTION":
-      style = "bg-[#0A1B2E] text-[#ffffff] border-[#0A1B2E]";
+      style = "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C] font-bold";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#ffffff]">priority_high</span>
-          <span className="font-semibold text-white">NEEDS ATTENTION</span>
+          <span className="material-symbols-outlined text-[13px] text-[#ED2C2C]">priority_high</span>
+          <span className="font-semibold text-[#ED2C2C]">NEEDS ATTENTION</span>
         </>
       );
       break;
 
     case "COMPENSATING":
-      style = "bg-[#eef3f9] text-[#0A1B2E] border-[#557392]/40";
+    case "ROLLING_BACK":
+      style = "bg-[#FEF2F2] text-[#ED2C2C] border-[#ED2C2C]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#557392] animate-spin">sync</span>
-          <span className="font-semibold">COMPENSATING</span>
+          <span className="material-symbols-outlined text-[13px] text-[#ED2C2C] animate-spin">sync</span>
+          <span className="font-semibold">ROLLING BACK</span>
         </>
       );
       break;
 
     case "COMPENSATED":
-      style = "bg-[#eef3f9] text-[#557392] border-[#557392]/30";
+    case "ROLLED_BACK":
+      style = "bg-[#F5F5F4] text-[#8B7B65] border-[#8B7B65]";
       content = (
         <>
-          <span className="material-symbols-outlined text-[13px] text-[#557392]">undo</span>
+          <span className="material-symbols-outlined text-[13px] text-[#8B7B65]">undo</span>
           <span className="font-semibold">COMPENSATED</span>
         </>
       );
       break;
 
     case "CANCELLED":
-      style = "bg-[#F2F6FB] text-[#557392]/70 border-[#557392]/20";
+      style = "bg-[#F5F5F4] text-[#8B7B65] border-[#E2E8F0]";
       content = <span className="line-through">{status}</span>;
       break;
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 interface SubsystemConfig {
   id: string;
   name: string;
+  icon: string;
   port: number;
   protocol: string;
   status: "HEALTHY" | "DEGRADED";
@@ -30,6 +31,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "oms",
     name: "OMS Core (Order Management)",
+    icon: "dns",
     port: 8101,
     protocol: "Orchestrator Kernel · Temporal Workflow Driver · gRPC / HTTP2",
     status: "HEALTHY",
@@ -47,6 +49,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "sim",
     name: "SIM / eSIM Inventory Pool",
+    icon: "sim_card",
     port: 8102,
     protocol: "Profile Allocation · SM-DP+ Interface · REST / mTLS",
     status: "HEALTHY",
@@ -64,6 +67,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "network",
     name: "Network Slice Gateway (HLR / HSS)",
+    icon: "router",
     port: 8103,
     protocol: "Core Network Diameter Protocol & 5G QoS Subsystem · Injected via Chaos Mesh",
     status: "DEGRADED",
@@ -91,6 +95,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "ocs",
     name: "OCS Billing Engine",
+    icon: "payments",
     port: 8104,
     protocol: "Online Charging System · Ro / Diameter · Tariff Quota Locks",
     status: "DEGRADED",
@@ -117,6 +122,7 @@ const INITIAL_SYSTEMS: SubsystemConfig[] = [
   {
     id: "notif",
     name: "Notification Hub (SMS / Push)",
+    icon: "notifications_active",
     port: 8105,
     protocol: "Customer Dispatches · SMPP Gateway & Webhook Transmitters",
     status: "HEALTHY",
@@ -219,25 +225,25 @@ export default function SystemsChaosPage() {
 
   return (
     <div className="flex flex-col w-full space-y-6 pb-12">
-      {/* 1. SIMULATION ENVIRONMENT BANNER (LIGHT AMBER ALERT) */}
-      <section className="bg-amber-50/90 border border-amber-200/80 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* 1. SIMULATION ENVIRONMENT BANNER (CLEAN WHITE CARD WITH DEEP NAVY) */}
+      <section className="bg-white border border-[#CBD5E1] rounded-xl p-4 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start gap-3.5">
-          <div className="p-2 bg-amber-100 rounded-lg text-amber-800 shrink-0 mt-0.5 md:mt-0">
-            <span className="material-symbols-outlined text-[20px]">warning</span>
+          <div className="p-2 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-[#0A1B2E] shrink-0 mt-0.5 md:mt-0">
+            <span className="material-symbols-outlined text-[20px]">tune</span>
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="font-headline-sm text-headline-sm text-amber-950 font-semibold tracking-tight">
+              <h2 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-semibold tracking-tight">
                 Simulation Environment — Chaos Injection Mode
               </h2>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-900 font-label-sm text-label-sm font-mono font-medium border border-amber-300/60">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white text-[#0A1B2E] font-label-sm text-label-sm font-mono font-medium border border-[#CBD5E1] shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E] animate-pulse"></span>
                 ChaosMesh v2.4.1 · PRNG Seed Synced
               </span>
             </div>
-            <p className="font-body-md text-body-md text-amber-900/80 leading-relaxed max-w-4xl">
+            <p className="font-body-md text-body-md text-[#64748B] leading-relaxed max-w-4xl">
               Chaos is for demonstration verification &amp; resilience testing — impacts downstream invocations. All injected faults carry verified{" "}
-              <code className="font-mono bg-amber-200/50 px-1 py-0.5 rounded text-amber-950 font-medium">
+              <code className="font-mono bg-[#F1F5F9] text-[#0A1B2E] px-1 py-0.5 rounded font-medium border border-[#CBD5E1]">
                 X-Chaos-Key
               </code>{" "}
               propagation; linearizable compensations and idempotent rollback invariants remain guaranteed.
@@ -247,7 +253,7 @@ export default function SystemsChaosPage() {
         <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
           <button
             onClick={handleResetAllChaos}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-body-md text-body-md font-medium shadow-xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white font-body-md text-body-md font-medium shadow-xs transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">restart_alt</span>
             <span>Clear All Active Chaos ({systems.length} Services)</span>
@@ -260,16 +266,16 @@ export default function SystemsChaosPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-mono">
+              <span className="text-[11px] uppercase tracking-wider text-[#64748B] font-mono font-semibold">
                 Cluster Topology: us-east-core
               </span>
-              <span className="text-on-surface-variant/40">/</span>
-              <span className="font-label-sm text-label-sm font-mono text-primary font-semibold">Resilience Engine</span>
+              <span className="text-[#CBD5E1]">/</span>
+              <span className="text-[11px] font-mono text-[#0A1B2E] font-semibold">Resilience Engine</span>
             </div>
-            <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-semibold">
+            <h1 className="text-[24px] font-bold text-[#0A1B2E] tracking-tight">
               Systems &amp; Chaos Injection
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
+            <p className="text-[13px] text-[#64748B]">
               Telemetry status, live bulkhead saturation, and targeted fault injection across telecom microservices
             </p>
           </div>
@@ -281,24 +287,24 @@ export default function SystemsChaosPage() {
                 navigator.clipboard.writeText("make chaos-status");
                 alert("Copied CLI command to clipboard: make chaos-status");
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors cursor-pointer border border-outline-variant/30"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] text-[13px] font-medium transition-colors cursor-pointer border border-[#CBD5E1] shadow-2xs"
             >
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">terminal</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">terminal</span>
               <span className="font-mono">make chaos-status</span>
-              <span className="material-symbols-outlined text-[14px] text-on-surface-variant ml-0.5">content_copy</span>
+              <span className="material-symbols-outlined text-[14px] text-[#94A3B8] ml-0.5">content_copy</span>
             </button>
             <button
               onClick={downloadTopologyJSON}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-surface-container-low text-on-surface font-body-md text-body-md shadow-xs transition-colors cursor-pointer border border-outline-variant/30"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] text-[13px] font-medium shadow-2xs transition-colors cursor-pointer border border-[#CBD5E1]"
             >
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">download</span>
+              <span className="material-symbols-outlined text-[16px] text-[#64748B]">download</span>
               <span>Export Topology JSON</span>
             </button>
             <button
               onClick={handleResetAllChaos}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-error hover:bg-error/90 text-white font-body-md text-body-md font-medium shadow-xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-[#0A1B2E] hover:bg-[#14263b] text-white text-[13px] font-medium shadow-xs transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">power_settings_new</span>
+              <span className="material-symbols-outlined text-[16px]">restart_alt</span>
               <span>Emergency Reset All</span>
             </button>
           </div>
@@ -307,73 +313,61 @@ export default function SystemsChaosPage() {
         {/* Quick Stats Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Stat 1 */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-outline-variant/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-on-surface-variant tracking-wider">
-                Active Faults
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Active Faults
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                {activeFaultsCount} Faults
               </span>
-              <div className="flex items-baseline gap-2">
-                <span className="font-headline-lg text-headline-lg font-bold text-amber-700">
-                  {activeFaultsCount} Faults
-                </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-sm text-label-sm font-semibold">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-600 animate-ping"></span>
-                  Live
-                </span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-amber-50 text-amber-700">
-              <span className="material-symbols-outlined text-[24px]">crisis_alert</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] text-[10px] font-mono font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E] animate-pulse"></span>
+                Live
+              </span>
             </div>
           </div>
 
           {/* Stat 2 */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-outline-variant/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-on-surface-variant tracking-wider">
-                Subsystems Health
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Subsystems Health
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                {healthyCount} / {systems.length}
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-headline-lg text-headline-lg font-bold text-on-surface">
-                  {healthyCount} / {systems.length}
-                </span>
-                <span className="font-body-sm text-body-sm text-emerald-600 font-medium">Nominal (60%)</span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-700">
-              <span className="material-symbols-outlined text-[24px]">verified</span>
+              <span className="text-[11px] font-medium text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-1.5 py-0.5 rounded font-mono">
+                Nominal (60%)
+              </span>
             </div>
           </div>
 
           {/* Stat 3 */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-outline-variant/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-on-surface-variant tracking-wider">
-                Sagas in Blast Radius
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Sagas in Blast Radius
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                4 Orders
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-headline-lg text-headline-lg font-bold text-error">4 Orders</span>
-                <span className="font-body-sm text-body-sm text-amber-700 font-medium">Interception Active</span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-red-50 text-error">
-              <span className="material-symbols-outlined text-[24px]">emergency_heat</span>
+              <span className="text-[11px] font-medium text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-1.5 py-0.5 rounded font-mono">
+                Active Guard
+              </span>
             </div>
           </div>
 
           {/* Stat 4 */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-outline-variant/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="font-label-sm text-label-sm uppercase font-mono text-on-surface-variant tracking-wider">
-                Mean Bulkhead Headroom
+          <div className="bg-white rounded-xl p-3.5 shadow-2xs border border-[#E2E8F0] flex flex-col justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-[#64748B]">
+              Mean Bulkhead Headroom
+            </span>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-[24px] font-bold font-mono text-[#0A1B2E] tracking-tight">
+                54.2%
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-headline-lg text-headline-lg font-bold text-on-surface">54.2%</span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant">29 / 71 slots</span>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg bg-primary-fixed text-primary">
-              <span className="material-symbols-outlined text-[24px]">tune</span>
+              <span className="text-[11px] text-[#64748B] font-mono">29 / 71 slots</span>
             </div>
           </div>
         </div>
@@ -410,52 +404,35 @@ export default function SystemsChaosPage() {
 
                 <div className="p-5 flex flex-col gap-4">
                   {/* Card Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-outline-variant/20">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
                     <div className="flex items-start gap-3">
-                      <span
-                        className={`h-3 w-3 rounded-full mt-1.5 shrink-0 ${
-                          isDegraded
-                            ? sys.id === "network"
-                              ? "bg-error animate-ping"
-                              : "bg-amber-500 animate-pulse"
-                            : "bg-emerald-500"
-                        }`}
-                      ></span>
+                      <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center text-[#0A1B2E] shrink-0 mt-0.5">
+                        <span className="material-symbols-outlined text-[18px] text-[#0A1B2E]">
+                          {sys.icon}
+                        </span>
+                      </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">
+                          <h3 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">
                             {sys.name}
                           </h3>
-                          <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono bg-surface-container text-on-surface-variant font-medium">
+                          <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1] font-medium">
                             :{sys.port}
                           </span>
                           {sys.activeChaos && (
-                            <span
-                              className={`px-2 py-0.5 rounded-full font-label-sm text-label-sm font-mono font-bold ${
-                                sys.id === "network"
-                                  ? "bg-red-100 text-error border border-red-200"
-                                  : "bg-amber-100 text-amber-900 border border-amber-200"
-                              }`}
-                            >
+                            <span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm font-mono font-bold bg-[#0A1B2E] text-white border border-[#0A1B2E] shadow-2xs">
                               CHAOS: {sys.activeChaos.type}
                             </span>
                           )}
                         </div>
-                        <span className="font-body-sm text-body-sm text-on-surface-variant">{sys.protocol}</span>
+                        <span className="font-body-sm text-body-sm text-[#64748B]">{sys.protocol}</span>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={`px-2.5 py-1 rounded-full font-label-sm text-label-sm font-mono font-bold flex items-center gap-1.5 border ${
-                          isDegraded
-                            ? "bg-amber-100 text-amber-900 border-amber-200"
-                            : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        }`}
-                      >
+                      <span className="px-2.5 py-1 rounded-full font-label-sm text-label-sm font-mono font-bold flex items-center gap-1.5 border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            isDegraded ? "bg-amber-600" : "bg-emerald-600"
+                            isDegraded ? "bg-[#0A1B2E]" : "bg-[#0A1B2E]"
                           }`}
                         ></span>
                         {sys.statusText}
@@ -464,124 +441,61 @@ export default function SystemsChaosPage() {
                   </div>
 
                   {/* Telemetry Row */}
-                  <div
-                    className={`grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-lg border ${
-                      isDegraded
-                        ? sys.id === "network"
-                          ? "bg-red-50/40 border-red-200/60"
-                          : "bg-amber-50/40 border-amber-200/60"
-                        : "bg-surface-container-low border-outline-variant/20"
-                    }`}
-                  >
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-lg border bg-[#F8FAFC] border-[#CBD5E1]">
                     <div>
-                      <span
-                        className={`font-label-sm text-label-sm block uppercase font-mono ${
-                          isDegraded && sys.id === "network" ? "text-error font-medium" : "text-on-surface-variant"
-                        }`}
-                      >
+                      <span className="font-label-sm text-label-sm block uppercase font-mono text-[#64748B]">
                         p95 Latency
                       </span>
-                      <span
-                        className={`font-headline-sm text-headline-sm font-mono font-bold ${
-                          isDegraded && sys.id === "network" ? "text-error" : "text-on-surface"
-                        }`}
-                      >
+                      <span className="font-headline-sm text-headline-sm font-mono font-bold text-[#0A1B2E]">
                         {sys.p95Latency}
                       </span>
-                      <span
-                        className={`font-body-sm text-body-sm block ${
-                          isDegraded
-                            ? sys.id === "network"
-                              ? "text-error font-semibold flex items-center gap-0.5"
-                              : "text-on-surface-variant"
-                            : "text-emerald-600"
-                        }`}
-                      >
-                        {isDegraded && sys.id === "network" && (
-                          <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
-                        )}
+                      <span className="font-body-sm text-body-sm block text-[#64748B]">
                         {sys.latencyDiff}
                       </span>
                     </div>
 
                     <div>
-                      <span
-                        className={`font-label-sm text-label-sm block uppercase font-mono ${
-                          isDegraded ? "text-error font-medium" : "text-on-surface-variant"
-                        }`}
-                      >
+                      <span className="font-label-sm text-label-sm block uppercase font-mono text-[#64748B]">
                         Error Rate
                       </span>
-                      <span
-                        className={`font-headline-sm text-headline-sm font-mono font-bold ${
-                          isDegraded ? "text-error" : "text-on-surface"
-                        }`}
-                      >
+                      <span className="font-headline-sm text-headline-sm font-mono font-bold text-[#0A1B2E]">
                         {sys.errorRate}
                       </span>
-                      <span
-                        className={`font-body-sm text-body-sm block ${
-                          isDegraded ? "text-amber-800 font-medium" : "text-emerald-600"
-                        }`}
-                      >
+                      <span className="font-body-sm text-body-sm block text-[#64748B]">
                         {sys.errorNote}
                       </span>
                     </div>
 
                     <div>
-                      <span className="font-label-sm text-label-sm text-on-surface-variant block uppercase font-mono">
+                      <span className="font-label-sm text-label-sm text-[#64748B] block uppercase font-mono">
                         Circuit Breaker
                       </span>
                       <div className="mt-1">
-                        <span
-                          className={`px-2 py-0.5 rounded-full font-label-sm text-label-sm font-mono font-bold border ${
-                            isDegraded
-                              ? "bg-amber-100 text-amber-900 border-amber-200"
-                              : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                          }`}
-                        >
+                        <span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm font-mono font-bold border bg-white text-[#0A1B2E] border-[#CBD5E1] shadow-2xs">
                           {sys.circuitBreaker}
                         </span>
                       </div>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">
+                      <span className="font-body-sm text-body-sm text-[#64748B] block mt-0.5">
                         {sys.breakerNote}
                       </span>
                     </div>
 
                     <div>
                       <div className="flex items-center justify-between">
-                        <span
-                          className={`font-label-sm text-label-sm uppercase font-mono ${
-                            isDegraded && sys.id === "network" ? "text-error font-semibold" : "text-on-surface-variant"
-                          }`}
-                        >
+                        <span className="font-label-sm text-label-sm uppercase font-mono text-[#64748B]">
                           Bulkhead Pool
                         </span>
-                        <span
-                          className={`font-label-sm text-label-sm font-mono font-bold ${
-                            isDegraded && sys.id === "network" ? "text-error" : "text-on-surface"
-                          }`}
-                        >
+                        <span className="font-label-sm text-label-sm font-mono font-bold text-[#0A1B2E]">
                           {sys.bulkheadUsed} / {sys.bulkheadTotal}
                         </span>
                       </div>
-                      <div className="w-full bg-surface-container-highest rounded-full h-2 mt-1.5 overflow-hidden">
+                      <div className="w-full bg-[#E2E8F0] rounded-full h-2 mt-1.5 overflow-hidden">
                         <div
-                          className={`h-2 rounded-full ${
-                            isDegraded
-                              ? sys.id === "network"
-                                ? "bg-error"
-                                : "bg-amber-500"
-                              : "bg-primary"
-                          }`}
+                          className="h-2 rounded-full bg-[#0A1B2E]"
                           style={{ width: `${(sys.bulkheadUsed / sys.bulkheadTotal) * 100}%` }}
                         ></div>
                       </div>
-                      <span
-                        className={`font-body-sm text-body-sm block mt-1 ${
-                          isDegraded && sys.id === "network" ? "text-error font-semibold" : "text-on-surface-variant"
-                        }`}
-                      >
+                      <span className="font-body-sm text-body-sm block mt-1 text-[#64748B]">
                         {sys.bulkheadNote}
                       </span>
                     </div>
@@ -698,43 +612,43 @@ export default function SystemsChaosPage() {
 
         {/* RIGHT COLUMN: 4 COLS BLAST RADIUS DRAWER (STICKY) */}
         <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
-          <div className="bg-white rounded-xl shadow-md p-5 space-y-4 border border-outline-variant/30">
+          <div className="bg-white rounded-xl shadow-2xs p-5 space-y-4 border border-[#CBD5E1]">
             {/* Drawer Header */}
-            <div className="flex items-start justify-between pb-3 border-b border-outline-variant/20">
+            <div className="flex items-start justify-between pb-3 border-b border-[#E2E8F0]">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-red-100 text-error">
-                    <span className="material-symbols-outlined text-[20px]">shield_with_heart</span>
+                  <span className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0A1B2E]">
+                    <span className="material-symbols-outlined text-[18px]">shield</span>
                   </span>
-                  <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">
+                  <h2 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">
                     Blast Radius
                   </h2>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                <p className="font-body-sm text-body-sm text-[#64748B]">
                   In-flight transactions traversing degraded nodes
                 </p>
               </div>
-              <span className="px-2.5 py-1 rounded-full font-label-sm text-label-sm font-mono font-bold bg-red-100 text-error border border-red-200">
+              <span className="px-2.5 py-1 rounded-full font-label-sm text-label-sm font-mono font-bold bg-[#0A1B2E] text-white border border-[#0A1B2E] shadow-2xs">
                 4 Orders At Risk
               </span>
             </div>
 
             {/* Tag Strip of Impacted Nodes */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-50 text-error font-label-sm text-label-sm font-mono font-medium border border-red-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-error"></span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white text-[#0A1B2E] font-label-sm text-label-sm font-mono font-medium border border-[#CBD5E1] shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
                 Network:8103 (Jitter+504)
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 font-label-sm text-label-sm font-mono font-medium border border-amber-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-600"></span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white text-[#0A1B2E] font-label-sm text-label-sm font-mono font-medium border border-[#CBD5E1] shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#64748B]"></span>
                 Billing:8104 (409 Error)
               </span>
             </div>
 
             {/* Explanatory Guard Banner */}
-            <div className="bg-surface-container-low p-3 rounded-lg text-on-surface-variant font-body-sm text-body-sm leading-relaxed border border-outline-variant/20">
-              <div className="flex items-center gap-1.5 text-on-surface font-semibold mb-1">
-                <span className="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+            <div className="bg-[#F8FAFC] p-3 rounded-lg text-[#64748B] font-body-sm text-body-sm leading-relaxed border border-[#E2E8F0]">
+              <div className="flex items-center gap-1.5 text-[#0A1B2E] font-semibold mb-1">
+                <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">verified_user</span>
                 Automated Saga Interception Active
               </div>
               Orders currently executing sagas that touch degraded downstream providers. SwitchOn circuit breakers and rollback compensations are actively safeguarding order state.
@@ -743,36 +657,36 @@ export default function SystemsChaosPage() {
             {/* List of In-Flight Exposed Orders */}
             <div className="space-y-3 pt-1">
               {/* Order 1: High Risk */}
-              <div className="p-3.5 rounded-lg bg-red-50/50 shadow-xs space-y-2 border border-red-200/60">
+              <div className="p-3.5 rounded-lg bg-white shadow-2xs space-y-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-label-md text-label-md font-mono text-on-surface font-bold">
+                    <span className="font-label-md text-label-md font-mono text-[#0A1B2E] font-bold">
                       ORD-20260712-004217
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-bold bg-red-100 text-error">
+                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-bold bg-[#0A1B2E] text-white">
                     CRITICAL SLA RISK
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+                <div className="flex items-center justify-between text-[#64748B] font-body-sm text-body-sm">
                   <span>
-                    Customer: <strong className="text-on-surface font-medium">Marcus Vance</strong>
+                    Customer: <strong className="text-[#0A1B2E] font-medium">Marcus Vance</strong>
                   </span>
-                  <span className="font-mono text-primary">Fiber 500</span>
+                  <span className="font-mono text-[#0A1B2E]">Fiber 500</span>
                 </div>
-                <div className="text-on-surface-variant font-body-sm text-body-sm">
-                  <span className="font-medium text-on-surface">Step 4/8:</span> HLR Network Slice Provisioning
+                <div className="text-[#64748B] font-body-sm text-body-sm">
+                  <span className="font-medium text-[#0A1B2E]">Step 4/8:</span> HLR Network Slice Provisioning
                 </div>
-                <div className="p-2 rounded bg-white text-on-surface font-body-sm text-body-sm border border-red-100">
-                  <p className="text-error font-medium flex items-center gap-1">
+                <div className="p-2 rounded bg-[#F8FAFC] text-[#0A1B2E] font-body-sm text-body-sm border border-[#CBD5E1]">
+                  <p className="text-[#0A1B2E] font-medium flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">timer_off</span>
                     Timeout at 2.4s (Breaker retry 2/3)
                   </p>
-                  <p className="text-on-surface-variant mt-0.5">Compensation saga ready if retry budget expires.</p>
+                  <p className="text-[#64748B] mt-0.5">Compensation saga ready if retry budget expires.</p>
                 </div>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004217"
                   >
                     Inspect Order Trace
@@ -782,30 +696,30 @@ export default function SystemsChaosPage() {
               </div>
 
               {/* Order 2: Moderate Risk */}
-              <div className="p-3.5 rounded-lg bg-white shadow-xs space-y-2 border border-outline-variant/30">
+              <div className="p-3.5 rounded-lg bg-white shadow-2xs space-y-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
-                  <span className="font-label-md text-label-md font-mono text-on-surface font-bold">
+                  <span className="font-label-md text-label-md font-mono text-[#0A1B2E] font-bold">
                     ORD-20260712-004219
                   </span>
-                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-bold bg-amber-100 text-amber-900">
+                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-semibold bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
                     MODERATE - RETRYING
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+                <div className="flex items-center justify-between text-[#64748B] font-body-sm text-body-sm">
                   <span>
-                    Customer: <strong className="text-on-surface font-medium">Acme Telecom Corp</strong>
+                    Customer: <strong className="text-[#0A1B2E] font-medium">Acme Telecom Corp</strong>
                   </span>
-                  <span className="font-mono text-primary">10x 5G eSIM</span>
+                  <span className="font-mono text-[#0A1B2E]">10x 5G eSIM</span>
                 </div>
-                <div className="text-on-surface-variant font-body-sm text-body-sm">
-                  <span className="font-medium text-on-surface">Step 5/8:</span> OCS Billing Profile Binding
+                <div className="text-[#64748B] font-body-sm text-body-sm">
+                  <span className="font-medium text-[#0A1B2E]">Step 5/8:</span> OCS Billing Profile Binding
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-low p-2 rounded">
+                <p className="font-body-sm text-body-sm text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] p-2 rounded">
                   Hit 409 quota lock contention. Exponential jitter backoff active (800ms slot backoff).
                 </p>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004219"
                   >
                     Inspect Order Trace
@@ -815,30 +729,30 @@ export default function SystemsChaosPage() {
               </div>
 
               {/* Order 3: Queued */}
-              <div className="p-3.5 rounded-lg bg-white shadow-xs space-y-2 border border-outline-variant/30">
+              <div className="p-3.5 rounded-lg bg-white shadow-2xs space-y-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
-                  <span className="font-label-md text-label-md font-mono text-on-surface font-bold">
+                  <span className="font-label-md text-label-md font-mono text-[#0A1B2E] font-bold">
                     ORD-20260712-004222
                   </span>
-                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-bold bg-surface-container-highest text-on-surface-variant">
+                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-semibold bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
                     QUEUED IN BULKHEAD
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+                <div className="flex items-center justify-between text-[#64748B] font-body-sm text-body-sm">
                   <span>
-                    Customer: <strong className="text-on-surface font-medium">Elena Rostova</strong>
+                    Customer: <strong className="text-[#0A1B2E] font-medium">Elena Rostova</strong>
                   </span>
-                  <span className="font-mono text-primary">Fiber 1000</span>
+                  <span className="font-mono text-[#0A1B2E]">Fiber 1000</span>
                 </div>
-                <div className="text-on-surface-variant font-body-sm text-body-sm">
-                  <span className="font-medium text-on-surface">Step 3/8:</span> Port Allocation (Queued for HLR)
+                <div className="text-[#64748B] font-body-sm text-body-sm">
+                  <span className="font-medium text-[#0A1B2E]">Step 3/8:</span> Port Allocation (Queued for HLR)
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-low p-2 rounded">
+                <p className="font-body-sm text-body-sm text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] p-2 rounded">
                   Waiting on HLR gateway slot (9/10 saturated). Bulkhead queue wait time: ~1.2s.
                 </p>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004222"
                   >
                     Inspect Order Trace
@@ -848,30 +762,30 @@ export default function SystemsChaosPage() {
               </div>
 
               {/* Order 4: Circuit Breaker Isolated */}
-              <div className="p-3.5 rounded-lg bg-white shadow-xs space-y-2 border border-outline-variant/30">
+              <div className="p-3.5 rounded-lg bg-white shadow-2xs space-y-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
-                  <span className="font-label-md text-label-md font-mono text-on-surface font-bold">
+                  <span className="font-label-md text-label-md font-mono text-[#0A1B2E] font-bold">
                     ORD-20260712-004225
                   </span>
-                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-bold bg-amber-100 text-amber-900">
+                  <span className="px-2 py-0.5 rounded font-label-sm text-label-sm font-mono font-semibold bg-[#F1F5F9] text-[#0A1B2E] border border-[#CBD5E1]">
                     BREAKER ISOLATED
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+                <div className="flex items-center justify-between text-[#64748B] font-body-sm text-body-sm">
                   <span>
-                    Customer: <strong className="text-on-surface font-medium">Devon Park</strong>
+                    Customer: <strong className="text-[#0A1B2E] font-medium">Devon Park</strong>
                   </span>
-                  <span className="font-mono text-primary">eSIM Roaming</span>
+                  <span className="font-mono text-[#0A1B2E]">eSIM Roaming</span>
                 </div>
-                <div className="text-on-surface-variant font-body-sm text-body-sm">
-                  <span className="font-medium text-on-surface">Step 4/8:</span> HLR QoS Rule Apply
+                <div className="text-[#64748B] font-body-sm text-body-sm">
+                  <span className="font-medium text-[#0A1B2E]">Step 4/8:</span> HLR QoS Rule Apply
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-low p-2 rounded">
+                <p className="font-body-sm text-body-sm text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] p-2 rounded">
                   Circuit breaker tripped to HALF-OPEN. Sagas safely diverted into fallback tombstone reconciliation.
                 </p>
                 <div className="flex justify-end pt-1">
                   <Link
-                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-label-sm text-label-sm font-semibold font-mono"
+                    className="inline-flex items-center gap-1 text-[#0A1B2E] hover:underline font-label-sm text-label-sm font-semibold font-mono"
                     href="/orders/ORD-20260712-004225"
                   >
                     Inspect Order Trace
@@ -882,20 +796,20 @@ export default function SystemsChaosPage() {
             </div>
 
             {/* Deterministic Chaos Formal Assertion Box */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-surface-container-low to-surface-container text-on-surface space-y-2 border border-outline-variant/30">
+            <div className="p-4 rounded-xl bg-white text-[#0A1B2E] space-y-2 border border-[#CBD5E1] shadow-2xs">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">verified</span>
-                <h4 className="font-headline-sm text-headline-sm font-bold text-on-surface">
+                <span className="material-symbols-outlined text-[#0A1B2E] text-[20px]">verified</span>
+                <h4 className="font-headline-sm text-headline-sm font-bold text-[#0A1B2E]">
                   Deterministic Chaos Assertion
                 </h4>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              <p className="font-body-sm text-body-sm text-[#64748B] leading-relaxed">
                 All faults verified against formal TLA+ specifications. Even under 100% downstream network drop or catastrophic provider timeout,{" "}
-                <strong>zero ghost billings or orphaned telecom port allocations</strong> will occur.
+                <strong className="text-[#0A1B2E]">zero ghost billings or orphaned telecom port allocations</strong> will occur.
               </p>
-              <div className="pt-1 flex items-center justify-between font-label-sm text-label-sm font-mono text-on-surface-variant">
+              <div className="pt-1 flex items-center justify-between font-label-sm text-label-sm font-mono text-[#64748B]">
                 <span>Model Proof: checked (34,190 states)</span>
-                <span className="text-emerald-700 font-semibold">TLA+ PASS</span>
+                <span className="text-[#0A1B2E] font-semibold">TLA+ PASS</span>
               </div>
             </div>
           </div>

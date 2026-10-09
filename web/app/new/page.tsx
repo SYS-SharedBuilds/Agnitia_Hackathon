@@ -8,94 +8,305 @@ export default function NewOrderPage() {
   const router = useRouter();
   const [showToast, setShowToast] = useState(true);
   const [productType, setProductType] = useState<"fiber" | "5g" | "esim">("fiber");
-  const [fullName, setFullName] = useState("Marcus Vance");
-  const [email, setEmail] = useState("m.vance@vancetech.io");
-  const [msisdn, setMsisdn] = useState("555 019-4821");
-  const [ratePlan, setRatePlan] = useState("Fiber Broadband 500 (500 Mbps Symmetrical · $65/mo)");
-  const [streetAddress, setStreetAddress] = useState("742 Evergreen Terrace, Suite 400");
-  const [city, setCity] = useState("Springfield");
-  const [state, setState] = useState("OR");
-  const [zip, setZip] = useState("97477");
-  const [simIccid, setSimIccid] = useState("890141032111");
-  const [deviceImei, setDeviceImei] = useState("354892091248102");
-  const [clientRef, setClientRef] = useState("EXT-CRM-991024");
+  const [fullName, setFullName] = useState("Aarav Sharma");
+  const [email, setEmail] = useState("aarav.sharma@airtelmail.in");
+  const [msisdn, setMsisdn] = useState("98201 54821");
+  const [ratePlan, setRatePlan] = useState("JioFiber Ultra 500 (500 Mbps Symmetrical · ₹1,499/mo)");
+  const [streetAddress, setStreetAddress] = useState("Flat 402, Godrej Woods, Sector 43");
+  const [city, setCity] = useState("Noida");
+  const [district, setDistrict] = useState("Gautam Buddha Nagar");
+  const [state, setState] = useState("Uttar Pradesh");
+  const [zip, setZip] = useState("201303");
+  const [simIccid, setSimIccid] = useState("89918603211123456780");
+  const [deviceImei, setDeviceImei] = useState("864892091248102");
+  const [clientRef, setClientRef] = useState(() => `EXT-CRM-${Math.floor(100000 + Math.random() * 900000)}`);
   const [activationTiming, setActivationTiming] = useState<"immediate" | "scheduled">("immediate");
-  const [activationDate, setActivationDate] = useState("2026-07-12 15:00:00 UTC");
-  const [chaosTarget, setChaosTarget] = useState("hlr");
+  const [activationDate, setActivationDate] = useState("2026-07-12 15:00:00 IST");
+  const [chaosTarget, setChaosTarget] = useState("none");
   const [chaosFault, setChaosFault] = useState("HTTP 504 Timeout after 5 retries");
-  const [chaosSeed, setChaosSeed] = useState("chaos-seed-9921");
+  const [chaosSeed, setChaosSeed] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[]>([
-    "device.iccid: Invalid checksum or length for E.118 SIM identifier (expected 19-20 digits starting with 89)",
-    "client_reference: Key format requires prefix EXT- or CRM-",
-  ]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Indian States & Union Territories with popular telecom circles/districts
+  const INDIAN_STATES_DISTRICTS: Record<string, string[]> = {
+    "Uttar Pradesh": ["Gautam Buddha Nagar (Noida)", "Ghaziabad", "Lucknow", "Kanpur Nagar", "Varanasi", "Agra", "Prayagraj"],
+    "Maharashtra": ["Mumbai Suburban", "Mumbai City", "Pune", "Thane", "Nagpur", "Nashik", "Aurangabad"],
+    "Karnataka": ["Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Dakshina Kannada (Mangaluru)", "Hubballi-Dharwad"],
+    "Delhi NCT": ["New Delhi", "South Delhi", "Central Delhi", "North Delhi", "West Delhi", "East Delhi"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Kanchipuram"],
+    "Telangana": ["Hyderabad", "Rangareddy", "Medchal-Malkajgiri", "Warangal", "Sangareddy"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar"],
+    "West Bengal": ["Kolkata", "North 24 Parganas", "South 24 Parganas", "Howrah", "Darjeeling"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer"],
+    "Haryana": ["Gurugram", "Faridabad", "Panchkula", "Ambala", "Karnal"],
+    "Kerala": ["Ernakulam (Kochi)", "Thiruvananthapuram", "Kozhikode", "Thrissur"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "SAS Nagar (Mohali)"],
+    "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur"],
+    "Bihar": ["Patna", "Gaya", "Muzaffarpur", "Bhagalpur"],
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Tirupati"],
+  };
 
   const fillPreset = (type: "fiber" | "5g" | "esim") => {
     setProductType(type);
     if (type === "fiber") {
-      setFullName("Marcus Vance");
-      setEmail("m.vance@vancetech.io");
-      setSimIccid("89014103211123456780");
+      setFullName("Aarav Sharma");
+      setEmail("aarav.sharma@airtelmail.in");
+      setMsisdn("98201 54821");
+      setStreetAddress("Flat 402, Godrej Woods, Sector 43");
+      setCity("Noida");
+      setDistrict("Gautam Buddha Nagar (Noida)");
+      setState("Uttar Pradesh");
+      setZip("201303");
+      setSimIccid("89918603211123456780");
       setClientRef("EXT-CRM-991024");
       setValidationErrors([]);
     } else if (type === "5g") {
-      setFullName("Apex Logistics LLC");
-      setEmail("ops@apexlogistics.net");
-      setSimIccid("89012604928193847291");
+      setFullName("Tata Consultancy Logistics LLP");
+      setEmail("ops@tataclg.co.in");
+      setMsisdn("98110 88401");
+      setStreetAddress("Plot 14, Phase 3, Hinjawadi Rajiv Gandhi Infotech Park");
+      setCity("Pune");
+      setDistrict("Pune");
+      setState("Maharashtra");
+      setZip("411057");
+      setSimIccid("89910204928193847291");
       setClientRef("EXT-5G-884019");
       setValidationErrors([]);
     } else if (type === "esim") {
-      setFullName("Elena Rostova");
-      setEmail("elena.rostova@globemail.org");
-      setSimIccid("89044021992019482012");
+      setFullName("Priya Venkatesh");
+      setEmail("priya.venkatesh@infosys.com");
+      setMsisdn("97422 00412");
+      setStreetAddress("32, 100 Feet Road, Indiranagar");
+      setCity("Bengaluru");
+      setDistrict("Bengaluru Urban");
+      setState("Karnataka");
+      setZip("560038");
+      setSimIccid("89914402199201948201");
       setClientRef("CRM-ESIM-00412");
       setValidationErrors([]);
     }
   };
 
-  const handleValidate = () => {
+  const [validatedSuccess, setValidatedSuccess] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+
+  // Product specific rate plans in Indian Telecom Context (₹ INR)
+  const PRODUCT_RATE_PLANS: Record<"fiber" | "5g" | "esim", { plans: string[]; sla: string; tier: string; badge: string }> = {
+    fiber: {
+      plans: [
+        "Airtel Xstream / JioFiber 300 Mbps (Unlimited Data · ₹999/mo + GST)",
+        "JioFiber Ultra 500 (500 Mbps Symmetrical · ₹1,499/mo)",
+        "Tata Play Fiber GigaPro (1000 Mbps Dedicated IP · ₹3,499/mo)",
+      ],
+      sla: "SLA: p99 latency < 8ms · 99.98% Fiber Availability",
+      tier: "Broadband Core",
+      badge: "FTTH GPON/XGS-PON",
+    },
+    "5g": {
+      plans: [
+        "Jio True5G / Airtel 5G Plus Postpaid (Unlimited 5G Data · ₹699/mo)",
+        "Enterprise 5G Network Slice (Guaranteed 250Mbps QoS · ₹2,499/mo)",
+        "Vi / Airtel IoT M2M Smart Metering (1GB Telemetry Pool · ₹149/mo)",
+      ],
+      sla: "SLA: 5QI-9 Low-Latency QoS Profile · VoNR Enabled",
+      tier: "5G SA Slice",
+      badge: "5G SA Core (HLR/HSS)",
+    },
+    esim: {
+      plans: [
+        "eSIM International Roaming Global Pass (10GB High-Speed · ₹2,999/pack)",
+        "eSIM Smartwatch Multi-SIM OneNumber Sharing (₹199/mo)",
+        "eSIM Instant Data Booster (15-Day Roam Pack · ₹1,499)",
+      ],
+      sla: "SLA: Instant GSMA RSP SM-DP+ Profile Delivery < 5s",
+      tier: "GSMA RSP v3",
+      badge: "SM-DP+ Remote Provisioning",
+    },
+  };
+
+  const handleProductChange = (type: "fiber" | "5g" | "esim") => {
+    setProductType(type);
+    setRatePlan(PRODUCT_RATE_PLANS[type].plans[0]);
+    setValidatedSuccess(false);
+    setValidationErrors([]);
+  };
+
+  // Pure sync validation — no DOM side-effects. Used by both handleValidate and handleSubmit.
+  const runValidation = (): { errs: string[]; errorsMap: Record<string, string> } => {
     const errs: string[] = [];
-    if (simIccid.length < 19) {
-      errs.push("device.iccid: Invalid checksum or length for E.118 SIM identifier (expected 19-20 digits starting with 89)");
+    const errorsMap: Record<string, string> = {};
+
+    if (!fullName.trim()) {
+      errs.push("customer_id: Customer full legal name or ID is required");
+      errorsMap.fullName = "Full Legal Name is required";
     }
-    if (!clientRef.startsWith("EXT-") && !clientRef.startsWith("CRM-")) {
-      errs.push("client_reference: Key format requires prefix EXT- or CRM-");
+    if (!email.trim() || !email.includes("@")) {
+      errs.push("email: Valid billing / service email address is required");
+      errorsMap.email = "Valid email address required";
     }
-    setValidationErrors(errs);
+    const cleanMsisdn = msisdn.replace(/\D/g, "");
+    if (!cleanMsisdn || cleanMsisdn.length < 10) {
+      errs.push("msisdn: Target phone MSISDN must contain 10 digits (e.g., 98201 54821)");
+      errorsMap.msisdn = "Valid 10-digit mobile number required";
+    }
+    if (productType === "fiber") {
+      if (!streetAddress.trim()) {
+        errs.push("site_address: Flat / House / Street address is required for FTTH physical drop & ONT installation");
+        errorsMap.streetAddress = "Street address required for Fiber";
+      }
+      if (!city.trim()) {
+        errs.push("site_city: City / Town is required for terminal ODF cross-connect matching");
+        errorsMap.city = "City required";
+      }
+      if (!district.trim()) {
+        errs.push("site_district: District / Telecom Circle is required");
+        errorsMap.district = "District required";
+      }
+      if (!state.trim()) {
+        errs.push("site_state: State / UT is required");
+        errorsMap.state = "State required";
+      }
+      const cleanZip = zip.replace(/\D/g, "");
+      if (!cleanZip || cleanZip.length !== 6) {
+        errs.push("site_zip: Indian PIN Code must be exactly 6 digits (e.g. 201303, 560038)");
+        errorsMap.zip = "Valid 6-digit PIN Code required";
+      }
+    }
+    const cleanIccid = simIccid.replace(/\s+/g, "");
+    if (!cleanIccid || cleanIccid.length < 18 || cleanIccid.length > 22 || !/^\d+$/.test(cleanIccid)) {
+      errs.push("iccid: Invalid E.118 SIM identifier (expected 18-22 digits starting with 89)");
+      errorsMap.simIccid = "Must be 18-22 digits starting with 89";
+    } else if (!cleanIccid.startsWith("89")) {
+      errs.push("iccid: E.118 SIM identifier must begin with telecom prefix '89'");
+      errorsMap.simIccid = "Must begin with prefix 89";
+    }
+    if (!clientRef.trim()) {
+      errs.push("client_order_ref: Missing client order reference (Idempotency Key)");
+      errorsMap.clientRef = "Client order reference required";
+    } else if (clientRef.length > 128) {
+      errs.push("client_order_ref: Maximum length is 128 characters");
+      errorsMap.clientRef = "Maximum 128 characters";
+    }
+    return { errs, errorsMap };
+  };
+
+  const handleValidate = () => {
+    const { errs, errorsMap } = runValidation();
+
+    setIsValidating(true);
+    setTimeout(() => {
+      setIsValidating(false);
+      if (errs.length > 0) {
+        setValidationErrors(errs);
+        setValidatedSuccess(false);
+
+        // Focus first invalid input field and scroll to error banner
+        const firstKey = Object.keys(errorsMap)[0];
+        if (firstKey === "fullName") document.getElementById("cust-fullname")?.focus();
+        else if (firstKey === "email") document.getElementById("cust-email")?.focus();
+        else if (firstKey === "msisdn") document.getElementById("cust-msisdn")?.focus();
+        else if (firstKey === "streetAddress") document.getElementById("site-address")?.focus();
+        else if (firstKey === "simIccid") document.getElementById("sim-iccid")?.focus();
+        else if (firstKey === "clientRef") document.getElementById("client-ref")?.focus();
+
+        document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        setValidationErrors([]);
+        setValidatedSuccess(true);
+        // No scroll on success — user is already looking at the submit button area
+      }
+    }, 250);
+
+    return errs.length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+
+    const { errs } = runValidation();
+    if (errs.length > 0) {
+      setValidationErrors(errs);
+      setValidatedSuccess(false);
+      document.getElementById("validation-feedback-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const cleanIccid = simIccid.replace(/\s+/g, "");
       const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const productCode = productType === "fiber" ? "FIBER_500" : productType === "5g" ? "MOBILE_5G" : "ESIM_ADDON";
+      const fullAddress = productType === "fiber"
+        ? `${streetAddress}, ${city}, Dist: ${district}, ${state} - ${zip}, India`
+        : undefined;
+
+      // If user selected a chaos target, configure the corresponding mock subsystem
+      if (chaosTarget !== "none") {
+        const portMap: Record<string, number> = { hlr: 8103, ocs: 8104, inv: 8102 };
+        const mockPort = portMap[chaosTarget];
+        if (mockPort) {
+          try {
+            const mode = "always_fail";
+            let status = 500;
+            if (chaosFault.includes("504")) {
+              status = 504;
+            } else if (chaosFault.includes("500")) {
+              status = 500;
+            }
+            await fetch(`http://localhost:${mockPort}/admin/chaos`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode,
+                status,
+                match_action: chaosTarget === "hlr" ? "provision" : chaosTarget === "ocs" ? "start_charging" : "reserve",
+              }),
+            });
+          } catch {
+            console.warn("Could not set mock chaos directly, relying on chaos_key");
+          }
+        }
+      } else {
+        // Clear chaos across mocks if nominal execution selected
+        for (const port of [8101, 8102, 8103, 8104, 8105]) {
+          fetch(`http://localhost:${port}/admin/chaos`, { method: "DELETE" }).catch(() => {});
+        }
+      }
+
       const res = await fetch(`${apiHost}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_id: fullName,
-          product_id: productType === "fiber" ? "Fiber Broadband 500" : productType === "5g" ? "5G Postpaid Unlimited" : "eSIM Roaming Global",
-          idempotency_key: clientRef,
-          payload: {
-            email,
-            msisdn: `+1 ${msisdn}`,
-            address: `${streetAddress}, ${city}, ${state} ${zip}`,
-            iccid: simIccid,
-            imei: deviceImei,
-            chaos_target: chaosTarget,
-            chaos_fault: chaosFault,
-            chaos_seed: chaosSeed,
-          },
+          client_order_ref: clientRef.trim(),
+          customer_id: fullName.trim(),
+          product: productCode,
+          plan_name: ratePlan,
+          site_address: fullAddress,
+          device_id: deviceImei.trim() || undefined,
+          msisdn: `+91 ${msisdn.trim()}`,
+          iccid: cleanIccid,
+          engine: "temporal",
+          chaos_key: chaosSeed.trim() || undefined,
         }),
       });
       if (res.ok) {
         const data = await res.json();
-        router.push(`/orders/${data.order_id || "ORD-20260712-004218"}`);
+        if (data.order_id) {
+          router.push(`/orders/${data.order_id}`);
+        } else {
+          router.push("/orders");
+        }
       } else {
-        router.push("/orders/ORD-20260712-004218");
+        const errorData = await res.json().catch(() => null);
+        const errMsg = errorData?.detail || "Order submission failed";
+        setValidationErrors([typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg)]);
+        setValidatedSuccess(false);
       }
-    } catch {
-      router.push("/orders/ORD-20260712-004218");
+    } catch (err: unknown) {
+      setValidationErrors([err instanceof Error ? err.message : "Failed to connect to order API"]);
+      setValidatedSuccess(false);
     } finally {
       setSubmitting(false);
     }
@@ -105,24 +316,24 @@ export default function NewOrderPage() {
     <div className="flex flex-col w-full">
       {/* FLOATING GLOBAL TOAST NOTIFICATION */}
       {showToast && (
-        <aside aria-label="Order status alert" className="w-full mb-5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg p-3.5 shadow-sm transition-all duration-200">
+        <aside aria-label="Order status alert" className="w-full mb-5 bg-white border border-[#CBD5E1] rounded-lg p-3.5 shadow-2xs transition-all duration-200">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-[#DCFCE7] flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[#16A34A] text-[20px]">check_circle</span>
+              <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[#0A1B2E] text-[20px]">check_circle</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5 min-w-0">
-                <span className="font-headline-sm text-headline-sm text-[#14532D] whitespace-nowrap">Order Accepted — 202 Accepted</span>
-                <span className="hidden sm:inline text-[#86EFAC]">•</span>
-                <span className="font-label-md text-label-md text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded font-mono">ORD-20260712-004218</span>
-                <span className="hidden md:inline text-body-sm font-body-sm text-[#166534] truncate">
-                  Saga execution initiated on Temporal cluster <span className="font-label-sm font-mono text-[#14532D]">prod-us-east-4</span>
+                <span className="font-headline-sm text-headline-sm text-[#0A1B2E] whitespace-nowrap font-bold">Order Accepted — 202 Accepted</span>
+                <span className="hidden sm:inline text-[#CBD5E1]">•</span>
+                <span className="font-label-md text-label-md text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded font-mono font-semibold">ORD-20260712-004218</span>
+                <span className="hidden md:inline text-body-sm font-body-sm text-[#64748B] truncate">
+                  Saga execution initiated on Temporal cluster <span className="font-label-sm font-mono text-[#0A1B2E]">prod-in-central-1 (Mumbai)</span>
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link
-                className="inline-flex items-center gap-1 text-[#4F46E5] hover:text-[#3730A3] bg-white border border-[#C7D2FE] px-3 py-1.5 rounded-lg text-body-sm font-body-sm shadow-xs transition-colors"
+                className="inline-flex items-center gap-1 text-white bg-[#0A1B2E] hover:bg-[#14263b] px-3 py-1.5 rounded-lg text-body-sm font-body-sm shadow-xs transition-colors font-medium"
                 href="/orders/ORD-20260712-004218"
               >
                 <span>Open live view</span>
@@ -130,7 +341,7 @@ export default function NewOrderPage() {
               </Link>
               <button
                 aria-label="Dismiss banner"
-                className="p-1 text-[#15803D] hover:text-[#14532D] hover:bg-[#DCFCE7] rounded transition-colors"
+                className="p-1 text-[#64748B] hover:text-[#0A1B2E] hover:bg-[#F1F5F9] rounded transition-colors"
                 onClick={() => setShowToast(false)}
                 type="button"
               >
@@ -141,13 +352,40 @@ export default function NewOrderPage() {
         </aside>
       )}
 
+      {/* REGISTRAR DE-CLUTTER NOTICE */}
+      <div className="mb-5 bg-sky-50 border border-sky-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sky-950 shadow-2xs">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <span className="material-symbols-outlined text-[20px]">badge</span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm">Retail Subscriber &amp; Partner Registration Moved</span>
+              <span className="text-[10.5px] font-mono font-semibold bg-sky-200/80 text-sky-800 px-2 py-0.5 rounded-full">
+                USER PORTAL
+              </span>
+            </div>
+            <p className="text-xs text-sky-800 mt-0.5">
+              Subscriber onboarding, E.118 SIM assignment, and scenario error simulations are managed in the Registrar Portal.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/registrar/new-order"
+          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+        >
+          <span>Open Registrar Portal</span>
+          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </Link>
+      </div>
+
       {/* MAIN TWO-COLUMN WORKSPACE (12-COL GRID) */}
       <div className="grid grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: STEPPED ORDER CREATION FORM (7 COLS) */}
         <div className="col-span-12 lg:col-span-7 flex flex-col gap-6">
           <section className="bg-surface-container-lowest rounded-xl p-6 sm:p-7 shadow-sm border border-[#E3E8F0]">
             {/* Header */}
-            <div className="mb-5">
+            <div className="mb-5" id="validation-feedback-anchor">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-secondary-container bg-surface-container px-2 py-0.5 rounded">
                   Orchestration Intent
@@ -162,31 +400,51 @@ export default function NewOrderPage() {
 
             {/* RFC-7807 Summary Banner (Conditional) */}
             {validationErrors.length > 0 && (
-              <div className="mb-7 bg-[#FEF2F2] border border-[#FECACA] rounded-lg p-4">
+              <div className="mb-7 bg-white border border-[#0A1B2E] rounded-lg p-4 shadow-2xs">
                 <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[#DC2626] text-[20px] shrink-0 mt-0.5">report_problem</span>
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[20px] shrink-0 mt-0.5">report_problem</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-label-sm text-label-sm font-bold text-[#991B1B] uppercase tracking-wide">
+                      <span className="font-label-sm text-label-sm font-bold text-[#0A1B2E] uppercase tracking-wide">
                         RFC-7807 Problem Details
                       </span>
-                      <span className="font-label-sm text-label-sm text-[#7F1D1D] bg-[#FEE2E2] px-1.5 py-0.5 rounded font-mono">
+                      <span className="font-label-sm text-label-sm text-[#0A1B2E] bg-[#F1F5F9] border border-[#CBD5E1] px-1.5 py-0.5 rounded font-mono">
                         422 Unprocessable Entity
                       </span>
                     </div>
-                    <p className="font-label-md text-label-md font-mono text-[#991B1B] mt-1 break-all">
+                    <p className="font-label-md text-label-md font-mono text-[#0A1B2E] mt-1 break-all">
                       urn:ietf:params:telecom:order-validation-failed
                     </p>
-                    <ul className="mt-3 space-y-1.5 font-body-sm text-body-sm text-[#991B1B]">
+                    <ul className="mt-3 space-y-1.5 font-body-sm text-body-sm text-[#64748B]">
                       {validationErrors.map((err, idx) => (
                         <li key={idx} className="flex items-start gap-1.5">
-                          <span className="font-mono font-semibold text-[#DC2626] shrink-0">•</span>
+                          <span className="font-mono font-semibold text-[#0A1B2E] shrink-0">•</span>
                           <span>{err}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Validation Success Banner */}
+            {validatedSuccess && (
+              <div className="mb-7 bg-white border border-[#CBD5E1] rounded-lg p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start sm:items-center gap-3">
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[20px]">check_circle</span>
+                  <div>
+                    <span className="font-label-sm text-label-sm font-bold text-[#0A1B2E] uppercase tracking-wide">
+                      Form Validated Successfully
+                    </span>
+                    <p className="font-body-sm text-body-sm text-[#64748B] mt-0.5">
+                      All required fields (Customer ID, Client Ref, MSISDN, E.118 ICCID) conform to the backend schema.
+                    </p>
+                  </div>
+                </div>
+                <span className="font-mono text-label-sm text-[#0A1B2E] font-semibold bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded">
+                  READY
+                </span>
               </div>
             )}
 
@@ -227,24 +485,25 @@ export default function NewOrderPage() {
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="cust-msisdn">
-                      Target Phone / MSISDN
+                      Target Phone / MSISDN (India +91)
                     </label>
                     <div className="relative flex items-center">
-                      <span className="absolute left-3 font-label-md text-label-md font-mono text-on-surface-variant select-none">+1</span>
+                      <span className="absolute left-3 font-label-md text-label-md font-mono text-on-surface-variant select-none font-semibold">+91</span>
                       <input
-                        className="w-full h-9 pl-9 pr-8 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border border-[#E2E8F0] focus:bg-surface-container-lowest transition-colors"
+                        className="w-full h-9 pl-12 pr-8 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border border-[#E2E8F0] focus:bg-surface-container-lowest transition-colors"
                         id="cust-msisdn"
                         type="text"
+                        placeholder="98201 54821"
                         value={msisdn}
                         onChange={(e) => setMsisdn(e.target.value)}
                       />
-                      <span className="material-symbols-outlined absolute right-2.5 text-[#16A34A] text-[18px]" title="Portability Verified">
+                      <span className="material-symbols-outlined absolute right-2.5 text-[#0A1B2E] text-[18px]" title="TRAI MNPO Portability Verified">
                         verified
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1.5 text-[#16A34A] font-body-sm text-body-sm">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]"></span>
-                      <span>Validated via National Number Portability DB (Routing point: SP-US-3341)</span>
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[#64748B] font-body-sm text-body-sm">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#0A1B2E]"></span>
+                      <span>Validated via National MNPO Clearinghouse (Circle: UP-West / Delhi-NCR LSA-IN-401)</span>
                     </div>
                   </div>
                 </div>
@@ -253,94 +512,94 @@ export default function NewOrderPage() {
               {/* Section 2: Product & Tier */}
               <fieldset className="space-y-4">
                 <legend className="w-full flex items-center gap-3 pb-2.5 border-b border-[#EDF0F5]">
-                  <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-[#0A1B2E] text-white flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">
                     2
                   </span>
-                  <span className="font-headline-sm text-headline-sm text-on-surface">Product &amp; Service Tier</span>
+                  <span className="font-headline-sm text-headline-sm text-[#0A1B2E]">Product &amp; Service Tier</span>
                 </legend>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Option A: Fiber Broadband */}
                   <label
-                    onClick={() => setProductType("fiber")}
+                    onClick={() => handleProductChange("fiber")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
-                      productType === "fiber" ? "bg-[#EEF2FF] border-[#4F46E5]" : "bg-surface hover:bg-surface-container-low border-[#E2E8F0]"
+                      productType === "fiber" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`material-symbols-outlined text-[22px] ${productType === "fiber" ? "text-[#4F46E5]" : "text-on-surface-variant"}`}>
+                        <span className={`material-symbols-outlined text-[22px] ${productType === "fiber" ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                           router
                         </span>
                         <input
                           checked={productType === "fiber"}
-                          onChange={() => setProductType("fiber")}
-                          className="w-4 h-4 text-[#4F46E5] focus:ring-0 focus:outline-none"
+                          onChange={() => handleProductChange("fiber")}
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
                       </div>
-                      <span className="font-headline-sm text-headline-sm text-on-surface block">Fiber Broadband</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                      <span className="font-headline-sm text-headline-sm text-[#0A1B2E] block font-bold">Fiber Broadband</span>
+                      <p className="font-body-sm text-body-sm text-[#64748B] mt-1 leading-relaxed">
                         FTTH GPON/XGS-PON with static IP option and ONT auto-discovery.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#4F46E5] font-semibold">Broadband Core</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#0A1B2E] font-semibold">Broadband Core</span>
                   </label>
 
                   {/* Option B: 5G Postpaid */}
                   <label
-                    onClick={() => setProductType("5g")}
+                    onClick={() => handleProductChange("5g")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
-                      productType === "5g" ? "bg-[#EEF2FF] border-[#4F46E5]" : "bg-surface hover:bg-surface-container-low border-[#E2E8F0]"
+                      productType === "5g" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`material-symbols-outlined text-[22px] ${productType === "5g" ? "text-[#4F46E5]" : "text-on-surface-variant"}`}>
+                        <span className={`material-symbols-outlined text-[22px] ${productType === "5g" ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                           cell_tower
                         </span>
                         <input
                           checked={productType === "5g"}
-                          onChange={() => setProductType("5g")}
-                          className="w-4 h-4 text-[#4F46E5] focus:ring-0 focus:outline-none"
+                          onChange={() => handleProductChange("5g")}
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
                       </div>
-                      <span className="font-headline-sm text-headline-sm text-on-surface block">5G Postpaid</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                      <span className="font-headline-sm text-headline-sm text-[#0A1B2E] block font-bold">5G Postpaid</span>
+                      <p className="font-body-sm text-body-sm text-[#64748B] mt-1 leading-relaxed">
                         Standalone 5G NR network slice with VoNR and dynamic QoS profile.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-on-surface-variant">5G SA Slice</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#0A1B2E] font-semibold">5G SA Slice</span>
                   </label>
 
                   {/* Option C: eSIM Add-on */}
                   <label
-                    onClick={() => setProductType("esim")}
+                    onClick={() => handleProductChange("esim")}
                     className={`cursor-pointer rounded-lg p-3.5 flex flex-col justify-between transition-all border ${
-                      productType === "esim" ? "bg-[#EEF2FF] border-[#4F46E5]" : "bg-surface hover:bg-surface-container-low border-[#E2E8F0]"
+                      productType === "esim" ? "bg-[#F8FAFC] border-[#0A1B2E] ring-1 ring-[#0A1B2E]" : "bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]"
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`material-symbols-outlined text-[22px] ${productType === "esim" ? "text-[#4F46E5]" : "text-on-surface-variant"}`}>
+                        <span className={`material-symbols-outlined text-[22px] ${productType === "esim" ? "text-[#0A1B2E]" : "text-[#64748B]"}`}>
                           sim_card
                         </span>
                         <input
                           checked={productType === "esim"}
-                          onChange={() => setProductType("esim")}
-                          className="w-4 h-4 text-[#4F46E5] focus:ring-0 focus:outline-none"
+                          onChange={() => handleProductChange("esim")}
+                          className="w-4 h-4 text-[#0A1B2E] focus:ring-0 focus:outline-none"
                           name="product_type"
                           type="radio"
                         />
                       </div>
-                      <span className="font-headline-sm text-headline-sm text-on-surface block">eSIM Add-on</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                      <span className="font-headline-sm text-headline-sm text-[#0A1B2E] block font-bold">eSIM Add-on</span>
+                      <p className="font-body-sm text-body-sm text-[#64748B] mt-1 leading-relaxed">
                         Instant remote SIM provisioning (RSP) via SM-DP+ server profile.
                       </p>
                     </div>
-                    <span className="mt-3 inline-block font-label-sm text-label-sm text-on-surface-variant">GSMA RSP v3</span>
+                    <span className="mt-3 inline-block font-label-sm text-label-sm text-[#0A1B2E] font-semibold">GSMA RSP v3</span>
                   </label>
                 </div>
 
@@ -348,92 +607,121 @@ export default function NewOrderPage() {
                   <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="plan-select">
                     Catalog Rate Plan
                   </label>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-2.5">
                     <select
-                      className="flex-1 h-9 px-3 bg-surface rounded text-on-surface font-body-md text-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
+                      className="w-full flex-1 min-w-0 h-9 px-3 bg-surface rounded text-on-surface font-body-md text-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest truncate"
                       id="plan-select"
                       value={ratePlan}
-                      onChange={(e) => setRatePlan(e.target.value)}
+                      onChange={(e) => {
+                        setRatePlan(e.target.value);
+                        setValidatedSuccess(false);
+                      }}
                     >
-                      <option>Fiber Broadband 500 (500 Mbps Symmetrical · $65/mo)</option>
-                      <option>Fiber Broadband Gig (1000 Mbps Symmetrical · $85/mo)</option>
-                      <option>Fiber Enterprise Pro 2.5G ($180/mo)</option>
+                      {PRODUCT_RATE_PLANS[productType].plans.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
                     </select>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0]">
-                      <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
-                      <span>SLA: p99 latency &lt; 12ms</span>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0] self-start lg:self-auto max-w-full">
+                      <span className="w-2 h-2 rounded-full bg-[#0A1B2E] shrink-0"></span>
+                      <span className="truncate">{PRODUCT_RATE_PLANS[productType].sla}</span>
                     </div>
                   </div>
                 </div>
               </fieldset>
 
-              {/* Section 3: Site / Service Address */}
+              {/* Section 3: Site / Service Address (India Context) */}
               <fieldset className="space-y-4">
                 <legend className="w-full flex items-center gap-3 pb-2.5 border-b border-[#EDF0F5]">
                   <span className="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold shrink-0">
                     3
                   </span>
-                  <span className="font-headline-sm text-headline-sm text-on-surface">Site &amp; Service Physical Address</span>
+                  <span className="font-headline-sm text-headline-sm text-on-surface">Site &amp; Service Physical Address (India)</span>
                 </legend>
                 <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
                   <div className="sm:col-span-6">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-address">
-                      Street Address
+                      Flat / House / Street Address
                     </label>
                     <input
                       className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
                       id="site-address"
                       type="text"
+                      placeholder="e.g. Flat 402, Godrej Woods, Sector 43"
                       value={streetAddress}
                       onChange={(e) => setStreetAddress(e.target.value)}
                     />
                   </div>
-                  <div className="sm:col-span-3">
+                  <div className="sm:col-span-2">
+                    <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-state">
+                      State / UT
+                    </label>
+                    <select
+                      className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
+                      id="site-state"
+                      value={state}
+                      onChange={(e) => {
+                        const newState = e.target.value;
+                        setState(newState);
+                        if (INDIAN_STATES_DISTRICTS[newState]) {
+                          setDistrict(INDIAN_STATES_DISTRICTS[newState][0]);
+                        }
+                      }}
+                    >
+                      {Object.keys(INDIAN_STATES_DISTRICTS).map((st) => (
+                        <option key={st} value={st}>{st}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-district">
+                      District / Telecom Circle
+                    </label>
+                    <input
+                      className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
+                      id="site-district"
+                      type="text"
+                      placeholder="e.g. Gautam Buddha Nagar"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                    />
+                  </div>
+                  <div className="sm:col-span-1">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-city">
-                      City
+                      City / Town
                     </label>
                     <input
                       className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md border border-[#E2E8F0] focus:bg-surface-container-lowest"
                       id="site-city"
                       type="text"
+                      placeholder="Noida"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                     />
                   </div>
                   <div className="sm:col-span-1">
-                    <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-state">
-                      State
-                    </label>
-                    <input
-                      className="w-full h-9 px-3 bg-surface rounded text-on-surface text-body-md font-body-md uppercase border border-[#E2E8F0] focus:bg-surface-container-lowest"
-                      id="site-state"
-                      type="text"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
                     <label className="block font-body-sm text-body-sm font-medium text-on-surface mb-1" htmlFor="site-zip">
-                      Postal / ZIP
+                      PIN Code
                     </label>
                     <input
                       className="w-full h-9 px-3 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border border-[#E2E8F0] focus:bg-surface-container-lowest"
                       id="site-zip"
                       type="text"
+                      maxLength={6}
+                      placeholder="201303"
                       value={zip}
                       onChange={(e) => setZip(e.target.value)}
                     />
                   </div>
                 </div>
                 {/* Geocode Status Chip */}
-                <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg p-2.5 flex items-center justify-between text-body-sm font-body-sm text-[#14532D]">
+                <div className="bg-white border border-[#CBD5E1] rounded-lg p-2.5 flex items-center justify-between text-body-sm font-body-sm text-[#0A1B2E] shadow-2xs">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0"></span>
-                    <span className="font-mono text-label-sm">● Geocoded: lat 44.0462, lon -123.0220</span>
-                    <span className="text-[#86EFAC] hidden md:inline">|</span>
-                    <span className="font-mono text-label-sm text-[#15803D] hidden md:inline">Terminal DP: FTTH-CAB-92A (Available · Port 4 Free)</span>
+                    <span className="w-2 h-2 rounded-full bg-[#0A1B2E] shrink-0"></span>
+                    <span className="font-mono text-label-sm">● Geocoded: lat 28.5355, lon 77.3910 (Noida / NCR Circle)</span>
+                    <span className="text-[#CBD5E1] hidden md:inline">|</span>
+                    <span className="font-mono text-label-sm text-[#64748B] hidden md:inline">Terminal DP: BHARATNET-FIBER-DP-09 (Available · Port 3 Free)</span>
                   </div>
-                  <span className="font-label-sm text-label-sm font-semibold uppercase text-[#16A34A] tracking-wider">Ready</span>
+                  <span className="font-label-sm text-label-sm font-semibold uppercase text-[#0A1B2E] tracking-wider">Ready</span>
                 </div>
               </fieldset>
 
@@ -448,27 +736,27 @@ export default function NewOrderPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* SIM ICCID */}
                   <div>
-                    <label className={`block font-body-sm text-body-sm font-medium mb-1 ${simIccid.length < 19 ? "text-[#991B1B]" : "text-on-surface"}`} htmlFor="sim-iccid">
+                    <label className="block font-body-sm text-body-sm font-medium mb-1 text-[#0A1B2E]" htmlFor="sim-iccid">
                       SIM ICCID (E.118)
                     </label>
                     <div className="relative">
                       <input
                         className={`w-full h-9 px-3 bg-surface rounded text-on-surface font-label-md text-label-md font-mono border ${
-                          simIccid.length < 19 ? "border-[#DC2626] focus:border-[#DC2626]" : "border-[#E2E8F0]"
+                          simIccid.replace(/\s+/g, "").length < 18 ? "border-[#0A1B2E] focus:border-[#0A1B2E]" : "border-[#E2E8F0]"
                         } focus:bg-surface-container-lowest`}
                         id="sim-iccid"
                         type="text"
                         value={simIccid}
                         onChange={(e) => setSimIccid(e.target.value)}
                       />
-                      <span className={`material-symbols-outlined absolute right-2.5 top-2 text-[18px] ${simIccid.length < 19 ? "text-[#DC2626]" : "text-[#16A34A]"}`}>
-                        {simIccid.length < 19 ? "error" : "check"}
+                      <span className="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-[#0A1B2E]">
+                        {simIccid.replace(/\s+/g, "").length < 18 ? "error" : "check"}
                       </span>
                     </div>
-                    {simIccid.length < 19 && (
-                      <p className="font-label-sm text-label-sm text-[#DC2626] mt-1.5 flex items-start gap-1">
+                    {simIccid.replace(/\s+/g, "").length < 18 && (
+                      <p className="font-label-sm text-label-sm text-[#0A1B2E] mt-1.5 flex items-start gap-1">
                         <span className="shrink-0 font-bold">RFC-7807:</span>
-                        <span>Field &apos;iccid&apos; fails Luhn checksum check. Expected 19-20 digits.</span>
+                        <span>Field &apos;iccid&apos; must be 18-22 digits starting with prefix &apos;89&apos;.</span>
                       </p>
                     )}
                   </div>
@@ -485,11 +773,11 @@ export default function NewOrderPage() {
                         value={deviceImei}
                         onChange={(e) => setDeviceImei(e.target.value)}
                       />
-                      <span className="material-symbols-outlined absolute right-2.5 top-2 text-[#16A34A] text-[18px]">check</span>
+                      <span className="material-symbols-outlined absolute right-2.5 top-2 text-[#0A1B2E] text-[18px]">check</span>
                     </div>
-                    <p className="font-label-sm text-label-sm text-[#16A34A] mt-1.5 flex items-center gap-1 font-mono">
+                    <p className="font-label-sm text-label-sm text-[#64748B] mt-1.5 flex items-center gap-1 font-mono">
                       <span>Valid TAC:</span>
-                      <span className="font-medium">Apple iPhone 15 Pro (A3102)</span>
+                      <span className="font-medium text-[#0A1B2E]">Apple iPhone 15 Pro (A3102)</span>
                     </p>
                   </div>
                 </div>
@@ -537,7 +825,7 @@ export default function NewOrderPage() {
                       />
                     </div>
                     <span className="px-2.5 py-1.5 bg-surface-container rounded text-on-surface-variant font-label-sm text-label-sm font-mono shrink-0 border border-[#E2E8F0]">
-                      UTC / Operator local (PDT -07:00)
+                      IST (UTC+05:30) / Operator local
                     </span>
                   </div>
                 </div>
@@ -591,15 +879,34 @@ export default function NewOrderPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleValidate}
-                    className="h-9 px-4 bg-surface hover:bg-surface-container rounded-lg text-body-md font-body-md text-on-surface font-medium flex items-center gap-1.5 transition-colors border border-[#E2E8F0]"
+                    disabled={isValidating}
+                    className={`h-9 px-4 rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 transition-all border ${
+                      validatedSuccess
+                        ? "bg-[#F0FDF4] text-[#166534] border-[#86EFAC] shadow-2xs"
+                        : "bg-surface hover:bg-surface-container text-on-surface border-[#E2E8F0] shadow-xs active:scale-[0.98]"
+                    }`}
                     type="button"
                   >
-                    <span className="material-symbols-outlined text-[18px]">fact_check</span>
-                    <span>Validate Form</span>
+                    {isValidating ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] animate-spin text-[#0A1B2E]">progress_activity</span>
+                        <span>Validating...</span>
+                      </>
+                    ) : validatedSuccess ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] text-[#166534]">check_circle</span>
+                        <span>Form Validated ✔</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[18px]">fact_check</span>
+                        <span>Validate Form</span>
+                      </>
+                    )}
                   </button>
                   <button
                     disabled={submitting}
-                    className="h-9 px-5 bg-primary-container hover:bg-[#4338CA] text-on-primary rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                    className="h-9 px-5 bg-[#0A1B2E] hover:bg-[#14263b] text-white rounded-lg text-body-md font-body-md font-medium flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                     type="submit"
                   >
                     <span>{submitting ? "Submitting..." : "Submit Order"}</span>
@@ -618,73 +925,91 @@ export default function NewOrderPage() {
             <div className="flex items-start justify-between gap-3 mb-3 pb-3 border-b border-[#EDF0F5]">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-headline-sm text-headline-sm text-on-surface">Resolved Task Graph</h2>
-                  <span className="font-label-sm text-label-sm text-[#4F46E5] bg-[#EEF2FF] px-2 py-0.5 rounded-full font-mono font-semibold">
+                  <h2 className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">Resolved Task Graph</h2>
+                  <span className="font-label-sm text-label-sm text-[#0A1B2E] bg-white border border-[#CBD5E1] px-2 py-0.5 rounded-full font-mono font-semibold shadow-2xs">
                     6 Tasks · Est. 4.2s
                   </span>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                <p className="font-body-sm text-body-sm text-[#64748B] mt-1">
                   Saga Preview: Parallel branches synchronize before physical activation.
                 </p>
               </div>
             </div>
-            <div className="bg-surface rounded-lg p-2.5 mb-4 text-body-sm font-body-sm text-on-surface-variant flex items-center gap-2 border border-[#E2E8F0]">
-              <span className="material-symbols-outlined text-secondary text-[18px] shrink-0">call_split</span>
-              <span><strong>Parallel Fork:</strong> Branch A (SIM) runs concurrently with Branch B (Billing).</span>
+            <div className="bg-[#F8FAFC] rounded-lg p-2.5 mb-4 text-body-sm font-body-sm text-[#64748B] flex items-center gap-2 border border-[#E2E8F0]">
+              <span className="material-symbols-outlined text-[#0A1B2E] text-[18px] shrink-0">call_split</span>
+              <span><strong className="text-[#0A1B2E]">Parallel Fork:</strong> Branch A (SIM) runs concurrently with Branch B (Billing).</span>
             </div>
 
             {/* Visual Miniature DAG organized by Waves */}
             <div className="space-y-3 font-mono text-label-sm">
-              {/* WAVE 1 */}
-              <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+              {/* WAVE 1 - Root Validation */}
+              <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-on-surface-variant uppercase text-label-sm font-semibold tracking-wider">Wave 1 · Root</span>
-                  <span className="text-on-surface-variant">220ms</span>
+                  <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 1 · Root</span>
+                  <span className="text-[#64748B]">220ms</span>
                 </div>
-                <div className="bg-surface-container-lowest rounded p-2 flex items-center justify-between border border-[#EDF0F5]">
+                <div className="bg-[#F8FAFC] rounded p-2 flex items-center justify-between border border-[#E2E8F0]">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#4F46E5] text-[18px]">verified_user</span>
-                    <span className="text-on-surface font-medium">Validate Order</span>
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">verified_user</span>
+                    <span className="text-[#0A1B2E] font-medium">validate_order</span>
                   </div>
-                  <span className="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">OMS Core</span>
+                  <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">OMS Core</span>
                 </div>
               </div>
 
               {/* CONNECTOR */}
               <div className="flex justify-center -my-1 text-[#CBD5E1]">
-                <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
+                <span className="material-symbols-outlined text-[16px]">{productType === "esim" ? "arrow_downward" : "arrow_downward"}</span>
               </div>
 
-              {/* WAVE 2 (Forked in parallel) */}
-              <div className="bg-[#F8FAFC] rounded-lg p-2.5 border border-[#E2E8F0]">
+              {/* WAVE 2 - Inventory & Parallel Billing */}
+              <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[#475569] uppercase text-label-sm font-semibold tracking-wider">Wave 2 · Parallel Fork</span>
+                  <span className="text-[#0A1B2E] uppercase text-label-sm font-semibold tracking-wider">
+                    {productType === "esim" ? "Wave 2 · Inventory Allocation" : "Wave 2 · Parallel Fork"}
+                  </span>
                   <span className="text-[#64748B]">max 420ms</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="bg-surface-container-lowest rounded p-2 border border-[#EDF0F5]">
+                {productType === "esim" ? (
+                  <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#2563EB] text-[10px] font-bold">BRANCH A</span>
-                      <span className="text-[#64748B]">340ms</span>
+                      <span className="text-[#0A1B2E] text-[10px] font-bold">SM-DP+ PROFILE</span>
+                      <span className="text-[#64748B]">280ms</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#2563EB] text-[16px]">inventory_2</span>
-                      <span className="text-on-surface truncate">Reserve Inventory</span>
+                      <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">sim_card</span>
+                      <span className="text-[#0A1B2E] truncate font-medium">reserve_esim_profile</span>
                     </div>
-                    <div className="text-[#64748B] text-[10px] mt-1">SIM/eSIM Pool</div>
+                    <div className="text-[#64748B] text-[10px] mt-1">Inventory · RSP Pool</div>
                   </div>
-                  <div className="bg-surface-container-lowest rounded p-2 border border-[#EDF0F5]">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#7C3AED] text-[10px] font-bold">BRANCH B</span>
-                      <span className="text-[#64748B]">420ms</span>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH A</span>
+                        <span className="text-[#64748B]">340ms</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">inventory_2</span>
+                        <span className="text-[#0A1B2E] truncate font-medium">
+                          {productType === "fiber" ? "reserve_inventory" : "reserve_sim"}
+                        </span>
+                      </div>
+                      <div className="text-[#64748B] text-[10px] mt-1">Inventory Core</div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#7C3AED] text-[16px]">account_balance_wallet</span>
-                      <span className="text-on-surface truncate">Create Billing Acc</span>
+                    <div className="bg-[#F8FAFC] rounded p-2 border border-[#E2E8F0]">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[#0A1B2E] text-[10px] font-bold">BRANCH B</span>
+                        <span className="text-[#64748B]">420ms</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">account_balance_wallet</span>
+                        <span className="text-[#0A1B2E] truncate font-medium">create_billing_account</span>
+                      </div>
+                      <div className="text-[#64748B] text-[10px] mt-1">Billing Core</div>
                     </div>
-                    <div className="text-[#64748B] text-[10px] mt-1">OCS Billing Core</div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* CONNECTOR */}
@@ -692,18 +1017,22 @@ export default function NewOrderPage() {
                 <span className="material-symbols-outlined text-[16px]">merge</span>
               </div>
 
-              {/* WAVE 3 */}
-              <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+              {/* WAVE 3 - Network Activation */}
+              <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-on-surface-variant uppercase text-label-sm font-semibold tracking-wider">Wave 3 · Network Sync</span>
-                  <span className="text-on-surface-variant">1,420ms</span>
+                  <span className="text-[#64748B] uppercase text-label-sm font-semibold tracking-wider">Wave 3 · Network Activation</span>
+                  <span className="text-[#64748B]">1,420ms</span>
                 </div>
-                <div className="bg-surface-container-lowest rounded p-2 flex items-center justify-between border border-[#EDF0F5]">
+                <div className="bg-[#F8FAFC] rounded p-2 flex items-center justify-between border border-[#E2E8F0]">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#EA580C] text-[18px]">settings_ethernet</span>
-                    <span className="text-on-surface font-medium">Provision Network</span>
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">settings_ethernet</span>
+                    <span className="text-[#0A1B2E] font-medium">
+                      {productType === "fiber" ? "provision_network" : productType === "5g" ? "provision_5g_core" : "activate_network_profile"}
+                    </span>
                   </div>
-                  <span className="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant">HLR/HSS Gateway</span>
+                  <span className="bg-white border border-[#CBD5E1] px-1.5 py-0.5 rounded text-[#0A1B2E]">
+                    {productType === "fiber" ? "FTTH ODF / ONT" : "HLR/HSS Gateway"}
+                  </span>
                 </div>
               </div>
 
@@ -712,71 +1041,73 @@ export default function NewOrderPage() {
                 <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
               </div>
 
-              {/* WAVE 4 & 5 */}
+              {/* WAVE 4 & 5 - Verification & Rating */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+                <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-on-surface-variant text-[10px] uppercase font-bold">Wave 4</span>
-                    <span className="text-on-surface-variant">680ms</span>
+                    <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 4</span>
+                    <span className="text-[#64748B]">680ms</span>
                   </div>
-                  <div className="bg-surface-container-lowest rounded p-1.5 text-on-surface truncate flex items-center gap-1.5 border border-[#EDF0F5]">
-                    <span className="material-symbols-outlined text-[#16A34A] text-[16px]">sync_alt</span>
-                    <span>Verify Sync</span>
+                  <div className="bg-[#F8FAFC] rounded p-1.5 text-[#0A1B2E] truncate flex items-center gap-1.5 border border-[#E2E8F0]">
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">sync_alt</span>
+                    <span className="font-medium">
+                      {productType === "fiber" ? "verify_service" : productType === "5g" ? "verify_sim_reg" : "verify_activation"}
+                    </span>
                   </div>
                 </div>
-                <div className="bg-surface rounded-lg p-2.5 border border-[#E2E8F0]">
+                <div className="bg-white rounded-lg p-2.5 border border-[#CBD5E1]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-on-surface-variant text-[10px] uppercase font-bold">Wave 5</span>
-                    <span className="text-on-surface-variant">310ms</span>
+                    <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 5</span>
+                    <span className="text-[#64748B]">310ms</span>
                   </div>
-                  <div className="bg-surface-container-lowest rounded p-1.5 text-on-surface truncate flex items-center gap-1.5 border border-[#EDF0F5]">
-                    <span className="material-symbols-outlined text-[#0284C7] text-[16px]">payments</span>
-                    <span>Start Rating</span>
+                  <div className="bg-[#F8FAFC] rounded p-1.5 text-[#0A1B2E] truncate flex items-center gap-1.5 border border-[#E2E8F0]">
+                    <span className="material-symbols-outlined text-[#0A1B2E] text-[16px]">payments</span>
+                    <span className="font-medium">start_billing</span>
                   </div>
                 </div>
               </div>
 
-              {/* WAVE 6 */}
-              <div className="bg-surface rounded-lg p-2 border border-[#E2E8F0]">
+              {/* WAVE 6 - Customer Notification */}
+              <div className="bg-white rounded-lg p-2 border border-[#CBD5E1]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-on-surface-variant text-[10px] uppercase font-bold">Wave 6</span>
-                    <span className="text-on-surface">Notify Customer (SMS-C)</span>
+                    <span className="text-[#64748B] text-[10px] uppercase font-bold">Wave 6</span>
+                    <span className="text-[#0A1B2E] font-medium">notify_customer</span>
                   </div>
-                  <span className="text-on-surface-variant text-[10px]">180ms · best-effort</span>
+                  <span className="text-[#64748B] text-[10px]">SMS-C · best-effort</span>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Bottom Card: Quick Fill & Chaos Engine */}
-          <section className="bg-surface-container-lowest rounded-xl p-5 shadow-sm space-y-4 border border-[#E3E8F0]">
+          <section className="bg-white rounded-xl p-5 shadow-2xs space-y-4 border border-[#CBD5E1]">
             {/* Quick Fill Controls */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[#F59E0B] text-[18px]">bolt</span>
+                <span className="font-headline-sm text-headline-sm text-[#0A1B2E] flex items-center gap-1.5 font-bold">
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">bolt</span>
                   <span>Quick Presets</span>
                 </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant">Click to autofill</span>
+                <span className="font-label-sm text-label-sm text-[#64748B]">Click to autofill</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-body-sm font-body-sm text-on-surface border border-[#E2E8F0] transition-colors"
+                  className="px-2.5 py-1 rounded bg-white hover:bg-[#F8FAFC] text-body-sm font-body-sm text-[#0A1B2E] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer font-medium"
                   onClick={() => fillPreset("fiber")}
                   type="button"
                 >
                   Residential Fiber
                 </button>
                 <button
-                  className="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-body-sm font-body-sm text-on-surface border border-[#E2E8F0] transition-colors"
+                  className="px-2.5 py-1 rounded bg-white hover:bg-[#F8FAFC] text-body-sm font-body-sm text-[#0A1B2E] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer font-medium"
                   onClick={() => fillPreset("5g")}
                   type="button"
                 >
                   Enterprise 5G
                 </button>
                 <button
-                  className="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-body-sm font-body-sm text-on-surface border border-[#E2E8F0] transition-colors"
+                  className="px-2.5 py-1 rounded bg-white hover:bg-[#F8FAFC] text-body-sm font-body-sm text-[#0A1B2E] border border-[#CBD5E1] transition-colors shadow-2xs cursor-pointer font-medium"
                   onClick={() => fillPreset("esim")}
                   type="button"
                 >
@@ -786,16 +1117,16 @@ export default function NewOrderPage() {
             </div>
 
             {/* Chaos & Failure Injection Accordion */}
-            <details className="group bg-surface rounded-lg overflow-hidden border border-[#E2E8F0]" open>
-              <summary className="cursor-pointer list-none p-3 bg-surface hover:bg-surface-container-low flex items-center justify-between select-none transition-colors border-b border-[#EDF0F5]">
+            <details className="group bg-white rounded-lg overflow-hidden border border-[#CBD5E1]" open>
+              <summary className="cursor-pointer list-none p-3 bg-white hover:bg-[#F8FAFC] flex items-center justify-between select-none transition-colors border-b border-[#CBD5E1]">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#EA580C] text-[18px]">science</span>
-                  <span className="font-headline-sm text-headline-sm text-on-surface">Chaos &amp; Fault Injection</span>
-                  <span className="font-label-sm text-label-sm font-bold bg-[#FEF3C7] text-[#92400E] px-1.5 py-0.5 rounded uppercase border border-[#FDE68A]">
+                  <span className="material-symbols-outlined text-[#0A1B2E] text-[18px]">science</span>
+                  <span className="font-headline-sm text-headline-sm text-[#0A1B2E] font-bold">Chaos &amp; Fault Injection</span>
+                  <span className="font-label-sm text-label-sm font-bold bg-[#F1F5F9] text-[#0A1B2E] px-1.5 py-0.5 rounded uppercase border border-[#CBD5E1]">
                     Test Only
                   </span>
                 </div>
-                <span className="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform text-[20px]">
+                <span className="material-symbols-outlined text-[#64748B] group-open:rotate-180 transition-transform text-[20px]">
                   expand_more
                 </span>
               </summary>

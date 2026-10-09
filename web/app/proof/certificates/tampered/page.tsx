@@ -122,11 +122,11 @@ export default function TamperedCertificatePage() {
             {/* Timestamps */}
             <div className="flex items-center gap-4 font-label-sm text-label-sm text-on-surface-variant">
               <div className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px] text-outline">schedule</span>
+                <span className="material-symbols-outlined text-[16px] text-[#000000]">schedule</span>
                 <span className="text-on-surface font-semibold">2026-07-12 14:22:04.182 UTC</span>
               </div>
               <div className="flex items-center gap-1.5 font-mono">
-                <span className="text-outline">Epoch:</span>
+                <span className="text-[#000000]">Epoch:</span>
                 <span className="bg-surface-container px-1.5 py-0.5 rounded text-on-surface font-label-sm">
                   1714521600
                 </span>
@@ -160,7 +160,7 @@ export default function TamperedCertificatePage() {
               <span className="text-tertiary-fixed-dim mr-2">$</span>
               <span>make verify-cert id={selectedOrder}</span>
               <span
-                className="material-symbols-outlined text-[14px] ml-2 text-outline cursor-pointer hover:text-white"
+                className="material-symbols-outlined text-[14px] ml-2 text-[#000000] cursor-pointer hover:text-white"
                 onClick={copyCLICommand}
                 title="Copy Command"
               >
@@ -176,22 +176,22 @@ export default function TamperedCertificatePage() {
         {/* Centered Verified Receipt Document Container */}
         <div className="w-full max-w-5xl bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant/30 p-6 md:p-10 mb-8 flex flex-col gap-6">
           {/* 1. Prominent Tampered Failure Alert Banner */}
-          <div className="bg-error-container/40 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-error/30">
+          <div className="bg-[#ED2C2C] text-white rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-[#ED2C2C] shadow-md">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-error flex items-center justify-center shrink-0 text-white">
+              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0 text-white">
                 <span className="material-symbols-outlined text-[24px]">gpp_bad</span>
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-1 font-headline-sm text-headline-sm text-error font-semibold">
-                  <span>Verification FAILED — Hash mismatch at event #14 (NetworkSliceCreated)</span>
+                <div className="flex items-center gap-1 font-headline-sm text-headline-sm text-white font-bold tracking-tight">
+                  <span>Verification FAILED — Hash Mismatch at Event #14 (NetworkSliceCreated)</span>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                <p className="font-body-sm text-body-sm text-white/90 mt-0.5">
                   Computed hash{" "}
-                  <code className="font-label-sm text-label-sm font-semibold text-error bg-surface-container-lowest px-1 rounded font-mono">
+                  <code className="font-label-sm text-label-sm font-bold text-white bg-black/25 px-1.5 py-0.5 rounded font-mono">
                     0x7c9b…e4a1
                   </code>{" "}
                   does not match recorded state digest{" "}
-                  <code className="font-label-sm text-label-sm font-semibold text-on-surface bg-surface-container-lowest px-1 rounded font-mono">
+                  <code className="font-label-sm text-label-sm font-bold text-white bg-black/25 px-1.5 py-0.5 rounded font-mono">
                     0xDEAD…BEEF
                   </code>
                   . Cryptographic proof broke linearizability guarantees.
@@ -220,16 +220,16 @@ export default function TamperedCertificatePage() {
           {/* Hex Diff Expandable Box */}
           {showHexDiff && (
             <div className="p-4 rounded-xl bg-inverse-surface text-inverse-on-surface font-mono text-xs space-y-1.5 animate-in fade-in">
-              <div className="text-outline text-[11px] pb-1 border-b border-outline/30 flex justify-between">
+              <div className="text-[#000000] text-[11px] pb-1 border-b border-outline/30 flex justify-between">
                 <span>PAYLOAD BYTE-LEVEL DIFF INSPECTION</span>
                 <span className="text-error font-bold">1 CORRUPTED BLOCK</span>
               </div>
               <div className="text-secondary-fixed-dim">--- expected/h3_payload.json</div>
               <div className="text-secondary-fixed-dim">+++ actual/h3_payload.json</div>
-              <div className="text-outline">@@ -14,3 +14,3 @@</div>
+              <div className="text-[#000000]">@@ -14,3 +14,3 @@</div>
               <div className="text-[#10B981]">- &quot;bandwidth_mbps&quot;: 500,</div>
               <div className="text-error font-bold">+ &quot;bandwidth_mbps&quot;: 1000, [UNAUTHORIZED UPGRADE INJECTED]</div>
-              <div className="text-outline">  &quot;slice_id&quot;: &quot;slice-fiber-us-east-01&quot;,</div>
+              <div className="text-[#000000]">  &quot;slice_id&quot;: &quot;slice-fiber-us-east-01&quot;,</div>
             </div>
           )}
 
@@ -237,7 +237,7 @@ export default function TamperedCertificatePage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-surface-container-high">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-label-sm text-label-sm tracking-wider uppercase font-semibold text-outline">
+                <span className="font-label-sm text-label-sm tracking-wider uppercase font-semibold text-[#000000]">
                   Tampered Receipt
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold border border-error/20">
@@ -269,7 +269,7 @@ export default function TamperedCertificatePage() {
                   Scheme: <strong className="text-on-surface font-mono">Ed25519 / SHA-256</strong>
                 </span>
               </div>
-              <div className="font-label-sm text-label-sm text-outline">RFC 6962 Auditable Merkle Log Tree</div>
+              <div className="font-label-sm text-label-sm text-[#000000]">RFC 6962 Auditable Merkle Log Tree</div>
             </div>
           </div>
 
@@ -335,14 +335,14 @@ export default function TamperedCertificatePage() {
                 Customer Target
               </span>
               <span className="font-headline-sm text-headline-sm text-on-surface mt-1 font-semibold">Marcus Vance</span>
-              <span className="font-label-sm text-label-sm text-outline mt-0.5 font-mono">+1 555 019-4821</span>
+              <span className="font-label-sm text-label-sm text-[#000000] mt-0.5 font-mono">+1 555 019-4821</span>
             </div>
             <div className="flex flex-col">
               <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
                 Product / Plan
               </span>
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="font-body-md text-body-md line-through text-outline">Fiber 500</span>
+                <span className="font-body-md text-body-md line-through text-[#000000]">Fiber 500</span>
                 <span className="material-symbols-outlined text-[14px] text-error">arrow_forward</span>
                 <span className="font-body-md text-body-md font-semibold text-error">Fiber 1000</span>
               </div>
@@ -415,20 +415,20 @@ export default function TamperedCertificatePage() {
                 </div>
                 <ul className="flex flex-col gap-3 font-body-sm text-body-sm text-on-surface-variant">
                   <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-[18px] text-outline shrink-0">remove_circle_outline</span>
+                    <span className="material-symbols-outlined text-[18px] text-[#000000] shrink-0">remove_circle_outline</span>
                     <span>Physical optical fiber continuity at street cabinet (L1 loop verified independently via OTDR telemetry).</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-[18px] text-outline shrink-0">remove_circle_outline</span>
+                    <span className="material-symbols-outlined text-[18px] text-[#000000] shrink-0">remove_circle_outline</span>
                     <span>Third-party credit score legitimacy at payment gateway ingestion time.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-[18px] text-outline shrink-0">remove_circle_outline</span>
+                    <span className="material-symbols-outlined text-[18px] text-[#000000] shrink-0">remove_circle_outline</span>
                     <span>End-user CPE device operational power at subscriber residence.</span>
                   </li>
                 </ul>
               </div>
-              <div className="mt-4 pt-2 border-t border-surface-container-highest text-outline font-label-sm text-label-sm">
+              <div className="mt-4 pt-2 border-t border-surface-container-highest text-[#000000] font-label-sm text-label-sm">
                 Operational boundary governed under Section 4.2 of Telco State Proofing Protocol.
               </div>
             </div>
@@ -452,7 +452,7 @@ export default function TamperedCertificatePage() {
                 <span className="flex items-center gap-1 text-error">
                   <span className="w-2 h-2 rounded-full bg-error"></span> Tampered Node
                 </span>
-                <span className="flex items-center gap-1 text-outline">
+                <span className="flex items-center gap-1 text-[#000000]">
                   <span className="w-2 h-2 rounded-full bg-outline"></span> Cascading Invalidation
                 </span>
               </div>
@@ -563,10 +563,10 @@ export default function TamperedCertificatePage() {
                 {/* Event #4 */}
                 <div className="bg-surface-container-low p-3 rounded-lg flex items-center justify-between border border-outline-variant/20">
                   <div className="flex items-center gap-4">
-                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center font-label-sm text-label-sm">
+                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-[#000000] flex items-center justify-center font-label-sm text-label-sm">
                       4
                     </span>
-                    <div className="flex items-center gap-2 text-outline">
+                    <div className="flex items-center gap-2 text-[#000000]">
                       <span className="material-symbols-outlined text-[18px]">cancel</span>
                       <span className="font-body-md text-body-md line-through">CpeConfigurationPushed</span>
                       <span className="font-label-sm text-label-sm font-mono">h₄: [INVALIDATED PARENT ROOT]</span>
@@ -579,10 +579,10 @@ export default function TamperedCertificatePage() {
                 {/* Event #5 */}
                 <div className="bg-surface-container-low p-3 rounded-lg flex items-center justify-between border border-outline-variant/20">
                   <div className="flex items-center gap-4">
-                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center font-label-sm text-label-sm">
+                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-[#000000] flex items-center justify-center font-label-sm text-label-sm">
                       5
                     </span>
-                    <div className="flex items-center gap-2 text-outline">
+                    <div className="flex items-center gap-2 text-[#000000]">
                       <span className="material-symbols-outlined text-[18px]">cancel</span>
                       <span className="font-body-md text-body-md line-through">RadiusProfileActivated</span>
                       <span className="font-label-sm text-label-sm font-mono">h₅: [INVALIDATED PARENT ROOT]</span>
@@ -595,10 +595,10 @@ export default function TamperedCertificatePage() {
                 {/* Event #6 */}
                 <div className="bg-surface-container-low p-3 rounded-lg flex items-center justify-between border border-outline-variant/20">
                   <div className="flex items-center gap-4">
-                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center font-label-sm text-label-sm">
+                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-[#000000] flex items-center justify-center font-label-sm text-label-sm">
                       6
                     </span>
-                    <div className="flex items-center gap-2 text-outline">
+                    <div className="flex items-center gap-2 text-[#000000]">
                       <span className="material-symbols-outlined text-[18px]">cancel</span>
                       <span className="font-body-md text-body-md line-through">TelemetryBaselineSampled</span>
                       <span className="font-label-sm text-label-sm font-mono">h₆: [INVALIDATED PARENT ROOT]</span>
@@ -611,10 +611,10 @@ export default function TamperedCertificatePage() {
                 {/* Event #7 */}
                 <div className="bg-surface-container-low p-3 rounded-lg flex items-center justify-between border border-outline-variant/20">
                   <div className="flex items-center gap-4">
-                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-outline flex items-center justify-center font-label-sm text-label-sm">
+                    <span className="w-6 h-6 rounded-full bg-surface-container-highest text-[#000000] flex items-center justify-center font-label-sm text-label-sm">
                       7
                     </span>
-                    <div className="flex items-center gap-2 text-outline">
+                    <div className="flex items-center gap-2 text-[#000000]">
                       <span className="material-symbols-outlined text-[18px]">cancel</span>
                       <span className="font-body-md text-body-md line-through">OrderFinalized</span>
                       <span className="font-label-sm text-label-sm font-mono">h₇: [REJECTED ROOT DIGEST]</span>
@@ -634,7 +634,7 @@ export default function TamperedCertificatePage() {
               <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
                 Subsystem State Digest Matrix
               </span>
-              <span className="font-label-sm text-label-sm text-outline">
+              <span className="font-label-sm text-label-sm text-[#000000]">
                 Invariant Assertions: 4 Evaluated, 2 Violated
               </span>
             </div>
@@ -655,9 +655,9 @@ export default function TamperedCertificatePage() {
                       <span className="material-symbols-outlined text-[16px] text-secondary">layers</span>
                       <span>OMS Core</span>
                     </td>
-                    <td className="py-3 px-4 font-mono text-outline">order.service_spec</td>
+                    <td className="py-3 px-4 font-mono text-[#000000]">order.service_spec</td>
                     <td className="py-3 px-4 text-on-surface">Plan: fiber_broadband_500</td>
-                    <td className="py-3 px-4 text-outline font-mono">INV-01 (CatalogMatch)</td>
+                    <td className="py-3 px-4 text-[#000000] font-mono">INV-01 (CatalogMatch)</td>
                     <td className="py-3 px-4 text-right">
                       <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-semibold inline-flex items-center gap-1">
                         <span>✔</span> Intact
@@ -669,9 +669,9 @@ export default function TamperedCertificatePage() {
                       <span className="material-symbols-outlined text-[16px] text-secondary">sim_card</span>
                       <span>SIM Inventory</span>
                     </td>
-                    <td className="py-3 px-4 font-mono text-outline">inv.resource_lock</td>
+                    <td className="py-3 px-4 font-mono text-[#000000]">inv.resource_lock</td>
                     <td className="py-3 px-4 text-on-surface">ONT-ID #4412-A LOCKED</td>
-                    <td className="py-3 px-4 text-outline font-mono">INV-03 (SingleTenancy)</td>
+                    <td className="py-3 px-4 text-[#000000] font-mono">INV-03 (SingleTenancy)</td>
                     <td className="py-3 px-4 text-right">
                       <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-semibold inline-flex items-center gap-1">
                         <span>✔</span> Intact
@@ -694,12 +694,12 @@ export default function TamperedCertificatePage() {
                   </tr>
                   <tr className="bg-error-container/10">
                     <td className="py-3 px-4 font-semibold text-on-surface flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-outline">account_balance_wallet</span>
+                      <span className="material-symbols-outlined text-[16px] text-[#000000]">account_balance_wallet</span>
                       <span>OCS Billing</span>
                     </td>
-                    <td className="py-3 px-4 font-mono text-outline">ledger.charge_basis</td>
+                    <td className="py-3 px-4 font-mono text-[#000000]">ledger.charge_basis</td>
                     <td className="py-3 px-4 text-on-surface-variant">Ledger sync revoked</td>
-                    <td className="py-3 px-4 text-outline font-mono">INV-05 (DownstreamProof)</td>
+                    <td className="py-3 px-4 text-[#000000] font-mono">INV-05 (DownstreamProof)</td>
                     <td className="py-3 px-4 text-right">
                       <span className="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold inline-flex items-center gap-1">
                         <span>✖</span> UNTRUSTED
@@ -718,20 +718,20 @@ export default function TamperedCertificatePage() {
                 <span className="material-symbols-outlined text-[18px]">key_off</span>
                 <span>Cryptographic Attestation Digest Block</span>
               </div>
-              <span className="text-outline uppercase font-mono">Spec: RFC 8032 / Edwards-curve Digital Signature</span>
+              <span className="text-[#000000] uppercase font-mono">Spec: RFC 8032 / Edwards-curve Digital Signature</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-body-sm mb-4">
               <div className="flex flex-col gap-1">
-                <span className="text-outline">Attestation Key Scheme:</span>
+                <span className="text-[#000000]">Attestation Key Scheme:</span>
                 <span className="text-on-surface font-semibold">Ed25519-SHA256 (Enclave Key #PK-CORE-US-EAST)</span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-outline">Root Merkle Hash Attestation:</span>
+                <span className="text-[#000000]">Root Merkle Hash Attestation:</span>
                 <span className="text-error font-semibold">REJECTED (0x9e1200…fec4 != 0xbc4412…9012)</span>
               </div>
             </div>
             <div className="flex flex-col gap-1 mb-4">
-              <span className="text-outline font-mono">Signature Envelope (Hex):</span>
+              <span className="text-[#000000] font-mono">Signature Envelope (Hex):</span>
               <div className="bg-surface-container-lowest p-3 rounded-lg text-error break-all select-all font-mono border border-error/20">
                 3045022100e19a84b0f9c2d61a29384729103847a98b7c6d5e4f3a2b1c0d9e8f7a6b5c4d0220394857201938472910293847a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0
                 [INVALID_SIGNATURE_DIGEST_CORRUPTED]
@@ -740,7 +740,7 @@ export default function TamperedCertificatePage() {
 
             {/* Terminal Verification CLI Snippet */}
             <div className="bg-inverse-surface text-inverse-on-surface p-4 rounded-lg flex flex-col gap-1 font-mono text-xs">
-              <div className="flex items-center justify-between text-outline text-[11px] pb-1 border-b border-outline/20">
+              <div className="flex items-center justify-between text-[#000000] text-[11px] pb-1 border-b border-outline/20">
                 <span>TERMINAL VERIFICATION OUTPUT</span>
                 <span className="text-error font-bold">EXIT CODE: 1</span>
               </div>
@@ -759,7 +759,7 @@ export default function TamperedCertificatePage() {
           {/* Footer Attestation Details */}
           <div className="pt-4 border-t border-surface-container-high flex flex-wrap items-center justify-between text-on-surface-variant font-label-sm text-label-sm gap-3">
             <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px] text-outline">verified</span>
+              <span className="material-symbols-outlined text-[16px] text-[#000000]">verified</span>
               <span>SwitchOn Temporal Verification Engine v1.24.1-rc</span>
             </div>
             <div className="flex items-center gap-4">
