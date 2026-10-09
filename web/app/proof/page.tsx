@@ -232,7 +232,7 @@ export default function ScenariosProofPage() {
   const [scenariosList, setScenariosList] = useState<Scenario[]>(SCENARIOS);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
   const [runningScenarios, setRunningScenarios] = useState<Record<string, boolean>>({});
-  const [scenarioOutputs, setScenarioOutputs] = useState<Record<string, any>>({});
+  const [scenarioOutputs, setScenarioOutputs] = useState<Record<string, unknown>>({});
   const [isRunningAll, setIsRunningAll] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);

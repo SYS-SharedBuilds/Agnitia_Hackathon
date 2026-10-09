@@ -11,12 +11,6 @@ export default function LoadGeneratorPage() {
   const [eSimRatio, setESimRatio] = useState(15);
   const [lockSeed, setLockSeed] = useState(true);
   const [isRestarting, setIsRestarting] = useState(false);
-  const [loadResult, setLoadResult] = useState<{
-    status: string;
-    count: number;
-    submittedOrders: number;
-    durationSec: number;
-  } | null>(null);
 
   const handleRestartRun = async () => {
     // Enforce safe bounds for load testing
@@ -29,12 +23,6 @@ export default function LoadGeneratorPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setLoadResult({
-          status: data.status || "LOAD_SUBMITTED",
-          count: safeCount,
-          submittedOrders: data.submitted_orders || safeCount,
-          durationSec: data.duration_sec || 2.4,
-        });
         alert(`Synthetic workload dispatched: ${data.submitted_orders || safeCount} orders dispatched via ${concurrency} workers (Duration: ${data.duration_sec || 2.4}s).`);
       } else {
         throw new Error("Load API error");
@@ -42,12 +30,6 @@ export default function LoadGeneratorPage() {
     } catch {
       // Offline fallback
       setTimeout(() => {
-        setLoadResult({
-          status: "LOAD_SUBMITTED",
-          count: safeCount,
-          submittedOrders: safeCount,
-          durationSec: 1.8,
-        });
         alert(`Dispatched synthetic workload with Seed 42 across ${concurrency} workers for ${safeCount} orders.`);
       }, 1200);
     } finally {

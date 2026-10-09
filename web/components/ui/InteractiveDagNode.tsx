@@ -7,7 +7,7 @@ export interface DagNodeData extends Record<string, unknown> {
   name: string;
   metaLeft: string;
   metaRight: string;
-  status: "SUCCEEDED" | "FAILED" | "STALLED" | "RESOLVED" | "PAUSED / WAITING";
+  status: "SUCCEEDED" | "FAILED" | "STALLED" | "RESOLVED" | "PAUSED / WAITING" | "RUNNING" | "RETRYING" | "COMPENSATED";
   badgeText?: string;
   badgeStyle?: "default" | "noc" | "failed" | "attempt";
   isResolved?: boolean;

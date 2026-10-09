@@ -93,31 +93,16 @@ export default function CertificatesProofPage() {
     setTimeout(() => setCopiedCmd(false), 2000);
   };
 
-  const [verificationOutcome, setVerificationOutcome] = useState<{
-    status: "IDLE" | "VALID" | "INVALID";
-    message: string;
-  }>({ status: "IDLE", message: "" });
-
   const handleVerifyNow = async () => {
     setIsVerifying(true);
-    setVerificationOutcome({ status: "IDLE", message: "" });
     const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
       const res = await fetch(`${apiHost}/orders/${selectedOrder}/certificate`);
       if (res.ok) {
-        const certData = await res.json();
         if (isTampered) {
-          setVerificationOutcome({
-            status: "INVALID",
-            message: "VERIFICATION ERROR: Local hash chain evaluation does not yield signature state root. One or more events altered!",
-          });
           alert("VERIFICATION ERROR: Local hash chain evaluation does not yield signature state root. One or more events altered!");
         } else {
-          setVerificationOutcome({
-            status: "VALID",
-            message: `SUCCESS: Cryptographically Sound. Ed25519 signature (${certData.signature ? certData.signature.slice(0, 16) : "verified"}…) and SHA-256 state root match consensus ledger.`,
-          });
           alert("SUCCESS: Cryptographically Sound. Ed25519 signature and SHA-256 state root match consensus ledger.");
         }
       } else {
@@ -127,16 +112,8 @@ export default function CertificatesProofPage() {
       // Deterministic fallback verification
       setTimeout(() => {
         if (isTampered) {
-          setVerificationOutcome({
-            status: "INVALID",
-            message: "VERIFICATION ERROR: Local hash chain evaluation does not yield signature state root. One or more events altered!",
-          });
           alert("VERIFICATION ERROR: Local hash chain evaluation does not yield signature state root. One or more events altered!");
         } else {
-          setVerificationOutcome({
-            status: "VALID",
-            message: "SUCCESS: Cryptographically Sound. Ed25519 signature and SHA-256 state root match consensus ledger.",
-          });
           alert("SUCCESS: Cryptographically Sound. Ed25519 signature and SHA-256 state root match consensus ledger.");
         }
       }, 500);
