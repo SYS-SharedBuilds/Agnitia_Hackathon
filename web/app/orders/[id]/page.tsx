@@ -141,8 +141,38 @@ export default function OrderDetailPage() {
   useEffect(() => {
     fetchDetail();
     const interval = setInterval(fetchDetail, 3000);
-    return () => clearInterval(interval);
-  }, [fetchDetail]);
+
+    // Instantaneous real-time SSE listener for sub-second DAG updates
+    let evtSource: EventSource | null = null;
+    try {
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      evtSource = new EventSource(`${apiHost}/stream/orders`);
+      evtSource.onmessage = (event) => {
+        try {
+          if (!event.data) return;
+          const payload = JSON.parse(event.data);
+          if (
+            payload.order_id === orderId ||
+            payload.type?.startsWith("task.") ||
+            payload.type?.startsWith("order.")
+          ) {
+            fetchDetail();
+          }
+        } catch {
+          // Ignore parse errors on heartbeats
+        }
+      };
+    } catch {
+      // Gracefully fall back to interval polling if SSE is unsupported
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (evtSource) {
+        evtSource.close();
+      }
+    };
+  }, [orderId, fetchDetail]);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(orderId);

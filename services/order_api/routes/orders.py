@@ -214,9 +214,56 @@ async def get_order_detail(
     )
     tasks = [dict(t) for t in tasks_res.mappings().all()]
 
+    executed_map = {t["task_id"]: dict(t) for t in tasks}
+
+    plan_raw = order.get("plan_json")
+    plan: dict[str, Any] = {}
+    if isinstance(plan_raw, str):
+        try:
+            plan = json.loads(plan_raw)
+        except Exception:
+            plan = {}
+    elif isinstance(plan_raw, dict):
+        plan = plan_raw
+
+    planned_tasks = plan.get("tasks", [])
+    order_state = order["state"]
+
+    full_tasks: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    if planned_tasks:
+        for pt in planned_tasks:
+            tid = pt["id"]
+            seen_ids.add(tid)
+            if tid in executed_map:
+                rec = executed_map[tid]
+                rec["depends_on"] = pt.get("depends_on", [])
+                rec["action"] = pt.get("action", "")
+                full_tasks.append(rec)
+            else:
+                is_terminal = order_state in ("ROLLED_BACK", "CANCELLED", "NEEDS_ATTENTION", "ACTIVE")
+                task_state = "SKIPPED" if is_terminal else "PENDING"
+                full_tasks.append({
+                    "order_id": order_id,
+                    "task_id": tid,
+                    "system": pt.get("system", "unknown"),
+                    "action": pt.get("action", ""),
+                    "depends_on": pt.get("depends_on", []),
+                    "state": task_state,
+                    "attempts": 0,
+                    "started_at": None,
+                    "ended_at": None,
+                    "last_error": None,
+                })
+
+    for tid, rec in executed_map.items():
+        if tid not in seen_ids:
+            full_tasks.append(rec)
+
     return {
         "order": dict(order),
-        "tasks": tasks,
+        "tasks": full_tasks if full_tasks else tasks,
     }
 
 

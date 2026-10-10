@@ -40,6 +40,7 @@ export function OrderDagCanvas({
   dagGrid,
   dagMinimap,
   tasks = [],
+  orderState,
   chargingStatus = "FAILED",
 }: OrderDagProps) {
   // Define standard layout coordinate registry for product task graphs
@@ -84,12 +85,58 @@ export function OrderDagCanvas({
     []
   );
 
+  // Dynamic topological layout calculator for arbitrary product graphs
+  const layoutPositions = useMemo(() => {
+    if (!tasks || tasks.length === 0) return positions;
+    const taskMap = new Map(tasks.map((t) => [t.task_id, t]));
+    const depths = new Map<string, number>();
+
+    const getDepth = (tid: string, visited = new Set<string>()): number => {
+      if (depths.has(tid)) return depths.get(tid)!;
+      if (visited.has(tid)) return 0;
+      visited.add(tid);
+      const t = taskMap.get(tid);
+      if (!t || !t.depends_on || t.depends_on.length === 0) {
+        depths.set(tid, 0);
+        return 0;
+      }
+      let maxD = 0;
+      for (const dep of t.depends_on) {
+        maxD = Math.max(maxD, getDepth(dep, visited) + 1);
+      }
+      depths.set(tid, maxD);
+      return maxD;
+    };
+
+    tasks.forEach((t) => getDepth(t.task_id));
+
+    // Group by wave
+    const waveGroups = new Map<number, string[]>();
+    tasks.forEach((t) => {
+      const d = depths.get(t.task_id) || 0;
+      if (!waveGroups.has(d)) waveGroups.set(d, []);
+      waveGroups.get(d)!.push(t.task_id);
+    });
+
+    const res: Record<string, { x: number; y: number }> = { ...positions };
+    waveGroups.forEach((tids, wave) => {
+      tids.forEach((tid, idx) => {
+        if (!res[tid]) {
+          const totalInWave = tids.length;
+          const yOffset = totalInWave === 1 ? 155 : 70 + idx * 130;
+          res[tid] = { x: 30 + wave * 220, y: yOffset };
+        }
+      });
+    });
+    return res;
+  }, [tasks, positions]);
+
   const getInitialNodes = useCallback((): Node<DagNodeData>[] => {
     // If we have live tasks from the backend, build the DAG dynamically!
     if (tasks && tasks.length > 0) {
       return tasks.map((t, idx) => {
         const pos =
-          positions[t.task_id] || {
+          layoutPositions[t.task_id] || {
             x: 30 + (idx % 4) * 230,
             y: 70 + Math.floor(idx / 4) * 110,
           };
@@ -107,11 +154,73 @@ export function OrderDagCanvas({
           status = "FAILED";
         } else if (t.state === "COMPENSATION_FAILED") {
           status = isResolved ? "RESOLVED" : "FAILED";
+          isStalled = !isResolved;
         } else if (t.state === "COMPENSATED") {
-          status = "RESOLVED";
-        } else if (t.state === "PENDING" || t.state === "SKIPPED") {
+          status = isResolved ? "RESOLVED" : "COMPENSATED";
+        } else if (t.state === "COMPENSATING") {
+          status = "RUNNING";
+        } else if (t.state === "PENDING") {
+          status = "PAUSED / WAITING";
+          isStalled = false;
+        } else if (t.state === "SKIPPED") {
           status = "PAUSED / WAITING";
           isStalled = true;
+        }
+
+        // Calculate actual duration from ISO timestamps if present
+        let durationText = "--";
+        if (t.started_at && t.ended_at) {
+          const startMs = new Date(t.started_at).getTime();
+          const endMs = new Date(t.ended_at).getTime();
+          const diffMs = Math.max(0, endMs - startMs);
+          durationText = diffMs >= 1000 ? `${(diffMs / 1000).toFixed(2)}s` : `${diffMs}ms`;
+        } else if (t.started_at && t.state === "RUNNING") {
+          durationText = "In flight";
+        } else if (t.state === "RETRYING") {
+          durationText = "Backoff";
+        } else if (t.last_error) {
+          durationText = "Error";
+        }
+
+        // Formulate clear diagnostic metadata
+        let metaLeft = t.state as string;
+        if (t.attempts > 1) {
+          metaLeft = t.state === "FAILED" ? `Failed (×${t.attempts})` : `Attempt ×${t.attempts}`;
+        } else if (t.state === "SUCCEEDED") {
+          metaLeft = "Completed";
+        } else if (t.state === "RUNNING") {
+          metaLeft = "Executing";
+        } else if (t.state === "RETRYING") {
+          metaLeft = `Retry #${t.attempts}`;
+        } else if (t.state === "COMPENSATING") {
+          metaLeft = "Compensating";
+        } else if (t.state === "COMPENSATED") {
+          metaLeft = isResolved ? "Resolved" : "Compensated";
+        } else if (t.state === "COMPENSATION_FAILED") {
+          metaLeft = isResolved ? "NOC Cleared" : "Comp. Failed";
+        } else if (t.state === "SKIPPED") {
+          metaLeft = orderState === "CANCELLED" ? "Cancelled" : "Skipped";
+        } else if (t.state === "PENDING") {
+          metaLeft = "Queued";
+        }
+
+        let badgeText: string | undefined = undefined;
+        let badgeStyle: DagNodeData["badgeStyle"] = "default";
+
+        if (t.state === "COMPENSATION_FAILED") {
+          badgeText = isResolved ? "RESOLVED" : "FALLOUT";
+          badgeStyle = isResolved ? "noc" : "failed";
+        } else if (t.state === "COMPENSATED") {
+          badgeText = "UNDONE";
+          badgeStyle = isResolved ? "noc" : "default";
+        } else if (t.state === "FAILED") {
+          badgeText = t.attempts > 1 ? `×${t.attempts}` : "FAIL";
+          badgeStyle = "failed";
+        } else if (t.state === "RETRYING") {
+          badgeText = `×${t.attempts}`;
+          badgeStyle = "attempt";
+        } else if (t.attempts > 1) {
+          badgeText = `×${t.attempts}`;
         }
 
         const nameFormatted = t.task_id
@@ -128,20 +237,25 @@ export function OrderDagCanvas({
             system:
               systemLabels[t.system.toLowerCase()] || t.system.toUpperCase(),
             name: nameFormatted,
-            metaLeft: t.attempts > 1 ? `Attempt ×${t.attempts}` : t.state,
-            metaRight: t.last_error ? "Error" : "Done",
+            metaLeft,
+            metaRight: durationText,
             status,
-            badgeText: t.attempts > 1 ? `×${t.attempts}` : undefined,
-            badgeStyle:
-              t.state === "FAILED" || t.state === "COMPENSATION_FAILED"
-                ? "failed"
-                : "default",
+            badgeText,
+            badgeStyle,
             isResolved,
             isStalled,
             isBestEffort,
             isSelected,
-            tooltipTitle: t.last_error ? `Task ${t.task_id} Alert` : undefined,
-            tooltipText: t.last_error || undefined,
+            tooltipTitle: t.last_error
+              ? `Task ${t.task_id} Failure Alert`
+              : t.state === "COMPENSATED"
+              ? `Task ${t.task_id} Compensated`
+              : undefined,
+            tooltipText: t.last_error
+              ? t.last_error
+              : t.state === "COMPENSATED"
+              ? "Resource rolled back and released. Tombstone written."
+              : undefined,
           },
         };
       });
@@ -318,118 +432,129 @@ export function OrderDagCanvas({
         },
       },
     ];
-  }, [isResolved, selectedTaskId, tasks, positions, systemLabels]);
+  }, [isResolved, selectedTaskId, tasks, layoutPositions, systemLabels, orderState, chargingStatus]);
 
   // Compute dynamic edges matching the product catalog task DAG
   const computeEdges = useCallback((): Edge[] => {
     if (tasks && tasks.length > 0) {
       const taskIds = new Set(tasks.map((t) => t.task_id));
+      const taskMap = new Map(tasks.map((t) => [t.task_id, t]));
       const edgesList: Edge[] = [];
 
-      const addEdgeIfBothExist = (
-        source: string,
-        target: string,
-        color = "#2563EB",
-        styleExtra?: React.CSSProperties
-      ) => {
-        if (taskIds.has(source) && taskIds.has(target)) {
-          edgesList.push({
-            id: `e-${source}-${target}`,
-            source,
-            target,
-            type: "smoothstep",
-            markerEnd: { type: MarkerType.ArrowClosed, color },
-            style: { stroke: color, strokeWidth: 2, ...styleExtra },
+      let hasExplicitDeps = false;
+      tasks.forEach((t) => {
+        if (t.depends_on && Array.isArray(t.depends_on) && t.depends_on.length > 0) {
+          hasExplicitDeps = true;
+          t.depends_on.forEach((dep: string) => {
+            if (taskIds.has(dep)) {
+              const sourceTask = taskMap.get(dep);
+              const targetTask = t;
+
+              let color = "#2563EB";
+              let animated = false;
+              let strokeDasharray = undefined;
+
+              if (targetTask.state === "RUNNING" || targetTask.state === "RETRYING" || targetTask.state === "COMPENSATING") {
+                animated = true;
+                color = targetTask.state === "RETRYING" ? "#EEB930" : "#2563EB";
+              } else if (targetTask.state === "FAILED" || (targetTask.state === "COMPENSATION_FAILED" && !isResolved)) {
+                color = "#ED2C2C";
+              } else if (targetTask.state === "COMPENSATED" || sourceTask?.state === "COMPENSATED") {
+                color = "#8B7B65";
+                strokeDasharray = "3 3";
+              } else if (targetTask.state === "SKIPPED" || targetTask.state === "PENDING") {
+                color = "#CBD5E1";
+                strokeDasharray = "2 2";
+              } else if (sourceTask?.state === "SUCCEEDED" && targetTask.state === "SUCCEEDED") {
+                color = "#22C55E";
+              }
+
+              edgesList.push({
+                id: `e-${dep}-${t.task_id}`,
+                source: dep,
+                target: t.task_id,
+                type: "smoothstep",
+                animated,
+                markerEnd: { type: MarkerType.ArrowClosed, color },
+                style: { stroke: color, strokeWidth: 2, strokeDasharray },
+              });
+            }
           });
         }
-      };
+      });
 
-      // Detect inventory task variant
-      const invTask = tasks.find((t) =>
-        ["reserve_inventory", "reserve_sim", "reserve_esim_profile"].includes(t.task_id)
-      )?.task_id;
+      if (!hasExplicitDeps) {
+        const addEdgeIfBothExist = (
+          source: string,
+          target: string,
+          color = "#2563EB",
+          styleExtra?: React.CSSProperties
+        ) => {
+          if (taskIds.has(source) && taskIds.has(target)) {
+            edgesList.push({
+              id: `e-${source}-${target}`,
+              source,
+              target,
+              type: "smoothstep",
+              markerEnd: { type: MarkerType.ArrowClosed, color },
+              style: { stroke: color, strokeWidth: 2, ...styleExtra },
+            });
+          }
+        };
 
-      // Detect network task variant
-      const netTask = tasks.find((t) =>
-        ["provision_network", "provision_5g_core", "activate_network_profile"].includes(t.task_id)
-      )?.task_id;
+        const invTask = tasks.find((t) =>
+          ["reserve_inventory", "reserve_sim", "reserve_esim_profile"].includes(t.task_id)
+        )?.task_id;
 
-      // Detect verify task variant
-      const verTask = tasks.find((t) =>
-        ["verify_service", "verify_sim_registration", "verify_activation"].includes(t.task_id)
-      )?.task_id;
+        const netTask = tasks.find((t) =>
+          ["provision_network", "provision_5g_core", "activate_network_profile"].includes(t.task_id)
+        )?.task_id;
 
-      // Forward Execution Wave 1 -> Wave 2
-      if (invTask) {
-        addEdgeIfBothExist("validate_order", invTask);
-      }
-      addEdgeIfBothExist("validate_order", "create_billing_account");
+        const verTask = tasks.find((t) =>
+          ["verify_service", "verify_sim_registration", "verify_activation"].includes(t.task_id)
+        )?.task_id;
 
-      // Wave 2 -> Wave 3
-      if (invTask && netTask) {
-        addEdgeIfBothExist(invTask, netTask);
-      }
-      if (invTask) {
-        addEdgeIfBothExist(invTask, "create_billing_account");
-      }
-
-      // Wave 3 -> Wave 4 (Verify)
-      if (netTask && verTask) {
-        addEdgeIfBothExist(netTask, verTask);
-      }
-      if (verTask) {
-        addEdgeIfBothExist("create_billing_account", verTask);
-      }
-
-      // Wave 4 -> Wave 5 (Start Billing)
-      if (verTask) {
-        addEdgeIfBothExist(verTask, "start_billing");
-      } else if (netTask) {
-        addEdgeIfBothExist(netTask, "start_billing");
-      }
-
-      // Wave 5 -> Wave 6 (Complete & Notify)
-      addEdgeIfBothExist("start_billing", "complete_order");
-      addEdgeIfBothExist("start_billing", "notify_customer");
-
-      // Compensation edges if compensation tasks exist in order
-      addEdgeIfBothExist(
-        "start_billing",
-        "deprovision_network",
-        "#ED2C2C",
-        { strokeWidth: 2.5, strokeDasharray: "4 4" }
-      );
-      addEdgeIfBothExist(
-        "deprovision_network",
-        "release_inventory",
-        "#8B7B65",
-        { strokeDasharray: "3 3" }
-      );
-      addEdgeIfBothExist(
-        "release_inventory",
-        "void_billing_account",
-        "#8B7B65",
-        { strokeDasharray: "3 3" }
-      );
-      addEdgeIfBothExist(
-        "void_billing_account",
-        "notify_customer",
-        "#94A3B8",
-        { strokeDasharray: "3 3" }
-      );
-
-      // If we couldn't match known patterns, construct sequential chain fallback
-      if (edgesList.length === 0 && tasks.length > 1) {
-        for (let i = 0; i < tasks.length - 1; i++) {
-          edgesList.push({
-            id: `e-${tasks[i].task_id}-${tasks[i + 1].task_id}`,
-            source: tasks[i].task_id,
-            target: tasks[i + 1].task_id,
-            type: "smoothstep",
-            markerEnd: { type: MarkerType.ArrowClosed, color: "#2563EB" },
-            style: { stroke: "#2563EB", strokeWidth: 2 },
-          });
+        if (invTask) {
+          addEdgeIfBothExist("validate_order", invTask);
         }
+        if (invTask) {
+          addEdgeIfBothExist(invTask, "create_billing_account");
+        }
+        if (invTask && netTask) {
+          addEdgeIfBothExist(invTask, netTask);
+        }
+        if (netTask && verTask) {
+          addEdgeIfBothExist(netTask, verTask);
+        }
+        if (verTask) {
+          addEdgeIfBothExist("create_billing_account", verTask);
+        }
+        if (verTask) {
+          addEdgeIfBothExist(verTask, "start_billing");
+        } else if (netTask) {
+          addEdgeIfBothExist(netTask, "start_billing");
+        }
+        addEdgeIfBothExist("start_billing", "complete_order");
+        addEdgeIfBothExist("start_billing", "notify_customer");
+      }
+
+      // If order is rolled back or has fallout, add reverse compensation links
+      const failedTask = tasks.find((t) => t.state === "FAILED" || t.state === "COMPENSATION_FAILED");
+      const compensatedTasks = tasks.filter((t) => t.state === "COMPENSATED");
+      if (failedTask && compensatedTasks.length > 0) {
+        compensatedTasks.forEach((ct) => {
+          if (!edgesList.some((e) => e.source === failedTask.task_id && e.target === ct.task_id)) {
+            edgesList.push({
+              id: `e-rollback-${failedTask.task_id}-${ct.task_id}`,
+              source: failedTask.task_id,
+              target: ct.task_id,
+              type: "smoothstep",
+              animated: true,
+              markerEnd: { type: MarkerType.ArrowClosed, color: "#ED2C2C" },
+              style: { stroke: "#ED2C2C", strokeWidth: 2, strokeDasharray: "4 4" },
+            });
+          }
+        });
       }
 
       return edgesList;
@@ -519,7 +644,7 @@ export function OrderDagCanvas({
         style: { stroke: "#E2E8F0", strokeWidth: 2, strokeDasharray: "3 3" },
       },
     ];
-  }, [tasks]);
+  }, [tasks, isResolved]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(getInitialNodes());
   const [edges, setEdges, onEdgesChange] = useEdgesState(computeEdges());

@@ -44,6 +44,8 @@ export interface TaskRecord {
   order_id: string;
   task_id: string;
   system: string;
+  action?: string;
+  depends_on?: string[];
   state: TaskState;
   attempts: number;
   started_at?: string;
