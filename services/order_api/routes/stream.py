@@ -4,8 +4,8 @@ from collections.abc import AsyncGenerator
 
 import redis.asyncio as redis
 from fastapi import APIRouter, Request
-from sse_starlette.sse import EventSourceResponse
 from sqlalchemy import text
+from sse_starlette.sse import EventSourceResponse
 
 from services.order_api.db import get_db_session
 from shared.config import settings

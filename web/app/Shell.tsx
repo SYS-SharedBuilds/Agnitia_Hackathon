@@ -9,7 +9,7 @@ import { useWorkflowNotifications } from "@/lib/notifications";
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useWorkflowNotifications();
+  const { adminNotifications, adminUnreadCount, markAsRead, markAllAsRead } = useWorkflowNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -370,9 +370,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 title="Workflow Notifications"
               >
                 <span className="material-symbols-outlined text-[20px]">notifications</span>
-                {unreadCount > 0 && (
+                {adminUnreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {adminUnreadCount > 9 ? "9+" : adminUnreadCount}
                   </span>
                 )}
               </button>
@@ -383,10 +383,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center gap-2">
                       <span className="font-headline-sm text-sm font-bold text-[#000000]">Workflow Alerts & Breakages</span>
                       <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-black">
-                        {unreadCount} active
+                        {adminUnreadCount} active
                       </span>
                     </div>
-                    {unreadCount > 0 && (
+                    {adminUnreadCount > 0 && (
                       <button
                         onClick={markAllAsRead}
                         className="text-[11.5px] font-bold text-slate-600 hover:text-black hover:underline cursor-pointer"
@@ -397,14 +397,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                   </div>
 
                   <div className="max-h-[420px] overflow-y-auto divide-y divide-[#CBD5E1]">
-                    {notifications.length === 0 ? (
+                    {adminNotifications.length === 0 ? (
                       <div className="p-8 text-center text-[#000000]">
                         <span className="material-symbols-outlined text-3xl text-emerald-600 mb-1">check_circle</span>
                         <p className="text-body-sm font-bold">No broken workflows</p>
                         <p className="text-xs text-slate-500 font-medium mt-0.5">All order DAGs running normally without errors</p>
                       </div>
                     ) : (
-                      notifications.map((item) => (
+                      adminNotifications.map((item) => (
                         <div
                           key={item.id}
                           className={`p-3.5 transition-colors hover:bg-[#F8FAFC] flex flex-col gap-2 ${

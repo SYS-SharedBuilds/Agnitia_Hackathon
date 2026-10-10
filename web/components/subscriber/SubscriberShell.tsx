@@ -14,7 +14,7 @@ interface RegistrarShellProps {
 export function SubscriberShell({ children }: RegistrarShellProps) {
   const pathname = usePathname();
   const { user, switchRole, logout } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useWorkflowNotifications();
+  const { subscriberNotifications, subscriberUnreadCount, markAsRead, markAllAsRead } = useWorkflowNotifications();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -161,9 +161,9 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
                   title="Workflow Alerts"
                 >
                   <span className="material-symbols-outlined text-[20px]">notifications</span>
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">
-                      {unreadCount > 9 ? "9+" : unreadCount}
+                  {subscriberUnreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-600 text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">
+                      {subscriberUnreadCount > 9 ? "9+" : subscriberUnreadCount}
                     </span>
                   )}
                 </button>
@@ -172,12 +172,12 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
                   <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[420px] max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200/90 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-900">Workflow Error Alerts</span>
-                        <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 font-bold">
-                          {unreadCount} active
+                        <span className="text-sm font-bold text-slate-900">Service Provider Notifications</span>
+                        <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-bold">
+                          {subscriberUnreadCount} active
                         </span>
                       </div>
-                      {unreadCount > 0 && (
+                      {subscriberUnreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
                           className="text-[11px] font-bold text-slate-600 hover:text-slate-900 hover:underline cursor-pointer"
@@ -188,32 +188,26 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
                     </div>
 
                     <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100">
-                      {notifications.length === 0 ? (
+                      {subscriberNotifications.length === 0 ? (
                         <div className="p-8 text-center">
                           <span className="material-symbols-outlined text-3xl text-emerald-600 mb-1">check_circle</span>
-                          <p className="text-xs font-bold text-slate-800">All workflows healthy</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5">No broken activations or error states</p>
+                          <p className="text-xs font-bold text-slate-800">All services operating normally</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">No escalated service errors</p>
                         </div>
                       ) : (
-                        notifications.map((item) => (
+                        subscriberNotifications.map((item) => (
                           <div
                             key={item.id}
                             className={`p-3.5 transition-colors hover:bg-slate-50 flex flex-col gap-2 ${
-                              !item.read ? "bg-red-50/20" : "bg-white"
+                              !item.read ? "bg-amber-50/25" : "bg-white"
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span
-                                  className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded uppercase ${
-                                    item.channel === "registrar"
-                                      ? "bg-sky-100 text-sky-800 border border-sky-300"
-                                      : "bg-slate-100 text-slate-800 border border-slate-300"
-                                  }`}
-                                >
+                                <span className="text-[9.5px] font-bold px-1.5 py-0.2 rounded uppercase bg-amber-100 text-amber-800 border border-amber-300">
                                   {item.source}
                                 </span>
-                                <span className="font-mono text-xs font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                                <span className="font-mono text-xs font-black text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
                                   {item.orderRef}
                                 </span>
                                 <span className="font-mono text-[10px] text-slate-500">
@@ -231,8 +225,9 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
                             </div>
 
                             <div>
-                              <div className="text-xs font-bold text-slate-900 leading-snug">
-                                {item.title}
+                              <div className="text-xs font-bold text-amber-900 leading-snug flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-[15px] text-amber-600">contact_support</span>
+                                <span>{item.title}</span>
                               </div>
                               <p className="text-[11.5px] text-slate-600 mt-0.5 font-medium leading-relaxed">
                                 {item.detail}
@@ -246,22 +241,10 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
                                   markAsRead(item.id);
                                   setShowNotifications(false);
                                 }}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 active:scale-97 text-white font-bold text-[11px] shadow-2xs transition-all"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 active:scale-97 text-white font-bold text-[11px] shadow-2xs transition-all"
                               >
-                                <span className="material-symbols-outlined text-[14px]">build_circle</span>
-                                <span>Inspect & Resolve</span>
-                              </Link>
-
-                              <Link
-                                href={item.falloutUrl}
-                                onClick={() => {
-                                  markAsRead(item.id);
-                                  setShowNotifications(false);
-                                }}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] border border-slate-300 transition-all"
-                              >
-                                <span className="material-symbols-outlined text-[13px]">report_problem</span>
-                                <span>Fallout Queue</span>
+                                <span className="material-symbols-outlined text-[14px]">visibility</span>
+                                <span>Track Order</span>
                               </Link>
                             </div>
                           </div>
@@ -271,7 +254,7 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
 
                     <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-center">
                       <span className="font-mono text-[10px] text-slate-500 font-medium">
-                        Unified Orchestration Alert Stream
+                        Service Provider Escalation Stream
                       </span>
                     </div>
                   </div>

@@ -18,7 +18,12 @@ class EventProjector:
     def __init__(self, db_url: str | None = None, redis_url: str | None = None) -> None:
         self.db_url = db_url or settings.DATABASE_URL
         self.redis_url = redis_url or settings.REDIS_URL
-        self.engine = create_async_engine(self.db_url, echo=False)
+        self.engine = create_async_engine(
+            self.db_url,
+            echo=False,
+            pool_pre_ping=True,
+            connect_args={"prepared_statement_cache_size": 0},
+        )
         self.session_factory = async_sessionmaker(self.engine, expire_on_commit=False)
         self.redis_client: Any = None
 

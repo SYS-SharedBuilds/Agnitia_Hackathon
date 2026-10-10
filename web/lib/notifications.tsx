@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MOCK_ORDERS } from "./mockData";
 
 export interface WorkflowNotification {
@@ -31,6 +32,11 @@ interface WorkflowNotificationContextType {
   markAllAsRead: () => void;
   clearNotification: (id: string) => void;
   triggerManualAlert: (notification: WorkflowNotification) => void;
+  // Filtered views based on audience
+  adminNotifications: WorkflowNotification[];
+  adminUnreadCount: number;
+  subscriberNotifications: WorkflowNotification[];
+  subscriberUnreadCount: number;
 }
 
 const WorkflowNotificationContext = createContext<WorkflowNotificationContextType | undefined>(undefined);
@@ -125,11 +131,12 @@ const SEED_NOTIFICATIONS: WorkflowNotification[] = [
 ];
 
 export function WorkflowNotificationProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isRegistrarRoute = pathname?.startsWith("/registrar");
   const [notifications, setNotifications] = useState<WorkflowNotification[]>(SEED_NOTIFICATIONS);
   const [activeToast, setActiveToast] = useState<WorkflowNotification | null>(null);
   const seenErrorsRef = useRef<Set<string>>(new Set(["ORD-20260712-004217", "ORD-20260712-004213", "ORD-20260712-004215"]));
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const dismissToast = useCallback(() => {
     setActiveToast(null);
     if (toastTimeoutRef.current) {
@@ -279,7 +286,25 @@ export function WorkflowNotificationProvider({ children }: { children: React.Rea
     };
   }, [triggerToastAlert]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Admin sees all operational breakdown / workflow error alerts
+  const adminNotifications = notifications;
+  const adminUnreadCount = adminNotifications.filter((n) => !n.read).length;
+
+  // Subscriber / Registrar portal ONLY sees customer-facing alerts:
+  // Specifically "Error sent to the Service Provider" notifications
+  const subscriberNotifications = notifications
+    .filter((n) => n.channel === "registrar" || n.state === "NEEDS_ATTENTION" || n.state === "FAILED" || n.state === "ROLLING_BACK")
+    .map((n) => ({
+      ...n,
+      title: "Error sent to the Service Provider",
+      detail: `Notice dispatched to partner network operations for ${n.orderRef}. Provisioning halted cleanly and under active investigation.`,
+      source: "Service Desk",
+      severity: "warning" as const,
+      inspectUrl: `/registrar/orders/${n.orderId}`,
+    }));
+  const subscriberUnreadCount = subscriberNotifications.filter((n) => !n.read).length;
+
+  const unreadCount = isRegistrarRoute ? subscriberUnreadCount : adminUnreadCount;
 
   return (
     <WorkflowNotificationContext.Provider
@@ -292,16 +317,21 @@ export function WorkflowNotificationProvider({ children }: { children: React.Rea
         markAllAsRead,
         clearNotification,
         triggerManualAlert,
+        adminNotifications,
+        adminUnreadCount,
+        subscriberNotifications,
+        subscriberUnreadCount,
       }}
     >
       {children}
-      {/* Global Interactive Workflow Error Alert Toast */}
-      {activeToast && (
+      {/* Global Interactive Workflow Error Alert Toast - only displayed on Admin NOC portal, NEVER on Registrar/Subscriber portal */}
+      {activeToast && !isRegistrarRoute && (
         <WorkflowErrorToast alert={activeToast} onDismiss={dismissToast} onMarkRead={markAsRead} />
       )}
     </WorkflowNotificationContext.Provider>
   );
 }
+
 
 export function useWorkflowNotifications() {
   const context = useContext(WorkflowNotificationContext);

@@ -33,7 +33,12 @@ class BaselineEngine:
         self.billing = BillingClient(settings.BILLING_MOCK_URL)
         self.notification = NotificationClient(settings.NOTIFICATION_MOCK_URL)
 
-        self.engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        self.engine = create_async_engine(
+            settings.DATABASE_URL,
+            echo=False,
+            pool_pre_ping=True,
+            connect_args={"prepared_statement_cache_size": 0},
+        )
         self.session_factory = async_sessionmaker(self.engine, expire_on_commit=False)
 
     async def run_order(

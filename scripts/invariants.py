@@ -60,7 +60,12 @@ async def check_all_invariants(
     if custom_orders is not None:
         orders = custom_orders
     else:
-        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        engine = create_async_engine(
+            settings.DATABASE_URL,
+            echo=False,
+            pool_pre_ping=True,
+            connect_args={"prepared_statement_cache_size": 0},
+        )
         try:
             async with engine.connect() as conn:
                 q = text(
