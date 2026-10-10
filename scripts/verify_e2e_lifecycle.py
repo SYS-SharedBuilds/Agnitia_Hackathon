@@ -12,11 +12,12 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from typing import Any
 
 API_BASE = "http://127.0.0.1:8000"
 
 
-def http_req(path: str, method: str = "GET", data: dict | None = None) -> tuple[int, dict]:
+def http_req(path: str, method: str = "GET", data: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
     url = f"{API_BASE}{path}"
     headers = {"Content-Type": "application/json"}
     body = json.dumps(data).encode("utf-8") if data is not None else None
@@ -30,13 +31,13 @@ def http_req(path: str, method: str = "GET", data: dict | None = None) -> tuple[
         return e.code, json.loads(res_body) if res_body else {}
 
 
-def get_order_dict(data: dict) -> dict:
+def get_order_dict(data: dict[str, Any]) -> dict[str, Any]:
     if isinstance(data, dict) and "order" in data and isinstance(data["order"], dict):
         return data["order"]
     return data
 
 
-def wait_for_state(order_id: str, terminal_states: list[str], max_wait_sec: int = 50) -> dict:
+def wait_for_state(order_id: str, terminal_states: list[str], max_wait_sec: int = 50) -> dict[str, Any]:
     start = time.time()
     last_state = None
     while time.time() - start < max_wait_sec:
@@ -51,7 +52,7 @@ def wait_for_state(order_id: str, terminal_states: list[str], max_wait_sec: int 
     raise TimeoutError(f"Order {order_id} reached state '{last_state}', expected one of {terminal_states}")
 
 
-def run_e2e_tests():
+def run_e2e_tests() -> None:
     print("=================================================================")
     print("STARTING SWITCHON END-TO-END OPERATIONAL LIFECYCLE TESTS")
     print("=================================================================")
