@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { FalloutDagCanvas } from "@/components/ui/FalloutDagCanvas";
+import { Order } from "@/lib/types";
 
 interface FalloutIncident {
   id: string;
@@ -31,7 +32,7 @@ const INITIAL_INCIDENTS: FalloutIncident[] = [
     msisdn: "+1 555 019-4821",
     plan: "Fiber Broadband 500 / Voice Add-on",
     subsystem: "HLR/HSS Gateway",
-    summary: "HLR deprovision HTTP 504 Gateway Timeout after 5 retries",
+    summary: "HLR slice deprovision 504 Gateway Timeout during rollback cascade",
     errorCode: "hlr:timeout-exhausted",
     slaElapsed: "1h 14m",
     ageMinutes: 74,
@@ -40,13 +41,42 @@ const INITIAL_INCIDENTS: FalloutIncident[] = [
     status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
   },
   {
+    id: "ORD-20260712-004213",
+    customer: "Soren Lindqvist",
+    msisdn: "+46 8 123 4567",
+    plan: "IoT SIM Pool (500x)",
+    subsystem: "SIM/eSIM Provisioner",
+    summary: "SIM Pool allocation conflict (Err 409): Block quota exhausted in eu-north-sto",
+    errorCode: "sim:pool-exhaustion-409",
+    slaElapsed: "52m",
+    ageMinutes: 52,
+    slaSeverity: "medium",
+    createdAt: "2026-07-12T14:44:00Z",
+    assignedTo: "Kavita N.",
+    status: "NEEDS_ATTENTION · LEASE_CONFLICT",
+  },
+  {
+    id: "ORD-20260712-004214",
+    customer: "Apex Systems GmbH",
+    msisdn: "+49 30 2312 990",
+    plan: "Enterprise SIP Trunk",
+    subsystem: "Network Access Gateway",
+    summary: "Verify Service loopback probe rejected (Radius Access-Reject 401: BER > 10^-6)",
+    errorCode: "net:radius-reject-401",
+    slaElapsed: "41m",
+    ageMinutes: 41,
+    slaSeverity: "medium",
+    createdAt: "2026-07-12T14:55:00Z",
+    status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
+  },
+  {
     id: "ORD-20260712-004210",
     customer: "Northstar Freight",
     msisdn: "500x IoT Fleet",
     plan: "M2M Telematics Enterprise",
     subsystem: "OCS Rating",
-    summary: "OCS Void Billing Account rejected: invalid lease state (Err 409)",
-    errorCode: "ocs:lease-state-409",
+    summary: "Create Billing Account rejected (Err 422): Custom tariff table undefined",
+    errorCode: "ocs:tariff-invalid-422",
     slaElapsed: "38m",
     ageMinutes: 38,
     slaSeverity: "medium",
@@ -108,54 +138,104 @@ export default function FalloutQueuePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [isResolving, setIsResolving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showManualModal, setShowManualModal] = useState(false);
   const [resolutionTicket, setResolutionTicket] = useState("INC-94821");
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [activeDagNode, setActiveDagNode] = useState<string>("rollback-deprovision");
 
-  // Fetch real incidents needing attention from Order API
-  useEffect(() => {
-    const fetchLiveFallout = async () => {
-      try {
-        const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiHost}/orders?limit=100`);
-        if (res.ok) {
-          const apiOrders = await res.json();
-          const attentionOrders = apiOrders.filter(
-            (o: { state: string }) => o.state === "NEEDS_ATTENTION"
-          );
-          if (attentionOrders.length > 0) {
-            const liveIncidents: FalloutIncident[] = attentionOrders.map(
-              (o: { order_id: string; customer_id: string; msisdn?: string; product: string; failure_reason?: string; created_at?: string }) => ({
-                id: o.order_id,
-                customer: o.customer_id,
-                msisdn: o.msisdn || "+1 555 019-4821",
-                plan: o.product,
-                subsystem: "HLR/HSS Gateway",
-                summary: o.failure_reason || "Compensation stalled / manual operator intervention needed",
-                errorCode: "hlr:timeout-exhausted",
-                slaElapsed: "12m",
-                ageMinutes: 12,
-                slaSeverity: "high",
-                createdAt: o.created_at || new Date().toISOString(),
-                status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
-              })
-            );
-            setIncidents((prev) => {
-              const liveIds = new Set(liveIncidents.map((i) => i.id));
-              const nonDuplicated = prev.filter((p) => !liveIds.has(p.id));
-              return [...liveIncidents, ...nonDuplicated];
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const fetchFalloutData = useCallback(async (isManual: boolean = false) => {
+    setIsRefreshing(true);
+    try {
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiHost}/orders?limit=100`);
+      if (res.ok) {
+        const apiData: Order[] = await res.json();
+        const attentionOrders = apiData.filter(
+          (o) => o.state === "NEEDS_ATTENTION" || String(o.state) === "FAILED"
+        );
+        if (attentionOrders.length > 0) {
+          const mapped: FalloutIncident[] = attentionOrders.map((o) => ({
+            id: o.order_id,
+            customer: o.customer_id,
+            msisdn: String(o.payload?.msisdn || o.msisdn || "+1 555 019-4821"),
+            plan: o.product === "FIBER_500" ? "Fiber Broadband 500" : o.product === "MOBILE_5G" ? "5G Postpaid Unlimited" : "Enterprise SIP Trunk",
+            subsystem: o.failure_reason?.includes("hlr") ? "HLR/HSS Gateway" : o.failure_reason?.includes("ocs") ? "OCS Rating" : "HLR/HSS Gateway",
+            summary: o.failure_reason || "Downstream task execution or compensation failed after retries.",
+            errorCode: "hlr:timeout-exhausted",
+            slaElapsed: "45m",
+            ageMinutes: 45,
+            slaSeverity: "high",
+            createdAt: o.created_at || new Date().toISOString(),
+            status: "NEEDS_ATTENTION · COMPENSATION_FAILED",
+          }));
+          setIncidents((prev) => {
+            const newMap = new Map(mapped.map((m) => [m.id, m]));
+            prev.forEach((p) => {
+              if (!newMap.has(p.id) && !resolvedIds.includes(p.id)) newMap.set(p.id, p);
             });
-          }
+            return Array.from(newMap.values());
+          });
         }
-      } catch {
-        // Fallback to initial incidents
       }
-    };
-    fetchLiveFallout();
-    const interval = setInterval(fetchLiveFallout, 4000);
+    } catch {
+      // Backend not running, using existing state
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+        if (isManual) {
+          showToast("Fallout Queue refreshed. Live sync complete.");
+        }
+      }, 400);
+    }
+  }, [resolvedIds]);
+
+  // Auto-refresh interval (10s)
+  useEffect(() => {
+    fetchFalloutData(false);
+    if (!autoRefresh) return;
+    const interval = setInterval(() => {
+      fetchFalloutData(false);
+    }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [autoRefresh, fetchFalloutData]);
+
+  // Export Triage Report Handler (CSV & JSON download)
+  const handleExportReport = () => {
+    const activeData = activeTab === "active" ? incidents : resolvedIncidents;
+    const headers = ["Incident ID", "Customer", "MSISDN", "Plan", "Subsystem", "Summary", "Error Code", "SLA Severity", "Status", "Created At"];
+    const rows = activeData.map((inc) => [
+      `"${inc.id}"`,
+      `"${inc.customer}"`,
+      `"${inc.msisdn}"`,
+      `"${inc.plan}"`,
+      `"${inc.subsystem}"`,
+      `"${inc.summary.replace(/"/g, '""')}"`,
+      `"${inc.errorCode}"`,
+      `"${inc.slaSeverity}"`,
+      `"${inc.status}"`,
+      `"${inc.createdAt}"`,
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `fallout-triage-report-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast(`Exported ${activeData.length} incidents to fallout-triage-report.csv`);
+  };
 
   const activeDataSet: FalloutIncident[] = activeTab === "active" ? incidents : resolvedIncidents;
   const selectedIncident = activeDataSet.find((i: FalloutIncident) => i.id === selectedId) || activeDataSet[0];
@@ -298,28 +378,45 @@ export default function FalloutQueuePage() {
               </span>
             </div>
 
-            {/* Auto-Refresh Toggle */}
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className="h-9 px-3 flex items-center gap-1.5 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface rounded-lg shadow-sm border border-outline-variant/30 transition-colors font-label-sm text-label-sm cursor-pointer"
-            >
-              <span
-                className={`material-symbols-outlined text-[16px] text-primary ${
-                  autoRefresh ? "animate-spin" : ""
-                }`}
-                style={{ animationDuration: "10s" }}
+            {/* Auto-Refresh Toggle & Manual Trigger */}
+            <div className="flex items-center rounded-lg shadow-sm border border-[#CBD5E1] bg-white overflow-hidden">
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className="h-9 px-3 flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-[#F8FAFC] transition-colors font-label-sm text-label-sm cursor-pointer"
+                title={autoRefresh ? "Click to pause 10s auto-refresh" : "Click to resume 10s auto-refresh"}
+                type="button"
               >
-                sync
-              </span>
-              <span>{autoRefresh ? "Auto-refresh: 10s" : "Paused"}</span>
-            </button>
+                <span
+                  className={`material-symbols-outlined text-[16px] text-primary ${
+                    autoRefresh || isRefreshing ? "animate-spin" : ""
+                  }`}
+                  style={{ animationDuration: isRefreshing ? "0.8s" : "10s" }}
+                >
+                  sync
+                </span>
+                <span>{autoRefresh ? "Auto-refresh: 10s" : "Paused"}</span>
+              </button>
+              <button
+                onClick={() => fetchFalloutData(true)}
+                disabled={isRefreshing}
+                className="h-9 px-2 border-l border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0A1B2E] transition-colors cursor-pointer flex items-center justify-center"
+                title="Refresh Now"
+                type="button"
+              >
+                <span className={`material-symbols-outlined text-[15px] ${isRefreshing ? "animate-spin" : ""}`}>
+                  refresh
+                </span>
+              </button>
+            </div>
 
-            {/* Export Action */}
+            {/* Export Triage Report Action */}
             <button
-              onClick={() => alert("Exporting Fallout Incident Triage report...")}
-              className="h-9 px-3.5 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg shadow-sm border border-outline-variant/30 transition-colors cursor-pointer"
+              onClick={handleExportReport}
+              className="h-9 px-3.5 flex items-center gap-1.5 bg-white hover:bg-[#F8FAFC] text-[#0A1B2E] font-body-sm text-body-sm font-semibold rounded-lg shadow-sm border border-[#CBD5E1] transition-colors cursor-pointer"
+              title="Download CSV report of active triage incidents"
+              type="button"
             >
-              <span className="material-symbols-outlined text-[16px]">file_download</span>
+              <span className="material-symbols-outlined text-[16px] text-[#0A1B2E]">file_download</span>
               <span>Export Triage Report</span>
             </button>
           </div>
@@ -328,10 +425,10 @@ export default function FalloutQueuePage() {
 
       {/* Two-Column Master / Detail Grid */}
       <div className="grid grid-cols-12 gap-5 items-start">
-        {/* LEFT COLUMN (4 Cols) - Incident Cards Queue */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-3">
+        {/* LEFT COLUMN (4 Cols) - Incident Cards Queue (Sticky with scroll to prevent dead space) */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-3 lg:sticky lg:top-18 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto pr-1">
           {/* Tab Header & Quick Count Ribbon */}
-          <div className="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-3">
+          <div className="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-3 shrink-0">
             <div className="flex items-center justify-between p-1 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
               <button
                 onClick={() => {
@@ -1214,6 +1311,14 @@ export default function FalloutQueuePage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-[#0A1B2E] text-white text-body-sm rounded-xl shadow-lg border border-slate-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <span className="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>
