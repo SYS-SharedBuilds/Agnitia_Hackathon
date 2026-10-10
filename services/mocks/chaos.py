@@ -52,21 +52,52 @@ class ChaosEngine:
         RULES §5.5: Seeded faults are a pure function of (chaos_key, action).
         """
         # Deterministic seeded fault support (RULES §5.5 & X1)
-        if chaos_key and not is_compensation:
+        if chaos_key:
             import hashlib
 
-            if f"fail_{action}" in chaos_key or "always_fail" in chaos_key:
-                return 500, {
-                    "error": f"Chaos: deterministic seeded fault for action '{action}'",
-                    "chaos_key": chaos_key,
-                }
-            if "seed" in chaos_key and action in ("start_charging", "provision"):
-                h = int(hashlib.sha256(f"{chaos_key}:{action}".encode()).hexdigest(), 16)
-                if (h % 100) < 35:
+            if is_compensation:
+                if "fail_compensation" in chaos_key or f"fail_compensation_{action}" in chaos_key:
+                    return 500, {
+                        "error": f"Chaos: deterministic compensation failure for action '{action}'",
+                        "chaos_key": chaos_key,
+                    }
+            else:
+                if "fail_business" in chaos_key or f"business_{action}" in chaos_key:
+                    return 422, {
+                        "code": "OUT_OF_STOCK" if action == "reserve" else "CREDIT_LIMIT_EXCEEDED",
+                        "message": f"Chaos: simulated business error for action '{action}'",
+                        "action": action,
+                        "chaos_key": chaos_key,
+                    }
+                if "transient_2" in chaos_key or f"transient_{action}" in chaos_key:
+                    async with self._lock:
+                        k = f"{chaos_key}:{action}"
+                        c = self._action_fail_counts.get(k, 0)
+                        if c < 2:
+                            self._action_fail_counts[k] = c + 1
+                            return 503, {
+                                "error": f"Chaos: simulated transient failure ({c + 1}/2)",
+                                "action": action,
+                                "chaos_key": chaos_key,
+                            }
+                if "timeout" in chaos_key or f"timeout_{action}" in chaos_key:
+                    await asyncio.sleep(2.0)
+                    return 504, {
+                        "error": f"Chaos: deterministic gateway timeout for action '{action}'",
+                        "chaos_key": chaos_key,
+                    }
+                if f"fail_{action}" in chaos_key or "always_fail" in chaos_key:
                     return 500, {
                         "error": f"Chaos: deterministic seeded fault for action '{action}'",
                         "chaos_key": chaos_key,
                     }
+                if "seed" in chaos_key and action in ("start_charging", "provision"):
+                    h = int(hashlib.sha256(f"{chaos_key}:{action}".encode()).hexdigest(), 16)
+                    if (h % 100) < 35:
+                        return 500, {
+                            "error": f"Chaos: deterministic seeded fault for action '{action}'",
+                            "chaos_key": chaos_key,
+                        }
 
         # Latency simulation
         min_ms = self.config.latency.min_ms

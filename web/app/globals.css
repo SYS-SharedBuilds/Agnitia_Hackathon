@@ -22,3 +22,72 @@
   scrollbar-width: none;
 }
 
+/* Apple Design Foundations (WWDC Fluid Interfaces & Materials) */
+:root {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 1. Response & Tactile Press (WWDC §1 & §4 - instant feedback on pointer-down) */
+.apple-press {
+  transform: translateZ(0);
+  transition: transform 120ms cubic-bezier(0.25, 1, 0.5, 1), opacity 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.apple-press:active {
+  transform: scale(0.97) translateZ(0);
+  opacity: 0.92;
+}
+
+/* 12. Translucent Materials & Depth (WWDC §12 - backdrop blur, light edge borders) */
+.apple-material-header {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.apple-tab-bar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -4px 20px -2px rgba(0, 0, 0, 0.03);
+}
+
+.apple-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  transition: transform 140ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 140ms ease;
+}
+.apple-card:active {
+  transform: scale(0.985);
+}
+
+/* 15. Optical Typography & Dynamic Hierarchy (WWDC §15) */
+.apple-display-title {
+  letter-spacing: -0.028em;
+  line-height: 1.12;
+}
+
+.apple-section-headline {
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+}
+
+.apple-caption {
+  letter-spacing: 0.01em;
+}
+
+/* 14. Reduced Motion (WWDC §14) */
+@media (prefers-reduced-motion: reduce) {
+  .apple-press, .apple-card {
+    transition: opacity 150ms ease !important;
+    transform: none !important;
+  }
+}
+
