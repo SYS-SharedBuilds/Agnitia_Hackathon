@@ -30,6 +30,7 @@ interface OrderDagProps {
   dagMinimap: boolean;
   tasks?: TaskRecord[];
   orderState?: string;
+  chargingStatus?: "FAILED" | "ROLLED_BACK" | "UNDONE" | "SUCCEEDED";
 }
 
 export function OrderDagCanvas({
@@ -39,6 +40,7 @@ export function OrderDagCanvas({
   dagGrid,
   dagMinimap,
   tasks = [],
+  chargingStatus = "FAILED",
 }: OrderDagProps) {
   // Define standard layout coordinate registry for product task graphs
   const positions: Record<string, { x: number; y: number }> = useMemo(
@@ -145,7 +147,13 @@ export function OrderDagCanvas({
       });
     }
 
-    // Default Fallback Demo Graph (S11 Fallout Scenario)
+    // Default Fallback Demo Graph (Adaptable to diverse failed task points if tasks array is empty)
+    const isStartBillingFailed = selectedTaskId === "start_billing" || (!["reserve_inventory", "provision_network", "verify_service", "create_billing_account", "deprovision_network"].includes(selectedTaskId));
+    const isReserveInvFailed = selectedTaskId === "reserve_inventory";
+    const isProvNetFailed = selectedTaskId === "provision_network";
+    const isVerifyFailed = selectedTaskId === "verify_service";
+    const isCreateBillingFailed = selectedTaskId === "create_billing_account";
+
     return [
       {
         id: "validate_order",
@@ -169,9 +177,11 @@ export function OrderDagCanvas({
           taskId: "reserve_inventory",
           system: "SIM/eSIM",
           name: "Reserve Inventory",
-          metaLeft: "Branch A",
-          metaRight: "340ms",
-          status: "SUCCEEDED",
+          metaLeft: isReserveInvFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Restored" : "Err 409") : "Branch A",
+          metaRight: isReserveInvFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Clean" : "1.89s") : "340ms",
+          status: isReserveInvFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "FAILED") : "SUCCEEDED",
+          badgeText: isReserveInvFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "×3") : undefined,
+          badgeStyle: isReserveInvFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "noc" : "failed") : undefined,
           isSelected: selectedTaskId === "reserve_inventory",
         },
       },
@@ -183,9 +193,11 @@ export function OrderDagCanvas({
           taskId: "provision_network",
           system: "HLR/HSS",
           name: "Provision Network",
-          metaLeft: "hlr-east-01",
-          metaRight: "1.42s",
-          status: "SUCCEEDED",
+          metaLeft: isProvNetFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Restored" : "HLR 504") : "hlr-east-01",
+          metaRight: isProvNetFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Clean" : "3.95s") : "1.42s",
+          status: isProvNetFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "FAILED") : (isReserveInvFailed ? "PAUSED / WAITING" : "SUCCEEDED"),
+          badgeText: isProvNetFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "×3") : undefined,
+          badgeStyle: isProvNetFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "noc" : "failed") : undefined,
           isSelected: selectedTaskId === "provision_network",
         },
       },
@@ -197,9 +209,11 @@ export function OrderDagCanvas({
           taskId: "verify_service",
           system: "Network",
           name: "Verify Service",
-          metaLeft: "Ping/Radius",
-          metaRight: "610ms",
-          status: "SUCCEEDED",
+          metaLeft: isVerifyFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Restored" : "Radius 401") : "Ping/Radius",
+          metaRight: isVerifyFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Clean" : "5.40s") : "610ms",
+          status: isVerifyFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "FAILED") : (isReserveInvFailed || isProvNetFailed ? "PAUSED / WAITING" : "SUCCEEDED"),
+          badgeText: isVerifyFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "×3") : undefined,
+          badgeStyle: isVerifyFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "noc" : "failed") : undefined,
           isSelected: selectedTaskId === "verify_service",
         },
       },
@@ -211,9 +225,11 @@ export function OrderDagCanvas({
           taskId: "create_billing_account",
           system: "OCS",
           name: "Create Billing Acct",
-          metaLeft: "Branch B",
-          metaRight: "420ms",
-          status: "SUCCEEDED",
+          metaLeft: isCreateBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Restored" : "Err 422") : "Branch B",
+          metaRight: isCreateBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Clean" : "2.80s") : "420ms",
+          status: isCreateBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "FAILED") : "SUCCEEDED",
+          badgeText: isCreateBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "×3") : undefined,
+          badgeStyle: isCreateBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "noc" : "failed") : undefined,
           isSelected: selectedTaskId === "create_billing_account",
         },
       },
@@ -225,11 +241,11 @@ export function OrderDagCanvas({
           taskId: "start_billing",
           system: "OCS Rating",
           name: "Start Charging",
-          metaLeft: "OCS 500: Time...",
-          metaRight: "3.00s",
-          status: "FAILED",
-          badgeText: "×3",
-          badgeStyle: "attempt",
+          metaLeft: isStartBillingFailed ? (chargingStatus === "ROLLED_BACK" ? "Rolled Back" : chargingStatus === "UNDONE" ? "Request Undone" : "OCS 500: Time...") : "Queued",
+          metaRight: isStartBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Restored" : "3.00s") : "--",
+          status: isStartBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "FAILED") : "PAUSED / WAITING",
+          badgeText: isStartBillingFailed ? (chargingStatus === "ROLLED_BACK" ? "ROLLED_BACK" : chargingStatus === "UNDONE" ? "UNDONE" : "×3") : undefined,
+          badgeStyle: isStartBillingFailed ? (chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "noc" : "attempt") : undefined,
           isSelected: selectedTaskId === "start_billing",
         },
       },
@@ -548,6 +564,20 @@ export function OrderDagCanvas({
               },
             };
           }
+          if (node.id === "start_billing") {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                isSelected,
+                status: chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "RESOLVED" : "FAILED",
+                metaLeft: chargingStatus === "ROLLED_BACK" ? "Rolled Back" : chargingStatus === "UNDONE" ? "Request Undone" : "OCS 500: Time...",
+                metaRight: chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "Restored" : "3.00s",
+                badgeText: chargingStatus === "ROLLED_BACK" ? "ROLLED_BACK" : chargingStatus === "UNDONE" ? "UNDONE" : "×3",
+                badgeStyle: chargingStatus === "ROLLED_BACK" || chargingStatus === "UNDONE" ? "noc" : "attempt",
+              },
+            };
+          }
           return {
             ...node,
             data: {
@@ -559,7 +589,7 @@ export function OrderDagCanvas({
       );
       setEdges(computeEdges());
     }
-  }, [tasks, isResolved, selectedTaskId, getInitialNodes, computeEdges, setNodes, setEdges]);
+  }, [tasks, isResolved, selectedTaskId, chargingStatus, getInitialNodes, computeEdges, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) =>

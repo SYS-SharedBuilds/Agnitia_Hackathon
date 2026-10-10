@@ -39,6 +39,7 @@ app.add_middleware(
 
 # Routes
 app.include_router(orders.router)
+app.include_router(orders.cert_verify_router)
 app.include_router(stream.router)
 app.include_router(metrics.router)
 app.include_router(catalog.router)

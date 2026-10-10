@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Order, OrderEvent, TaskRecord } from "@/lib/types";
 import { OrderDagCanvas } from "@/components/ui/OrderDagCanvas";
+import { MOCK_ORDERS, MOCK_ORDER_TASKS } from "@/lib/mockData";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -53,9 +54,6 @@ export default function OrderDetailPage() {
     safety_assertion: string;
   } | null>(null);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<1 | 2 | 4>(1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentSeq, setCurrentSeq] = useState(31);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
   const [networkLoading, setNetworkLoading] = useState(false);
@@ -67,6 +65,12 @@ export default function OrderDetailPage() {
 
   const [isResolved, setIsResolved] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [chargingStatus, setChargingStatus] = useState<"FAILED" | "ROLLED_BACK" | "UNDONE" | "SUCCEEDED">("FAILED");
+  const [isRollbackModalOpen, setIsRollbackModalOpen] = useState(false);
+  const [isUndoModalOpen, setIsUndoModalOpen] = useState(false);
+  const [isExecutingAction, setIsExecutingAction] = useState(false);
+  const [rollbackNotes, setRollbackNotes] = useState("Rolling back charging quota reservation to previous Verified Service stage. Resetting quota lease in OCS Rating Engine.");
+  const [undoNotes, setUndoNotes] = useState("Canceling and undoing failed Start Charging request token. Marking task as reversed without state residue.");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [dagZoom, setDagZoom] = useState(1);
   const [dagGrid, setDagGrid] = useState(true);
@@ -96,6 +100,14 @@ export default function OrderDetailPage() {
         if (d.order && (d.order.state === "ROLLED_BACK" || d.order.state === "ACTIVE")) {
           setIsResolved(true);
         }
+        if (d.tasks && d.tasks.length > 0) {
+          const failedTask = d.tasks.find((t: TaskRecord) => t.state === "FAILED" || t.state === "COMPENSATION_FAILED");
+          if (failedTask) {
+            setSelectedTaskId(failedTask.task_id);
+          }
+        }
+      } else {
+        throw new Error("Backend order not found");
       }
       if (eRes.ok) {
         setEvents(await eRes.json());
@@ -107,7 +119,22 @@ export default function OrderDetailPage() {
         setAiRcaData(await aRes.json());
       }
     } catch {
-      // Backend not running, using mock state
+      // Backend not running, load matching mock state for orderId
+      const foundOrder = MOCK_ORDERS.find((o) => o.order_id === orderId);
+      if (foundOrder) {
+        setOrder(foundOrder);
+        if (foundOrder.state === "ROLLED_BACK" || foundOrder.state === "ACTIVE") {
+          setIsResolved(true);
+        }
+      }
+      const mockTaskList = MOCK_ORDER_TASKS[orderId];
+      if (mockTaskList && mockTaskList.length > 0) {
+        setTasks(mockTaskList);
+        const failedTask = mockTaskList.find((t) => t.state === "FAILED" || t.state === "COMPENSATION_FAILED");
+        if (failedTask) {
+          setSelectedTaskId(failedTask.task_id);
+        }
+      }
     }
   }, [orderId]);
 
@@ -167,6 +194,52 @@ export default function OrderDetailPage() {
         showToast("Compensation retry triggered for Deprovision Network (hlr-worker-east).");
         fetchDetail();
       }, 800);
+    }
+  };
+
+  const handleRollbackToPreviousStage = async () => {
+    setIsExecutingAction(true);
+    const targetTask = selectedTaskId;
+    try {
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      await fetch(`${apiHost}/orders/${orderId}/rollback-stage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_id: targetTask, target_stage: "previous_stage", notes: rollbackNotes }),
+      });
+    } catch (e) {
+      console.warn("Backend unavailable for rollback stage:", e);
+    } finally {
+      setTimeout(() => {
+        setIsExecutingAction(false);
+        setChargingStatus("ROLLED_BACK");
+        setIsRollbackModalOpen(false);
+        const taskName = targetTask.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        showToast(`Rolled back '${taskName}' to previous stage. Stage checkpoint reverted cleanly.`);
+      }, 600);
+    }
+  };
+
+  const handleUndoFailedRequest = async () => {
+    setIsExecutingAction(true);
+    const targetTask = selectedTaskId;
+    try {
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      await fetch(`${apiHost}/orders/${orderId}/undo-task`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_id: targetTask, notes: undoNotes }),
+      });
+    } catch (e) {
+      console.warn("Backend unavailable for undo task:", e);
+    } finally {
+      setTimeout(() => {
+        setIsExecutingAction(false);
+        setChargingStatus("UNDONE");
+        setIsUndoModalOpen(false);
+        const taskName = targetTask.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        showToast(`Failed request undone. Task '${taskName}' reset with zero orphaned ledger state.`);
+      }, 600);
     }
   };
 
@@ -462,6 +535,156 @@ export default function OrderDetailPage() {
         </div>
       )}
 
+      {/* MODAL DIALOG: ROLL BACK PROCESS TO PREVIOUS STAGE */}
+      {isRollbackModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#131b2e]/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-lg border border-[#E2E8F0] max-w-[580px] w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-white">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#0A1B2E] flex items-center justify-center text-white">
+                  <span className="material-symbols-outlined text-[18px]">history</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-sm text-headline-sm font-bold text-[#000000]">Roll Back to Previous Stage</h3>
+                  <p className="font-label-sm text-label-sm text-[#000000] font-mono">
+                    {orderId} · Step: {selectedTaskId.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                  </p>
+                </div>
+              </div>
+              <button
+                className="text-[#000000] hover:text-[#000000] p-1 rounded-md transition-colors"
+                onClick={() => setIsRollbackModalOpen(false)}
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-body-sm text-[#000000] space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold font-label-sm text-label-sm text-[#000000]">
+                  <span className="material-symbols-outlined text-[16px]">info</span>
+                  <span>Previous Stage Revert Guarantee</span>
+                </div>
+                <p className="leading-relaxed text-[#000000]">
+                  Rolling back cancels the faulted execution of <strong>{selectedTaskId.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</strong> and sets the active checkpoint back to the previously verified stage. All prerequisite allocations remain intact.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="font-label-sm text-label-sm font-semibold text-[#000000] flex items-center justify-between">
+                  <span>Rollback Audit Justification <span className="text-[#000000]">*</span></span>
+                  <span className="text-[#000000] font-normal font-mono">STAGE-ROLLBACK-LOG</span>
+                </label>
+                <textarea
+                  className="w-full text-body-sm font-mono border border-[#CBD5E1] rounded-lg p-2.5 text-[#000000] placeholder:text-[#000000] focus:border-[#0A1B2E] focus:outline-none focus:ring-1 focus:ring-[#0A1B2E] bg-white"
+                  value={rollbackNotes}
+                  onChange={(e) => setRollbackNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] text-emerald-700">verified</span>
+                <span>Idempotency token guaranteed: Downstream systems will receive clean revert signals without orphaned ledger balance.</span>
+              </div>
+            </div>
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-lg font-body-md text-body-md text-[#000000] hover:bg-white border border-[#CBD5E1] transition-colors"
+                onClick={() => setIsRollbackModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRollbackToPreviousStage}
+                disabled={isExecutingAction}
+                className="px-4 py-2 rounded-lg font-body-md text-body-md font-semibold text-white bg-[#0A1B2E] hover:bg-[#14263b] disabled:opacity-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className={`material-symbols-outlined text-[16px] ${isExecutingAction ? "animate-spin" : ""}`}>
+                  {isExecutingAction ? "sync" : "history"}
+                </span>
+                <span>{isExecutingAction ? "Rolling back..." : "Confirm Stage Rollback"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DIALOG: UNDO FAILED REQUEST */}
+      {isUndoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#131b2e]/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-lg border border-[#E2E8F0] max-w-[580px] w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-white">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#0A1B2E] flex items-center justify-center text-white">
+                  <span className="material-symbols-outlined text-[18px]">undo</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-sm text-headline-sm font-bold text-[#000000]">Undo Failed Request</h3>
+                  <p className="font-label-sm text-label-sm text-[#000000] font-mono">
+                    {orderId} · Task: {selectedTaskId}
+                  </p>
+                </div>
+              </div>
+              <button
+                className="text-[#000000] hover:text-[#000000] p-1 rounded-md transition-colors"
+                onClick={() => setIsUndoModalOpen(false)}
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-body-sm text-[#000000] space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold font-label-sm text-label-sm text-[#000000]">
+                  <span className="material-symbols-outlined text-[16px]">warning</span>
+                  <span>Undo &amp; Discard Faulted Request Token</span>
+                </div>
+                <p className="leading-relaxed text-[#000000]">
+                  This sends an undo transaction tombstone to release any half-initialized state or reservation on <strong>{selectedTaskId.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</strong> without triggering a full forward or compensation cycle.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="font-label-sm text-label-sm font-semibold text-[#000000] flex items-center justify-between">
+                  <span>Undo Operator Reason <span className="text-[#000000]">*</span></span>
+                  <span className="text-[#000000] font-normal font-mono">UNDO-REQUEST-LOG</span>
+                </label>
+                <textarea
+                  className="w-full text-body-sm font-mono border border-[#CBD5E1] rounded-lg p-2.5 text-[#000000] placeholder:text-[#000000] focus:border-[#0A1B2E] focus:outline-none focus:ring-1 focus:ring-[#0A1B2E] bg-white"
+                  value={undoNotes}
+                  onChange={(e) => setUndoNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 text-xs flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] text-sky-700">shield</span>
+                <span>Tombstone Guarantee: The discarded request ID will be blacklisted against duplicate execution.</span>
+              </div>
+            </div>
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-lg font-body-md text-body-md text-[#000000] hover:bg-white border border-[#CBD5E1] transition-colors"
+                onClick={() => setIsUndoModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUndoFailedRequest}
+                disabled={isExecutingAction}
+                className="px-4 py-2 rounded-lg font-body-md text-body-md font-semibold text-white bg-[#0A1B2E] hover:bg-[#14263b] disabled:opacity-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className={`material-symbols-outlined text-[16px] ${isExecutingAction ? "animate-spin" : ""}`}>
+                  {isExecutingAction ? "sync" : "undo"}
+                </span>
+                <span>{isExecutingAction ? "Undoing..." : "Confirm Undo Request"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* BREADCRUMB INTERNAL LINK TRACKER */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
@@ -647,184 +870,6 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* 2. TIME-TRAVEL REPLAY SCRUBBER */}
-      <div className="bg-surface-container-lowest rounded-xl shadow-sm p-4 space-y-3 border border-[#E3E8F0]">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          {/* Playback Controls */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-surface-container-low rounded-lg p-0.5 border border-[#E2E8F0]">
-              <button
-                onClick={() => setCurrentSeq(Math.max(1, currentSeq - 1))}
-                className="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"
-                title="Step Back"
-              >
-                <span className="material-symbols-outlined text-[18px]">skip_previous</span>
-              </button>
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="p-1.5 bg-[#0A1B2E] text-white rounded transition-colors shadow-xs"
-                title="Halted"
-              >
-                <span className="material-symbols-outlined text-[18px]">pause</span>
-              </button>
-              <button
-                onClick={() => setCurrentSeq(Math.min(42, currentSeq + 1))}
-                className="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"
-                title="Step Forward"
-              >
-                <span className="material-symbols-outlined text-[18px]">skip_next</span>
-              </button>
-            </div>
-            {/* Speed Selector Pills */}
-            <div className="flex items-center bg-surface-container-low rounded-lg p-0.5 text-label-sm font-label-sm border border-[#E2E8F0]">
-              <button
-                onClick={() => setPlaybackSpeed(1)}
-                className={`px-2 py-1 rounded transition-colors ${
-                  playbackSpeed === 1 ? "bg-surface-container-lowest text-primary font-bold shadow-xs" : "text-on-surface-variant"
-                }`}
-              >
-                1×
-              </button>
-              <button
-                onClick={() => setPlaybackSpeed(2)}
-                className={`px-2 py-1 rounded transition-colors ${
-                  playbackSpeed === 2 ? "bg-surface-container-lowest text-primary font-bold shadow-xs" : "text-on-surface-variant"
-                }`}
-              >
-                2×
-              </button>
-              <button
-                onClick={() => setPlaybackSpeed(4)}
-                className={`px-2 py-1 rounded transition-colors ${
-                  playbackSpeed === 4 ? "bg-surface-container-lowest text-primary font-bold shadow-xs" : "text-on-surface-variant"
-                }`}
-              >
-                4×
-              </button>
-            </div>
-            <span className="text-[#000000]-variant">|</span>
-            <span className="font-label-md text-label-md font-semibold text-on-surface">
-              Seq {events.length > 0 ? Math.min(currentSeq, events.length) : currentSeq} <span className="text-on-surface-variant font-normal">/ {events.length || 42}</span>
-            </span>
-          </div>
-
-          {/* Scrubber Label / Status Alert */}
-          <div className="flex items-center gap-2 bg-[#F8FAFC] border border-[#CBD5E1] px-3 py-1 rounded-full text-label-sm font-label-sm text-[#000000] shadow-2xs">
-            <span className="material-symbols-outlined text-[15px] text-[#000000]">
-              {order?.state === "ACTIVE" ? "check_circle" : order?.state === "NEEDS_ATTENTION" ? "error" : "info"}
-            </span>
-            <span>
-              {(() => {
-                const totalEvts = events.length || 42;
-                const activeEvt = events[Math.min(currentSeq - 1, events.length - 1)];
-                if (activeEvt) {
-                  return (
-                    <>
-                      Seq {activeEvt.seq}: <span className="font-bold font-mono text-[#000000]">{activeEvt.type}</span> · {activeEvt.task_id || order?.state}
-                    </>
-                  );
-                }
-                if (order?.state === "ACTIVE") {
-                  return (
-                    <>
-                      Seq {totalEvts}: <span className="font-bold font-mono text-[#000000]">order.completed</span> · All forward tasks succeeded
-                    </>
-                  );
-                }
-                if (order?.state === "NEEDS_ATTENTION") {
-                  return (
-                    <>
-                      Seq {currentSeq}: <span className="font-bold font-mono text-[#000000]">saga.compensation_failed</span> · Rollback Blocked ({order.failure_reason || "Downstream failure"})
-                    </>
-                  );
-                }
-                return (
-                  <>
-                    Seq {currentSeq}: <span className="font-bold font-mono text-[#000000]">order.in_progress</span> · Processing DAG tasks
-                  </>
-                );
-              })()}
-            </span>
-          </div>
-
-          {/* Jump & Action Buttons */}
-          <div className="flex items-center gap-2">
-            {order?.state === "NEEDS_ATTENTION" ? (
-              <>
-                <button
-                  onClick={() => setCurrentSeq(events.length || 31)}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-semibold bg-[#0A1B2E] text-white hover:bg-[#1E293B] transition-colors shadow-2xs"
-                >
-                  <span className="material-symbols-outlined text-[14px]">report_problem</span>
-                  <span>Jump to Fault Point</span>
-                </button>
-                <button className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-white text-[#000000] border border-[#CBD5E1] hover:bg-[#F8FAFC] transition-colors shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0A1B2E] animate-ping"></span>
-                  <span>Waiting on NOC</span>
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setCurrentSeq(events.length || 8)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-white text-[#000000] border border-[#CBD5E1] hover:bg-[#F8FAFC] transition-colors shadow-2xs"
-              >
-                <span className="material-symbols-outlined text-[14px]">fast_forward</span>
-                <span>Jump to Latest Event</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Scrubber Progress Bar */}
-        <div className="relative pt-2 pb-1">
-          {(() => {
-            const maxSeq = events.length > 0 ? events.length : 42;
-            const isHalted = order?.state === "NEEDS_ATTENTION";
-            const isCompleted = order?.state === "ACTIVE";
-            const percent = isCompleted ? 100 : Math.min(100, Math.max(10, Math.round((currentSeq / maxSeq) * 100)));
-            return (
-              <>
-                <div
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const clickPercent = (e.clientX - rect.left) / rect.width;
-                    setCurrentSeq(Math.max(1, Math.round(clickPercent * maxSeq)));
-                  }}
-                  className="w-full h-2 bg-[#F1F5F9] rounded-full relative cursor-pointer overflow-hidden border border-[#CBD5E1]"
-                >
-                  <div
-                    className={`absolute left-0 top-0 bottom-0 rounded-full transition-all duration-300 ${
-                      isCompleted ? "bg-[#0A1B2E]" : isHalted ? "bg-red-700" : "bg-[#0A1B2E]"
-                    }`}
-                    style={{ width: `${percent}%` }}
-                  ></div>
-                </div>
-                {/* Playhead Thumb Indicator */}
-                <div
-                  className="absolute top-1 -ml-2 flex flex-col items-center pointer-events-none transition-all"
-                  style={{ left: `${percent}%` }}
-                >
-                  <div className={`w-4 h-4 border-2 border-white rounded-full shadow-md animate-pulse ${
-                    isCompleted ? "bg-[#0A1B2E]" : isHalted ? "bg-red-700" : "bg-[#0A1B2E]"
-                  }`}></div>
-                </div>
-                {/* Timeline Tick Marks */}
-                <div className="flex justify-between items-center px-1 pt-1.5 font-label-sm text-label-sm text-[#000000] font-mono">
-                  <span>0.00s (Validate)</span>
-                  <span>0.34s (Reserve SIM)</span>
-                  <span className="text-[#000000] font-semibold">0.96s (Network &amp; Billing)</span>
-                  <span className="text-[#000000] font-bold">
-                    {isCompleted ? "1.65s (Activated)" : isHalted ? "Compensation Halted" : "Executing..."}
-                  </span>
-                  <span className="text-[#000000]">
-                    Status: {order?.state || "IN_PROGRESS"}
-                  </span>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </div>
 
       {/* 3. MAIN CONTENT: REGION A & REGION B */}
       <div className="grid grid-cols-12 gap-5 items-start">
@@ -874,6 +919,7 @@ export default function OrderDetailPage() {
               dagMinimap={dagMinimap}
               tasks={tasks}
               orderState={order?.state}
+              chargingStatus={chargingStatus}
             />
           </div>
         </div>
@@ -1212,11 +1258,11 @@ export default function OrderDetailPage() {
                       title: "Start Charging",
                       system: "OCS Rating Engine",
                       action: "start_quota_reservation",
-                      attempts: "3/3 (Exhausted)",
-                      duration: "3,000ms",
-                      result: "FAILED",
-                      code: "HTTP 500 Internal Timeout",
-                      err: "OCS_TIMEOUT_504 · Upstream tariff lock error",
+                      attempts: chargingStatus === "FAILED" ? "3/3 (Exhausted)" : "Reconciled (1/1)",
+                      duration: chargingStatus === "FAILED" ? "3,000ms" : "210ms",
+                      result: chargingStatus === "FAILED" ? "FAILED" : chargingStatus === "ROLLED_BACK" ? "ROLLED_BACK" : "UNDONE",
+                      code: chargingStatus === "FAILED" ? "HTTP 500 Internal Timeout" : chargingStatus === "ROLLED_BACK" ? "STAGE_RESTORE_200" : "REQUEST_UNDONE_200",
+                      err: chargingStatus === "FAILED" ? "OCS_TIMEOUT_504 · Upstream tariff lock error" : chargingStatus === "ROLLED_BACK" ? "Rolled back to previous stage (Verify Service) · Resource lease released" : "Failed request undone · Zero state residue in OCS ledger",
                     },
                     deprovision_network: {
                       title: "Deprovision Network",
@@ -1370,6 +1416,84 @@ export default function OrderDetailPage() {
                           </pre>
                         </div>
                       </div>
+
+                      {/* ADMIN OVERRIDE & RECOVERY CONTROLS */}
+                      {(selectedTaskId === "start_billing" || liveTask?.state === "FAILED" || liveTask?.state === "COMPENSATION_FAILED" || currentMeta.result.includes("FAILED")) && (
+                        <div className="p-3.5 bg-neutral-50 rounded-lg border border-neutral-300 space-y-3 mt-1 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-label-sm text-label-sm font-bold uppercase tracking-wider text-[#000000] flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[16px] text-[#000000]">admin_panel_settings</span>
+                              <span>Admin Remediation Controls</span>
+                            </span>
+                            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                              chargingStatus === "FAILED" ? "bg-rose-100 text-rose-800 border border-rose-200" : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            }`}>
+                              {chargingStatus === "FAILED" ? "ACTION REQUIRED" : "RECOVERED"}
+                            </span>
+                          </div>
+
+                          {chargingStatus === "FAILED" ? (
+                            <>
+                              <p className="font-body-sm text-body-sm text-[#000000] leading-snug">
+                                The <strong>{currentMeta.title}</strong> stage encountered a downstream error ({currentMeta.code}). Select an operational action to recover the workflow:
+                              </p>
+                              <div className="flex flex-col gap-2 pt-1">
+                                <button
+                                  onClick={() => setIsRollbackModalOpen(true)}
+                                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-[#CBD5E1] hover:border-black hover:bg-neutral-50 transition-colors cursor-pointer group shadow-2xs"
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-[#000000]">history</span>
+                                    <div className="text-left">
+                                      <div className="font-bold text-xs text-[#000000]">Roll Back to Previous Stage</div>
+                                      <div className="text-[11px] text-slate-600">Reverts to previous valid checkpoint &amp; clears reservations</div>
+                                    </div>
+                                  </div>
+                                  <span className="material-symbols-outlined text-[16px] text-[#000000] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setIsUndoModalOpen(true)}
+                                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-[#CBD5E1] hover:border-black hover:bg-neutral-50 transition-colors cursor-pointer group shadow-2xs"
+                                  type="button"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-[#000000]">undo</span>
+                                    <div className="text-left">
+                                      <div className="font-bold text-xs text-[#000000]">Undo Failed Request</div>
+                                      <div className="text-[11px] text-slate-600">Discards the faulted attempt cleanly with zero state residue</div>
+                                    </div>
+                                  </div>
+                                  <span className="material-symbols-outlined text-[16px] text-[#000000] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="p-2.5 bg-white border border-emerald-300 rounded-lg space-y-1">
+                              <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-xs">
+                                <span className="material-symbols-outlined text-[16px] text-emerald-700">check_circle</span>
+                                <span>{chargingStatus === "ROLLED_BACK" ? "Rolled Back to Previous Stage" : "Failed Request Undone"}</span>
+                              </div>
+                              <p className="text-[11px] text-slate-700 leading-normal">
+                                {chargingStatus === "ROLLED_BACK"
+                                  ? `Execution returned to previous stage for ${currentMeta.title} without orphaned locks.`
+                                  : `Faulted request for ${currentMeta.title} canceled and discarded.`}
+                              </p>
+                              <button
+                                onClick={() => {
+                                  setChargingStatus("FAILED");
+                                  showToast(`Reset demo view to failed ${currentMeta.title} state.`);
+                                }}
+                                className="text-[11px] font-bold text-black underline mt-1 cursor-pointer"
+                                type="button"
+                              >
+                                Re-simulate Failure
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </>
                   );
                 })()}

@@ -447,3 +447,30 @@ async def resolve_order(
     except Exception as exc:
         logger.error("resolve_workflow_failed", order_id=order_id, error=str(exc))
         raise HTTPException(status_code=500, detail="Failed to signal workflow resolution") from exc
+
+
+cert_verify_router = APIRouter(tags=["Certificates"])
+
+
+@cert_verify_router.post("/certificates/verify")
+async def verify_certificate(
+    cert: dict[str, Any],
+) -> dict[str, Any]:
+    """Verify an Ed25519-signed Consistency Certificate per OpenAPI spec."""
+    try:
+        body = cert.get("body", cert)
+        sig = cert.get("signature", "")
+        pub_key = cert.get("public_key_pem") or _cert_signer.get_public_key_pem()
+
+        is_valid = CertificateSigner.verify(body, sig, pub_key)
+        return {
+            "valid": is_valid,
+            "reason": (
+                "Ed25519 digital signature verified against SwitchOn consensus key"
+                if is_valid
+                else "Invalid Ed25519 signature: digital proof does not match state root"
+            ),
+        }
+    except Exception as exc:
+        return {"valid": False, "reason": f"Verification error: {exc}"}
+

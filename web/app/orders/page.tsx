@@ -73,10 +73,10 @@ const INITIAL_ORDERS: DisplayOrder[] = [
     msisdn: "+49 30 2312 990",
     product: "Enterprise SIP Trunk",
     status: "NEEDS_ATTENTION",
-    tasksCompleted: 3,
+    tasksCompleted: 4,
     totalTasks: 8,
-    taskDetail: "Manual approval",
-    retries: "1",
+    taskDetail: "Radius 401 Reject",
+    retries: "3 (exhausted)",
     activationTime: "8.4s",
     created: "14m ago",
     certStatus: "pending",
@@ -88,9 +88,9 @@ const INITIAL_ORDERS: DisplayOrder[] = [
     msisdn: "+46 8 123 4567",
     product: "IoT SIM Pool (500x)",
     status: "FAILED",
-    tasksCompleted: 5,
+    tasksCompleted: 1,
     totalTasks: 8,
-    taskDetail: "OCS Err 409",
+    taskDetail: "SIM Pool 409",
     retries: "3 (exhausted)",
     activationTime: "18.9s",
     created: "22m ago",
@@ -140,6 +140,96 @@ const INITIAL_ORDERS: DisplayOrder[] = [
     activationTime: "—",
     created: "44m ago",
     certStatus: "none",
+  },
+  {
+    id: "ORD-20260712-004209",
+    clientRef: "EXT-CRM-990382",
+    customer: "Acme Logistics Global",
+    msisdn: "+1 415 555-0132",
+    product: "IoT SIM Pool (500x)",
+    status: "FAILED",
+    tasksCompleted: 3,
+    totalTasks: 8,
+    taskDetail: "HLR Timeout 504",
+    retries: "3 (exhausted)",
+    activationTime: "16.4s",
+    created: "52m ago",
+    certStatus: "revoked",
+  },
+  {
+    id: "ORD-20260712-004208",
+    clientRef: "EXT-CRM-990312",
+    customer: "David Alaba",
+    msisdn: "+43 1 515 8800",
+    product: "5G Postpaid Unlimited",
+    status: "SUCCEEDED",
+    tasksCompleted: 8,
+    totalTasks: 8,
+    taskDetail: "100%",
+    retries: "0",
+    activationTime: "3.8s",
+    created: "1h ago",
+    certStatus: "verified",
+  },
+  {
+    id: "ORD-20260712-004207",
+    clientRef: "EXT-CRM-990264",
+    customer: "Nordic Tech AB",
+    msisdn: "+46 8 555 1234",
+    product: "Enterprise SIP Trunk",
+    status: "NEEDS_ATTENTION",
+    tasksCompleted: 4,
+    totalTasks: 8,
+    taskDetail: "Credit check hold",
+    retries: "2",
+    activationTime: "14.1s",
+    created: "1h 15m ago",
+    certStatus: "pending",
+  },
+  {
+    id: "ORD-20260712-004206",
+    clientRef: "EXT-CRM-990198",
+    customer: "Elena Rostova",
+    msisdn: "+49 89 21800",
+    product: "eSIM Roaming Global",
+    status: "FAILED",
+    tasksCompleted: 2,
+    totalTasks: 8,
+    taskDetail: "Inventory OOS",
+    retries: "1",
+    activationTime: "11.2s",
+    created: "1h 30m ago",
+    certStatus: "revoked",
+  },
+  {
+    id: "ORD-20260712-004205",
+    clientRef: "EXT-CRM-990145",
+    customer: "Lucas Martins",
+    msisdn: "+55 11 98765-4321",
+    product: "Fiber Broadband 500",
+    status: "SUCCEEDED",
+    tasksCompleted: 8,
+    totalTasks: 8,
+    taskDetail: "100%",
+    retries: "0",
+    activationTime: "4.5s",
+    created: "2h ago",
+    certStatus: "verified",
+  },
+  {
+    id: "ORD-20260712-004204",
+    clientRef: "EXT-CRM-990112",
+    customer: "FinTech Prime Ltd",
+    msisdn: "+44 20 7946 0888",
+    product: "Enterprise SIP Trunk",
+    status: "COMPENSATED",
+    tasksCompleted: 5,
+    totalTasks: 5,
+    taskDetail: "Clean rollback",
+    retries: "1",
+    activationTime: "17.6s",
+    created: "2h 10m ago",
+    certStatus: "verified",
   },
 ];
 
@@ -299,6 +389,20 @@ export default function OrdersPage() {
     return true;
   });
 
+  // Dynamic counts for top header and tab badges
+  const totalOrdersCount = orders.length;
+  const failedTabCount = orders.filter((o) => o.status === "FAILED").length;
+  const slowTabCount = orders.filter(
+    (o) =>
+      o.activationTime.includes("12.") ||
+      o.activationTime.includes("18.") ||
+      o.activationTime.includes("15.") ||
+      o.activationTime.includes("16.") ||
+      o.activationTime.includes("14.") ||
+      o.activationTime.includes("17.")
+  ).length;
+  const attentionTabCount = orders.filter((o) => o.status === "NEEDS_ATTENTION").length;
+
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / rowsPerPage));
   const validCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (validCurrentPage - 1) * rowsPerPage;
@@ -378,7 +482,7 @@ export default function OrdersPage() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="font-headline-lg text-headline-lg text-[#000000] tracking-tight font-bold">Orders</h1>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold bg-white text-[#000000] border border-[#CBD5E1]">
-              1,284 total orders
+              {totalOrdersCount} total orders
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-sm text-label-sm text-[#000000] bg-white border border-[#CBD5E1] font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-[#000000]"></span>
@@ -392,6 +496,13 @@ export default function OrdersPage() {
 
         {/* Right Utility Buttons */}
         <div className="flex items-center gap-2.5 shrink-0">
+          <Link
+            href="/orders/new-orders"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded bg-[#000000] text-white hover:bg-neutral-800 transition-colors font-body-md text-body-md font-bold shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            <span>New Order</span>
+          </Link>
           <button
             onClick={() => {
               const csv = "Order ID,Client Ref,Customer,Product,Status\n" + orders.map(o => `${o.id},${o.clientRef},${o.customer},${o.product},${o.status}`).join("\n");
@@ -411,6 +522,63 @@ export default function OrdersPage() {
         </div>
       </section>
 
+      {/* DASHBOARD SUMMARY KPI CARDS */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div className="bg-white p-3.5 rounded-xl border border-[#CBD5E1] shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748B]">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Received</span>
+            <span className="material-symbols-outlined text-[20px] text-black">all_inbox</span>
+          </div>
+          <div className="mt-2 flex items-baseline justify-between">
+            <span className="text-2xl font-bold font-mono text-black">{totalOrdersCount}</span>
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Live SSE</span>
+          </div>
+          <span className="text-[11px] text-slate-500 mt-1">Synchronized with User Portal</span>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-[#CBD5E1] shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748B]">
+            <span className="text-xs font-bold uppercase tracking-wider">In Flight (Running)</span>
+            <span className="material-symbols-outlined text-[20px] text-blue-600">sync</span>
+          </div>
+          <div className="mt-2 flex items-baseline justify-between">
+            <span className="text-2xl font-bold font-mono text-black">
+              {orders.filter(o => o.status === "RUNNING" || o.status === "RETRYING" || o.status === "PENDING").length}
+            </span>
+            <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Temporal</span>
+          </div>
+          <span className="text-[11px] text-slate-500 mt-1">Actively provisioning</span>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-[#CBD5E1] shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748B]">
+            <span className="text-xs font-bold uppercase tracking-wider">Active &amp; Succeeded</span>
+            <span className="material-symbols-outlined text-[20px] text-emerald-600">check_circle</span>
+          </div>
+          <div className="mt-2 flex items-baseline justify-between">
+            <span className="text-2xl font-bold font-mono text-black">
+              {orders.filter(o => o.status === "SUCCEEDED").length}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">100% Sagas</span>
+          </div>
+          <span className="text-[11px] text-slate-500 mt-1">Verified with Signed Certs</span>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-[#CBD5E1] shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748B]">
+            <span className="text-xs font-bold uppercase tracking-wider">Fallout / Failed</span>
+            <span className="material-symbols-outlined text-[20px] text-rose-600">report_problem</span>
+          </div>
+          <div className="mt-2 flex items-baseline justify-between">
+            <span className="text-2xl font-bold font-mono text-black">
+              {orders.filter(o => o.status === "FAILED" || o.status === "NEEDS_ATTENTION" || o.status === "COMPENSATED" || o.status === "COMPENSATING").length}
+            </span>
+            <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">Clean Rollback</span>
+          </div>
+          <span className="text-[11px] text-slate-500 mt-1">0 Inconsistent Leaks</span>
+        </div>
+      </section>
+
       {/* SAVED VIEW TABS */}
       <div className="flex items-center justify-between bg-white px-4 rounded-xl shadow-2xs border border-[#E2E8F0]">
         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
@@ -426,7 +594,7 @@ export default function OrdersPage() {
           >
             <span>All Orchestrations</span>
             <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
-              1,284
+              {totalOrdersCount}
             </span>
           </button>
 
@@ -442,7 +610,7 @@ export default function OrdersPage() {
           >
             <span>Failed last 24h</span>
             <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
-              14
+              {failedTabCount}
             </span>
           </button>
 
@@ -458,7 +626,7 @@ export default function OrdersPage() {
           >
             <span>Slow (&gt;p95)</span>
             <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
-              48
+              {slowTabCount}
             </span>
           </button>
 
@@ -474,7 +642,7 @@ export default function OrdersPage() {
           >
             <span>Needs Attention</span>
             <span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-white text-[#000000] font-bold border border-[#CBD5E1]">
-              2
+              {attentionTabCount}
             </span>
           </button>
         </div>
@@ -763,13 +931,14 @@ export default function OrdersPage() {
                 return (
                   <tr
                     key={ord.id}
-                    className={`h-12 transition-colors ${
+                    onClick={() => window.location.href = `/orders/${ord.id}`}
+                    className={`h-12 transition-colors cursor-pointer group ${
                       isSelected
-                        ? "bg-[#F8FAFC] hover:bg-[#F1F5F9]/70"
+                        ? "bg-[#F8FAFC] hover:bg-[#F1F5F9]/80"
                         : "bg-white hover:bg-[#F8FAFC]"
                     }`}
                   >
-                    <td className="px-3 text-center">
+                    <td className="px-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <input
                         checked={isSelected}
                         onChange={() => toggleSelect(ord.id)}
@@ -866,6 +1035,9 @@ export default function OrdersPage() {
                           </span>
                         )}
                         <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
                           className="p-1 text-[#000000] hover:text-[#000000] rounded hover:bg-[#F1F5F9]"
                           title="Row Actions"
                           type="button"
@@ -981,11 +1153,11 @@ export default function OrdersPage() {
                 {selectedIds.length} orders selected
               </span>
               <button
-                onClick={toggleSelectAll}
+                onClick={() => setSelectedIds(orders.map((o) => o.id))}
                 className="font-body-sm text-body-sm text-[#000000] hover:underline font-bold"
                 type="button"
               >
-                Select all 1,284 orders across pages
+                Select all {totalOrdersCount} orders across pages
               </button>
             </div>
             {/* Bulk Actions */}
