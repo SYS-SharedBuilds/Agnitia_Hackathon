@@ -537,6 +537,124 @@ async def resolve_order(
     return {"status": "resolved", "order_id": order_id, "workflow_signaled": str(signaled)}
 
 
+@router.post("/{order_id}/retry-compensation")
+async def retry_compensation_order(
+    order_id: str,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    res = await session.execute(
+        text("SELECT state FROM ops.orders WHERE order_id = :id"), {"id": order_id}
+    )
+    row = res.mappings().first()
+    if not row:
+        raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+
+    await session.execute(
+        text(
+            """
+            UPDATE ops.tasks
+            SET state = 'COMPENSATING',
+                attempts = attempts + 1
+            WHERE order_id = :id AND state = 'COMPENSATION_FAILED'
+            """
+        ),
+        {"id": order_id},
+    )
+    await session.execute(
+        text(
+            """
+            INSERT INTO ops.events (order_id, seq, event_id, ts, type, payload)
+            VALUES (:id, 9998, :evt_id, NOW(), 'order.compensating', :payload)
+            ON CONFLICT DO NOTHING
+            """
+        ),
+        {
+            "id": order_id,
+            "evt_id": f"evt_retry_{order_id}_{int(datetime.now(UTC).timestamp())}",
+            "payload": json.dumps({"action": "retry_compensation", "operator": "admin"}),
+        },
+    )
+    await session.commit()
+    return {"status": "retry_compensation_triggered", "order_id": order_id}
+
+
+@router.post("/{order_id}/rollback-stage")
+async def rollback_stage_order(
+    order_id: str,
+    body: dict[str, Any],
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    task_id = body.get("task_id", "")
+    target_stage = body.get("target_stage", "previous_stage")
+    notes = body.get("notes", "Rolled back to previous stage by operator")
+
+    await session.execute(
+        text(
+            """
+            UPDATE ops.tasks
+            SET state = 'COMPENSATED',
+                last_error = :notes
+            WHERE order_id = :id AND task_id = :task_id
+            """
+        ),
+        {"id": order_id, "task_id": task_id, "notes": notes},
+    )
+    await session.execute(
+        text(
+            """
+            INSERT INTO ops.events (order_id, seq, event_id, ts, type, payload)
+            VALUES (:id, 9997, :evt_id, NOW(), 'order.rolled_back_stage', :payload)
+            ON CONFLICT DO NOTHING
+            """
+        ),
+        {
+            "id": order_id,
+            "evt_id": f"evt_rb_stage_{order_id}_{int(datetime.now(UTC).timestamp())}",
+            "payload": json.dumps({"task_id": task_id, "target_stage": target_stage, "notes": notes}),
+        },
+    )
+    await session.commit()
+    return {"status": "rolled_back_to_stage", "order_id": order_id, "task_id": task_id}
+
+
+@router.post("/{order_id}/undo-task")
+async def undo_task_order(
+    order_id: str,
+    body: dict[str, Any],
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    task_id = body.get("task_id", "")
+    notes = body.get("notes", "Undo failed step by operator")
+
+    await session.execute(
+        text(
+            """
+            UPDATE ops.tasks
+            SET state = 'COMPENSATED',
+                last_error = :notes
+            WHERE order_id = :id AND task_id = :task_id
+            """
+        ),
+        {"id": order_id, "task_id": task_id, "notes": notes},
+    )
+    await session.execute(
+        text(
+            """
+            INSERT INTO ops.events (order_id, seq, event_id, ts, type, payload)
+            VALUES (:id, 9996, :evt_id, NOW(), 'order.task_undone', :payload)
+            ON CONFLICT DO NOTHING
+            """
+        ),
+        {
+            "id": order_id,
+            "evt_id": f"evt_undo_{order_id}_{int(datetime.now(UTC).timestamp())}",
+            "payload": json.dumps({"task_id": task_id, "notes": notes}),
+        },
+    )
+    await session.commit()
+    return {"status": "task_undone", "order_id": order_id, "task_id": task_id}
+
+
 cert_verify_router = APIRouter(tags=["Certificates"])
 
 

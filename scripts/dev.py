@@ -77,9 +77,23 @@ def start_infra_containers() -> None:
         log("WARN", YELLOW, f"Could not start docker compose services: {exc}")
 
 
+def cleanup_stale_processes() -> None:
+    """Free development ports and clean up orphaned background processes from previous aborted runs."""
+    dev_ports = [3000, 8000, 8101, 8102, 8103, 8104, 8105]
+    if sys.platform != "win32":
+        try:
+            port_args = [f"{p}/tcp" for p in dev_ports]
+            subprocess.run(["fuser", "-k", *port_args], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            subprocess.run(["pkill", "-f", "services.orchestrator.worker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            subprocess.run(["pkill", "-f", "services.orchestrator.projector"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        except Exception:
+            pass
+
+
 def main() -> NoReturn:
     os.chdir(REPO_ROOT)
     start_infra_containers()
+    cleanup_stale_processes()
 
     services: list[ServiceConfig] = [
         # Order API gateway
@@ -341,6 +355,9 @@ def main() -> NoReturn:
                 if ret is not None and name not in exited_services:
                     exited_services.add(name)
                     log(name, color, f"Process exited with code {ret}")
+                    if name in ("web", "order-api"):
+                        log("SYSTEM", YELLOW, f"Critical service '{name}' stopped. Shutting down stack...")
+                        shutdown()
             time.sleep(1)
     except KeyboardInterrupt:
         shutdown()

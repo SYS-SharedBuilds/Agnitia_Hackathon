@@ -289,6 +289,8 @@ export default function NewOrderPage() {
           iccid: cleanIccid,
           engine: "temporal",
           chaos_key: chaosSeed.trim() || undefined,
+          channel: "admin",
+          source: "Admin NOC Portal",
         }),
       });
       if (res.ok) {

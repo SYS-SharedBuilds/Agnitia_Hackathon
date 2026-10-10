@@ -11,6 +11,7 @@ from shared.config import settings
 
 async def check_all_invariants(
     custom_orders: list[dict[str, Any]] | None = None,
+    custom_mock_data: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Evaluates cross-system invariants defined in BRAIN.md §7 (INV-1..INV-6).
     Reads ops.orders and audits state directly against the mock systems' persistent store via /admin/audit/resources.
@@ -19,39 +20,40 @@ async def check_all_invariants(
     overall_pass = True
 
     # 1. Fetch live resource allocations from each mock system
-    inv_data: dict[str, dict[str, Any]] = {}
-    net_data: dict[str, dict[str, Any]] = {}
-    bil_data: dict[str, dict[str, Any]] = {}
-    oms_data: dict[str, dict[str, Any]] = {}
+    inv_data: dict[str, dict[str, Any]] = custom_mock_data.get("inventory", {}) if custom_mock_data else {}
+    net_data: dict[str, dict[str, Any]] = custom_mock_data.get("network", {}) if custom_mock_data else {}
+    bil_data: dict[str, dict[str, Any]] = custom_mock_data.get("billing", {}) if custom_mock_data else {}
+    oms_data: dict[str, dict[str, Any]] = custom_mock_data.get("oms", {}) if custom_mock_data else {}
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        try:
-            r = await client.get(f"{settings.INVENTORY_MOCK_URL}/admin/audit/resources")
-            if r.is_success:
-                inv_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
-        except Exception:
-            pass
+    if not custom_mock_data:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                r = await client.get(f"{settings.INVENTORY_MOCK_URL}/admin/audit/resources")
+                if r.is_success:
+                    inv_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+            except Exception:
+                pass
 
-        try:
-            r = await client.get(f"{settings.NETWORK_MOCK_URL}/admin/audit/resources")
-            if r.is_success:
-                net_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
-        except Exception:
-            pass
+            try:
+                r = await client.get(f"{settings.NETWORK_MOCK_URL}/admin/audit/resources")
+                if r.is_success:
+                    net_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+            except Exception:
+                pass
 
-        try:
-            r = await client.get(f"{settings.BILLING_MOCK_URL}/admin/audit/resources")
-            if r.is_success:
-                bil_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
-        except Exception:
-            pass
+            try:
+                r = await client.get(f"{settings.BILLING_MOCK_URL}/admin/audit/resources")
+                if r.is_success:
+                    bil_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+            except Exception:
+                pass
 
-        try:
-            r = await client.get(f"{settings.OMS_MOCK_URL}/admin/audit/resources")
-            if r.is_success:
-                oms_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
-        except Exception:
-            pass
+            try:
+                r = await client.get(f"{settings.OMS_MOCK_URL}/admin/audit/resources")
+                if r.is_success:
+                    oms_data = {item["order_id"]: item for item in r.json() if "order_id" in item}
+            except Exception:
+                pass
 
     # 2. Query orders from database or use custom_orders (for testing/negative testing)
     orders: list[dict[str, Any]] = []

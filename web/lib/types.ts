@@ -7,6 +7,7 @@ export type OrderState =
   | "ROLLING_BACK"
   | "ROLLED_BACK"
   | "NEEDS_ATTENTION"
+  | "FAILED"
   | "CANCELLED";
 
 export type TaskState =

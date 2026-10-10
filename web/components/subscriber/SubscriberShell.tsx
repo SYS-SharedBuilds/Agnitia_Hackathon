@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { useWorkflowNotifications } from "@/lib/notifications";
 import { motion, AnimatePresence } from "motion/react";
 
 interface RegistrarShellProps {
@@ -13,20 +14,27 @@ interface RegistrarShellProps {
 export function SubscriberShell({ children }: RegistrarShellProps) {
   const pathname = usePathname();
   const { user, switchRole, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useWorkflowNotifications();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const notifMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close profile dropdown on outside click or Escape key (WCAG compliant)
+  // Close dropdowns on outside click or Escape key (WCAG compliant)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setProfileMenuOpen(false);
       }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setProfileMenuOpen(false);
+        setShowNotifications(false);
         setMobileMenuOpen(false);
       }
     };
@@ -134,7 +142,7 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
               })}
             </nav>
 
-            {/* Right: Primary New Activation Button + User Profile Capsule */}
+            {/* Right: Primary New Activation Button + Notifications Bell + User Profile Capsule */}
             <div className="flex items-center gap-3">
               <Link
                 href="/registrar/new-order"
@@ -143,6 +151,132 @@ export function SubscriberShell({ children }: RegistrarShellProps) {
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 <span>New Activation</span>
               </Link>
+
+              {/* Notification Bell Dropdown */}
+              <div className="relative" ref={notifMenuRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-slate-200/80 apple-press cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 transition-colors"
+                  aria-label="Workflow Alerts"
+                  title="Workflow Alerts"
+                >
+                  <span className="material-symbols-outlined text-[20px]">notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[420px] max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200/90 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-900">Workflow Error Alerts</span>
+                        <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 font-bold">
+                          {unreadCount} active
+                        </span>
+                      </div>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-[11px] font-bold text-slate-600 hover:text-slate-900 hover:underline cursor-pointer"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <span className="material-symbols-outlined text-3xl text-emerald-600 mb-1">check_circle</span>
+                          <p className="text-xs font-bold text-slate-800">All workflows healthy</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">No broken activations or error states</p>
+                        </div>
+                      ) : (
+                        notifications.map((item) => (
+                          <div
+                            key={item.id}
+                            className={`p-3.5 transition-colors hover:bg-slate-50 flex flex-col gap-2 ${
+                              !item.read ? "bg-red-50/20" : "bg-white"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span
+                                  className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                                    item.channel === "registrar"
+                                      ? "bg-sky-100 text-sky-800 border border-sky-300"
+                                      : "bg-slate-100 text-slate-800 border border-slate-300"
+                                  }`}
+                                >
+                                  {item.source}
+                                </span>
+                                <span className="font-mono text-xs font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                                  {item.orderRef}
+                                </span>
+                                <span className="font-mono text-[10px] text-slate-500">
+                                  {item.time}
+                                </span>
+                              </div>
+                              {!item.read && (
+                                <button
+                                  onClick={() => markAsRead(item.id)}
+                                  className="text-slate-400 hover:text-slate-700 text-[10px] font-bold cursor-pointer"
+                                >
+                                  Mark read
+                                </button>
+                              )}
+                            </div>
+
+                            <div>
+                              <div className="text-xs font-bold text-slate-900 leading-snug">
+                                {item.title}
+                              </div>
+                              <p className="text-[11.5px] text-slate-600 mt-0.5 font-medium leading-relaxed">
+                                {item.detail}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-1">
+                              <Link
+                                href={item.inspectUrl}
+                                onClick={() => {
+                                  markAsRead(item.id);
+                                  setShowNotifications(false);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 active:scale-97 text-white font-bold text-[11px] shadow-2xs transition-all"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">build_circle</span>
+                                <span>Inspect & Resolve</span>
+                              </Link>
+
+                              <Link
+                                href={item.falloutUrl}
+                                onClick={() => {
+                                  markAsRead(item.id);
+                                  setShowNotifications(false);
+                                }}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] border border-slate-300 transition-all"
+                              >
+                                <span className="material-symbols-outlined text-[13px]">report_problem</span>
+                                <span>Fallout Queue</span>
+                              </Link>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-center">
+                      <span className="font-mono text-[10px] text-slate-500 font-medium">
+                        Unified Orchestration Alert Stream
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* User Profile Avatar & Accessible Menu */}
               <div className="relative" ref={profileMenuRef}>

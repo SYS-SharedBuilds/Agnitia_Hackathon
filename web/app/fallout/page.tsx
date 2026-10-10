@@ -150,6 +150,17 @@ export default function FalloutQueuePage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  // Auto-focus problem if orderId query parameter is present in URL
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlOrderId = params.get("orderId");
+      if (urlOrderId) {
+        setSelectedId(urlOrderId);
+      }
+    }
+  }, []);
+
   const fetchFalloutData = useCallback(async (isManual: boolean = false) => {
     setIsRefreshing(true);
     try {

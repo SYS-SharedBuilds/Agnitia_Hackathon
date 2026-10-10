@@ -4,69 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  detail: string;
-  time: string;
-  severity: "info" | "warning" | "critical" | "success";
-  orderRef?: string;
-  read: boolean;
-}
-
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif-1",
-    title: "Order activation completed",
-    detail: "ORD-20260712-004216 completed activation in 4.1s. All 8 tasks verified.",
-    time: "2m ago",
-    severity: "success",
-    orderRef: "ORD-20260712-004216",
-    read: false,
-  },
-  {
-    id: "notif-2",
-    title: "Activation retry occurred",
-    detail: "ORD-20260712-004215 retrying step 4 (HLR lock) attempt #2.",
-    time: "6m ago",
-    severity: "warning",
-    orderRef: "ORD-20260712-004215",
-    read: false,
-  },
-  {
-    id: "notif-3",
-    title: "Compensation requires operator attention",
-    detail: "ORD-20260712-004217 halted at Deprovision Network (5/5 retries exhausted).",
-    time: "10m ago",
-    severity: "critical",
-    orderRef: "ORD-20260712-004217",
-    read: false,
-  },
-  {
-    id: "notif-4",
-    title: "Order rolled back cleanly",
-    detail: "ORD-20260712-004211 compensation completed. Tombstone token recorded.",
-    time: "18m ago",
-    severity: "info",
-    orderRef: "ORD-20260712-004211",
-    read: true,
-  },
-  {
-    id: "notif-5",
-    title: "Certificate verification completed",
-    detail: "Cryptographic Merkle log verified zero orphaned state records.",
-    time: "25m ago",
-    severity: "success",
-    read: true,
-  },
-];
+import { useWorkflowNotifications } from "@/lib/notifications";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useWorkflowNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -85,16 +29,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   if (pathname.startsWith("/registrar") || pathname === "/login") {
     return <>{children}</>;
   }
-
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
-  const handleMarkItemRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
 
   const operationsNav = [
     { name: "Overview", href: "/", pathKey: "overview", icon: "grid_view" },
@@ -432,102 +366,122 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-1.5 text-[#000000] rounded-lg hover:bg-[#F8FAFC] transition-colors cursor-pointer"
-                aria-label="Notifications"
-                title="Notifications"
+                aria-label="Workflow Notifications"
+                title="Workflow Notifications"
               >
                 <span className="material-symbols-outlined text-[20px]">notifications</span>
-                {notifications.some((n) => !n.read) && (
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#000000] border border-white"></span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm sm:max-w-none bg-white rounded-xl shadow-xl border border-[#CBD5E1] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[440px] max-w-md sm:max-w-none bg-white rounded-xl shadow-2xl border border-[#CBD5E1] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-4 py-3 bg-white border-b border-[#CBD5E1] flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-headline-sm text-sm font-bold text-[#000000]">Notifications</span>
-                      <span className="font-mono text-[10.5px] px-1.5 py-0.2 rounded-full bg-white text-[#000000] border border-[#CBD5E1] font-bold">
-                        {notifications.filter((n) => !n.read).length} new
+                      <span className="font-headline-sm text-sm font-bold text-[#000000]">Workflow Alerts & Breakages</span>
+                      <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-black">
+                        {unreadCount} active
                       </span>
                     </div>
-                    {notifications.some((n) => !n.read) && (
+                    {unreadCount > 0 && (
                       <button
-                        onClick={handleMarkAllRead}
-                        className="text-[11.5px] font-bold text-[#000000] hover:underline cursor-pointer"
+                        onClick={markAllAsRead}
+                        className="text-[11.5px] font-bold text-slate-600 hover:text-black hover:underline cursor-pointer"
                       >
-                        Mark all as read
+                        Mark all read
                       </button>
                     )}
                   </div>
 
-                  <div className="max-h-[380px] overflow-y-auto divide-y divide-[#CBD5E1]">
+                  <div className="max-h-[420px] overflow-y-auto divide-y divide-[#CBD5E1]">
                     {notifications.length === 0 ? (
                       <div className="p-8 text-center text-[#000000]">
-                        <span className="material-symbols-outlined text-3xl text-[#000000] mb-1">notifications_off</span>
-                        <p className="text-body-sm font-bold">No notifications</p>
-                        <p className="text-xs text-[#000000] font-medium mt-0.5">All order events are up to date</p>
+                        <span className="material-symbols-outlined text-3xl text-emerald-600 mb-1">check_circle</span>
+                        <p className="text-body-sm font-bold">No broken workflows</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">All order DAGs running normally without errors</p>
                       </div>
                     ) : (
                       notifications.map((item) => (
                         <div
                           key={item.id}
-                          className={`p-3.5 transition-colors hover:bg-[#F8FAFC] flex items-start gap-3 bg-white`}
+                          className={`p-3.5 transition-colors hover:bg-[#F8FAFC] flex flex-col gap-2 ${
+                            !item.read ? "bg-red-50/20" : "bg-white"
+                          }`}
                         >
-                          <span
-                            className="p-1.5 rounded-lg shrink-0 bg-[#F1F5F9] border border-[#CBD5E1] text-[#000000]"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">
-                              {item.severity === "critical"
-                                ? "warning"
-                                : item.severity === "warning"
-                                ? "refresh"
-                                : item.severity === "success"
-                                ? "verified"
-                                : "info"}
-                            </span>
-                          </span>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1 mb-0.5">
-                              <span className="text-body-sm font-bold text-[#000000] truncate">
-                                {item.title}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span
+                                className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                                  item.channel === "registrar"
+                                    ? "bg-sky-100 text-sky-800 border border-sky-300"
+                                    : "bg-slate-100 text-slate-800 border border-slate-300"
+                                }`}
+                              >
+                                {item.source}
                               </span>
-                              <span className="font-mono text-[10px] text-[#000000] font-semibold shrink-0">
+                              <span className="font-mono text-xs font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                                {item.orderRef}
+                              </span>
+                              <span className="font-mono text-[10px] text-slate-500 font-medium">
                                 {item.time}
                               </span>
                             </div>
-                            <p className="text-xs text-[#000000] font-medium leading-snug mb-1.5">
+                            {!item.read && (
+                              <button
+                                onClick={() => markAsRead(item.id)}
+                                className="text-slate-500 hover:text-black text-[10px] font-bold cursor-pointer"
+                              >
+                                Mark read
+                              </button>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="text-xs font-bold text-slate-900 leading-snug">
+                              {item.title}
+                            </div>
+                            <p className="text-[11.5px] text-slate-600 mt-0.5 font-medium leading-relaxed">
                               {item.detail}
                             </p>
-                            <div className="flex items-center justify-between text-[11px]">
-                              {item.orderRef ? (
-                                <Link
-                                  href={`/orders/${item.orderRef}`}
-                                  onClick={() => setShowNotifications(false)}
-                                  className="font-mono text-[#000000] font-bold hover:underline flex items-center gap-0.5"
-                                >
-                                  <span>{item.orderRef}</span>
-                                  <span className="material-symbols-outlined text-[12px]">north_east</span>
-                                </Link>
-                              ) : <span />}
-                              {!item.read && (
-                                <button
-                                  onClick={() => handleMarkItemRead(item.id)}
-                                  className="text-[#000000] font-bold hover:underline text-[10.5px] cursor-pointer"
-                                >
-                                  Mark read
-                                </button>
-                              )}
-                            </div>
+                          </div>
+
+                          {/* Quick Inspect & Resolve Action Trigger */}
+                          <div className="flex items-center gap-2 pt-1">
+                            <Link
+                              href={item.inspectUrl}
+                              onClick={() => {
+                                markAsRead(item.id);
+                                setShowNotifications(false);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 active:scale-97 text-white font-bold text-[11px] shadow-2xs transition-all"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">build_circle</span>
+                              <span>Inspect & Resolve</span>
+                            </Link>
+
+                            <Link
+                              href={item.falloutUrl}
+                              onClick={() => {
+                                markAsRead(item.id);
+                                setShowNotifications(false);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-97 text-slate-800 font-semibold text-[11px] border border-slate-300 transition-all"
+                            >
+                              <span className="material-symbols-outlined text-[13px]">report_problem</span>
+                              <span>Fallout Queue</span>
+                            </Link>
                           </div>
                         </div>
                       ))
                     )}
                   </div>
 
-                  <div className="p-2.5 bg-white border-t border-[#CBD5E1] text-center">
-                    <span className="font-mono text-[10.5px] text-[#000000] font-medium">
-                      Demo Notification Stream · Sync: 2026-07-12
+                  <div className="p-2.5 bg-slate-50 border-t border-[#CBD5E1] text-center">
+                    <span className="font-mono text-[10.5px] text-slate-600 font-medium">
+                      SwitchOn Unified Orchestration Alert Bus · Live SSE
                     </span>
                   </div>
                 </div>

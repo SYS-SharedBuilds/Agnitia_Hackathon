@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth";
+import { WorkflowNotificationProvider } from "@/lib/notifications";
 import Shell from "./Shell";
 import "./globals.css";
 
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-white font-body-md text-[#0A1B2E] antialiased">
         <AuthProvider>
-          <Shell>{children}</Shell>
+          <WorkflowNotificationProvider>
+            <Shell>{children}</Shell>
+          </WorkflowNotificationProvider>
         </AuthProvider>
       </body>
     </html>

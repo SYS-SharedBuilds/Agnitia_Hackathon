@@ -10,7 +10,13 @@ async def test_invariants_pass_on_consistent_orders() -> None:
         {"order_id": "ord_83340a2ff6", "state": "ACTIVE", "product": "FIBER_500"},
         {"order_id": "ord_ef9762f665", "state": "ROLLED_BACK", "product": "FIBER_500"},
     ]
-    res = await check_all_invariants(custom_orders=sample_consistent)
+    mock_data = {
+        "inventory": {"ord_83340a2ff6": {"order_id": "ord_83340a2ff6", "state": "RESERVED"}},
+        "network": {"ord_83340a2ff6": {"order_id": "ord_83340a2ff6", "state": "PROVISIONED"}},
+        "billing": {"ord_83340a2ff6": {"order_id": "ord_83340a2ff6", "state": "ACTIVE"}},
+        "oms": {"ord_83340a2ff6": {"order_id": "ord_83340a2ff6", "state": "COMPLETED"}},
+    }
+    res = await check_all_invariants(custom_orders=sample_consistent, custom_mock_data=mock_data)
     assert res["status"] == "PASS"
 
 

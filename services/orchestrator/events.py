@@ -14,6 +14,7 @@ class EventPublisher:
         self.redis_url = redis_url or settings.REDIS_URL
         self._client: Any = None
         self._redis_disabled: bool = False
+        self._projector: Any = None
 
     async def get_client(self) -> Any:
         if self._redis_disabled:

@@ -364,6 +364,8 @@ export function SubscriberActivationWizardView() {
         iccid: (selectedProduct === "MOBILE_5G" || selectedProduct === "ESIM_ADDON") ? iccid.trim() : undefined,
         engine: "temporal",
         chaos_key: computedChaosKey,
+        channel: "registrar",
+        source: "Registrar Portal",
       };
 
       const response = await fetch(`${apiHost}/orders`, {
