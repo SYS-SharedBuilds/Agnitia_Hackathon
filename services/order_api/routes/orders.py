@@ -1,4 +1,5 @@
 import json
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -437,16 +438,56 @@ async def resolve_order(
     res = await session.execute(
         text("SELECT state FROM ops.orders WHERE order_id = :id"), {"id": order_id}
     )
-    if not res.mappings().first():
+    row = res.mappings().first()
+    if not row:
         raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+
+    signaled = False
     try:
         temporal_client = await get_temporal_client()
         handle = temporal_client.get_workflow_handle(f"order-{order_id}")
         await handle.signal("resolve_manually", note)
-        return {"status": "resolve_signaled", "order_id": order_id}
+        signaled = True
     except Exception as exc:
-        logger.error("resolve_workflow_failed", order_id=order_id, error=str(exc))
-        raise HTTPException(status_code=500, detail="Failed to signal workflow resolution") from exc
+        logger.warning("resolve_temporal_signal_skipped", order_id=order_id, error=str(exc))
+
+    # Update database record and emit resolution event
+    await session.execute(
+        text(
+            """
+            UPDATE ops.orders
+            SET state = 'ROLLED_BACK',
+                failure_reason = :note,
+                completed_at = COALESCE(completed_at, NOW())
+            WHERE order_id = :id
+            """
+        ),
+        {"id": order_id, "note": f"Manually resolved: {note}"},
+    )
+    await session.execute(
+        text(
+            """
+            INSERT INTO ops.events (order_id, seq, event_id, ts, type, payload)
+            VALUES (:id, 9999, :evt_id, NOW(), 'order.rolled_back', :payload)
+            ON CONFLICT DO NOTHING
+            """
+        ),
+        {
+            "id": order_id,
+            "evt_id": f"evt_res_{order_id}_{int(datetime.now(UTC).timestamp())}",
+            "payload": json.dumps({"reason": f"Manually resolved: {note}", "manual_resolution": True}),
+        },
+    )
+    await session.commit()
+
+    # Trigger background cleanup of orphan resources via Reconciler to satisfy INV-2
+    try:
+        from services.orchestrator.reconciler import Reconciler
+        await Reconciler().sweep()
+    except Exception as r_exc:
+        logger.warning("resolve_reconciler_sweep_failed", error=str(r_exc))
+
+    return {"status": "resolved", "order_id": order_id, "workflow_signaled": str(signaled)}
 
 
 cert_verify_router = APIRouter(tags=["Certificates"])

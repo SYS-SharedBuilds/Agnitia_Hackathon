@@ -147,6 +147,7 @@ async def oms_complete(
 async def oms_reopen(
     order_id: str,
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     # Write tombstone for forward complete key
     forward_key = f"{order_id}:complete_order:complete"
@@ -158,7 +159,7 @@ async def oms_reopen(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("reopen", order_id, is_compensation=True)
+    status, err = await chaos_engine.apply("reopen", order_id, chaos_key=x_chaos_key, is_compensation=True)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -216,6 +217,7 @@ async def inventory_reserve(
 async def inventory_release(
     order_id: str,
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     # Write tombstone for the forward reserve key
     forward_key = f"{order_id}:reserve_inventory:reserve"
@@ -227,7 +229,7 @@ async def inventory_release(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("release", order_id, is_compensation=True)
+    status, err = await chaos_engine.apply("release", order_id, chaos_key=x_chaos_key, is_compensation=True)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -304,6 +306,7 @@ async def network_verify(
 async def network_deprovision(
     order_id: str,
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     forward_key = f"{order_id}:provision_network:provision"
     store.write_tombstone(forward_key, order_id)
@@ -314,7 +317,7 @@ async def network_deprovision(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("deprovision", order_id, is_compensation=True)
+    status, err = await chaos_engine.apply("deprovision", order_id, chaos_key=x_chaos_key, is_compensation=True)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -363,6 +366,7 @@ async def billing_create_account(
 async def billing_void_account(
     order_id: str,
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     forward_key = f"{order_id}:create_billing_account:create_account"
     store.write_tombstone(forward_key, order_id)
@@ -373,7 +377,7 @@ async def billing_void_account(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("void_account", order_id, is_compensation=True)
+    status, err = await chaos_engine.apply("void_account", order_id, chaos_key=x_chaos_key, is_compensation=True)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 
@@ -420,6 +424,7 @@ async def billing_start_charging(
 async def billing_reverse_charges(
     order_id: str,
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    x_chaos_key: str | None = Header(None, alias="X-Chaos-Key"),
 ) -> Response:
     forward_key = f"{order_id}:start_billing:start_charging"
     store.write_tombstone(forward_key, order_id)
@@ -430,7 +435,7 @@ async def billing_reverse_charges(
             status_code=cached[0], content=cached[1], headers={"Idempotent-Replay": "true"}
         )
 
-    status, err = await chaos_engine.apply("reverse_charges", order_id, is_compensation=True)
+    status, err = await chaos_engine.apply("reverse_charges", order_id, chaos_key=x_chaos_key, is_compensation=True)
     if status:
         return JSONResponse(status_code=status, content=err or {"error": "chaos"})
 

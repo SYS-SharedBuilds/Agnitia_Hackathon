@@ -323,9 +323,28 @@ export function SubscriberOrderDetailView() {
           </div>
         )}
 
-        {/* Failure / Review Human-Language Explainer Box */}
+        {/* Sandbox Simulation Indicator Badge */}
+        {order?.chaos_key && (
+          <div className="p-3.5 sm:p-4 bg-sky-50/90 border border-sky-200/90 rounded-2xl flex items-center justify-between text-xs text-sky-900 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-sky-600">science</span>
+              <span>
+                <strong>Sandbox Test Order:</strong> Controlled fault simulation injected (
+                <code className="font-mono font-semibold bg-sky-100/70 px-1.5 py-0.5 rounded text-[11px] text-sky-800">
+                  {order.chaos_key}
+                </code>
+                ). Real Saga compensation and NOC incident synchronization enabled.
+              </span>
+            </div>
+            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-sky-200/60 text-sky-800 font-mono text-[10px] font-bold">
+              DEMO SIMULATION
+            </span>
+          </div>
+        )}
+
+        {/* Dynamic Failure / Review / Resolution Explainer Box */}
         {order?.state === "NEEDS_ATTENTION" && (
-          <div className="p-5 sm:p-6 bg-amber-50 border border-amber-300 rounded-3xl shadow-xs space-y-2">
+          <div className="p-5 sm:p-6 bg-amber-50 border border-amber-300 rounded-3xl shadow-xs space-y-2.5">
             <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
               <span className="material-symbols-outlined text-[22px] text-amber-700">
                 support_agent
@@ -333,27 +352,62 @@ export function SubscriberOrderDetailView() {
               <span>Our Operations Desk is Reviewing Your Activation</span>
             </div>
             <p className="text-xs sm:text-sm text-amber-900/90 leading-relaxed">
-              Your service order encountered a temporary gateway timeout during the network provision step. SwitchOn halted further operations safely without leaving any orphaned billing charges. A network engineer has been notified and is reviewing the profile lock. This page will update automatically once verified.
+              {order.failure_reason
+                ? `Operational incident detected: ${order.failure_reason}. SwitchOn circuit-breaker engaged safely without leaving any orphaned billing charges.`
+                : "Your service order encountered an execution anomaly during provisioning or compensation. SwitchOn circuit-breaker engaged safely to prevent stranded resources."}
+              {" "}An authorized network engineer has been paged in the NOC Fallout Queue. This tracker will update automatically once verified.
             </p>
-            <div className="pt-2 flex items-center gap-4 text-xs font-mono text-amber-800">
-              <span>Incident Ticket: <strong>NOC-AUTO-94821</strong></span>
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-mono text-amber-800 border-t border-amber-200/70">
+              <span>Incident Ticket: <strong>NOC-AUTO-{orderId.slice(-5).toUpperCase()}</strong></span>
               <span>·</span>
               <span>SLA Target: <strong>Under 30 minutes</strong></span>
+              <span>·</span>
+              <span className="text-amber-900 font-bold">Queue: Central Fallout</span>
             </div>
           </div>
         )}
 
         {order?.state === "ROLLED_BACK" && (
-          <div className="p-5 sm:p-6 bg-slate-100 border border-slate-300 rounded-3xl shadow-xs space-y-2">
+          <div className="p-5 sm:p-6 bg-slate-100 border border-slate-300 rounded-3xl shadow-xs space-y-2.5">
             <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
               <span className="material-symbols-outlined text-[22px] text-slate-600">
-                undo
+                {order.failure_reason?.includes("Manually resolved") ? "verified_user" : "undo"}
               </span>
-              <span>Activation Safeguard: Incomplete Setup Safely Reversed</span>
+              <span>
+                {order.failure_reason?.includes("Manually resolved")
+                  ? "Operator Resolution Complete · State Restored"
+                  : "Activation Safeguard: Incomplete Setup Safely Reversed"}
+              </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-              Because an upstream rating or network service was temporarily unreachable, SwitchOn triggered an automated backward compensation saga. All reserved SIM allocations and network slice profiles were cleanly restored. You may safely initiate a new activation when ready.
+              {order.failure_reason?.includes("Manually resolved")
+                ? `NOC Operator Action: ${order.failure_reason}. All downstream locks and circuit-breaker states have been verified and reconciled cleanly.`
+                : (order.failure_reason
+                    ? `Reason: ${order.failure_reason}. SwitchOn triggered an automated backward compensation saga. All reserved SIM allocations and network slice profiles were cleanly restored.`
+                    : "Because an upstream dependency encountered a failure, SwitchOn triggered an automated backward compensation saga. All reserved SIM allocations and network profiles were cleanly restored with zero stranded charges.")}
             </p>
+          </div>
+        )}
+
+        {order?.state === "ACTIVE" && (
+          <div className="p-4 sm:p-5 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-900 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-[20px] text-emerald-600">verified</span>
+              <div>
+                <span className="font-bold">Service Fully Operational &amp; Activated</span>
+                <span className="text-emerald-700 block text-[11px] mt-0.5">
+                  All 8 activation phases completed with zero drift. Cryptographic certificate generated and verified.
+                </span>
+              </div>
+            </div>
+            {hasCert && (
+              <Link
+                href={`/registrar/orders/${orderId}/certificate`}
+                className="hidden sm:inline-flex px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs apple-press shrink-0"
+              >
+                View Certificate
+              </Link>
+            )}
           </div>
         )}
 
@@ -405,6 +459,9 @@ export function SubscriberOrderDetailView() {
                   }`}
                 ></span>
                 <span>{isLiveActive ? "Live SSE Stream" : "Polling (3s)"}</span>
+                {events.length > 0 && (
+                  <span className="text-[10px] text-slate-400 font-normal">({events.length})</span>
+                )}
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">
                 {order?.created_at ? new Date(order.created_at).toLocaleTimeString() : "Recent"}

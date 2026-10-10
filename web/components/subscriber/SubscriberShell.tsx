@@ -10,7 +10,7 @@ interface RegistrarShellProps {
   children: React.ReactNode;
 }
 
-export function SubscriberShell({ children }: { children: React.ReactNode }) {
+export function SubscriberShell({ children }: RegistrarShellProps) {
   const pathname = usePathname();
   const { user, switchRole, logout } = useAuth();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -259,7 +259,10 @@ export function SubscriberShell({ children }: { children: React.ReactNode }) {
                       <div className="px-2 pt-1 border-t border-slate-100">
                         <Link
                           href="/login"
-                          onClick={() => setProfileMenuOpen(false)}
+                          onClick={() => {
+                            logout();
+                            setProfileMenuOpen(false);
+                          }}
                           role="menuitem"
                           className="w-full text-left px-2.5 py-2 text-xs rounded-xl hover:bg-rose-50 text-slate-600 hover:text-rose-700 flex items-center gap-2.5 transition-colors cursor-pointer apple-press"
                         >

@@ -49,13 +49,12 @@ export function SubscriberActivationWizardView() {
   ]);
 
   // STEP 1: Customer Information
-  const [customerName, setCustomerName] = useState("Aarav Sharma");
+  const [customerName, setCustomerName] = useState(() => user?.name || "Aarav Sharma");
   const [contactMobile, setContactMobile] = useState("9820154821");
   const [contactEmail, setContactEmail] = useState("aarav.sharma@airtelmail.in");
   const [customerId, setCustomerId] = useState(() => `CUST-IND-${Math.floor(100000 + Math.random() * 900000)}`);
   const [customerType, setCustomerType] = useState<"individual" | "business">("individual");
   const [preferredContact, setPreferredContact] = useState<"sms" | "email" | "whatsapp">("sms");
-  const [dob, setDob] = useState("1994-08-15");
 
   // STEP 2: Service Address
   const [streetAddress, setStreetAddress] = useState("Flat 402, Godrej Woods, Sector 43");
@@ -78,7 +77,7 @@ export function SubscriberActivationWizardView() {
 
   // STEP 5: Identity Demo Verification (Simulated Aadhaar, OTP & Face Demo)
   // Aadhaar sub-step
-  const [syntheticAadhaar, setSyntheticAadhaar] = useState("9821 4402 4821");
+  const syntheticAadhaar = "9821 4402 4821";
   const [otpSent, setOtpSent] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
   const [enteredOtp, setEnteredOtp] = useState("");

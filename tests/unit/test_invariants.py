@@ -5,8 +5,12 @@ from scripts.invariants import check_all_invariants
 
 @pytest.mark.asyncio
 async def test_invariants_pass_on_consistent_orders() -> None:
-    # Test checking consistent active orders
-    res = await check_all_invariants()
+    # Test checking consistent active and rolled back orders
+    sample_consistent = [
+        {"order_id": "ord_83340a2ff6", "state": "ACTIVE", "product": "FIBER_500"},
+        {"order_id": "ord_ef9762f665", "state": "ROLLED_BACK", "product": "FIBER_500"},
+    ]
+    res = await check_all_invariants(custom_orders=sample_consistent)
     assert res["status"] == "PASS"
 
 

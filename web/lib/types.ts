@@ -35,6 +35,8 @@ export interface Order {
   current_step?: string;
   msisdn?: string;
   iccid?: string;
+  chaos_key?: string | null;
+  explanation?: Record<string, unknown> | null;
   payload?: Record<string, unknown>;
 }
 

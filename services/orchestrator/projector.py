@@ -117,12 +117,15 @@ class EventProjector:
                 EventType.TASK_COMPENSATION_FAILED: "COMPENSATION_FAILED",
             }
             t_state = task_state_map.get(event.type, "PENDING")
+            ended_at = (
+                event.ts
+                if t_state in ("SUCCEEDED", "FAILED", "COMPENSATED", "COMPENSATION_FAILED")
+                else None
+            )
             upsert_task = text(
                 """
                 INSERT INTO ops.tasks (order_id, task_id, system, state, attempts, started_at, ended_at, last_error)
-                VALUES (:order_id, :task_id, :system, :state, :attempts, :ts,
-                    CASE WHEN :state IN ('SUCCEEDED', 'FAILED', 'COMPENSATED', 'COMPENSATION_FAILED') THEN :ts ELSE NULL END,
-                    :last_error)
+                VALUES (:order_id, :task_id, :system, :state, :attempts, :ts, :ended_at, :last_error)
                 ON CONFLICT (order_id, task_id) DO UPDATE SET
                     state = CASE
                         WHEN ops.tasks.state IN ('SUCCEEDED', 'COMPENSATED') AND excluded.state IN ('RUNNING', 'PENDING') THEN ops.tasks.state
@@ -150,6 +153,7 @@ class EventProjector:
                     "state": t_state,
                     "attempts": event.attempt or 1,
                     "ts": event.ts,
+                    "ended_at": ended_at,
                     "last_error": event.detail.get("error"),
                 },
             )
