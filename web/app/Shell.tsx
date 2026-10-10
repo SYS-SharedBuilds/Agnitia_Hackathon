@@ -96,21 +96,33 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const navItems = [
+  const operationsNav = [
     { name: "Overview", href: "/", pathKey: "overview", icon: "grid_view" },
-    { name: "Orders", href: "/orders", pathKey: "orders", icon: "receipt_long" },
-    { name: "Fallout Queue", href: "/fallout", pathKey: "fallout-queue", icon: "report_problem", badge: "14", badgeColor: "bg-[#eef3f9] text-[#0A1B2E] border-[#0A1B2E]" },
+    {
+      name: "Orders",
+      href: "/orders",
+      pathKey: "orders",
+      icon: "receipt_long",
+      subItems: [
+        { name: "All Orders", href: "/orders", icon: "table_rows" },
+        { name: "New Order", href: "/orders/new-orders", icon: "add_circle" },
+      ],
+    },
+    { name: "Fallout Queue", href: "/fallout", pathKey: "fallout-queue", icon: "report_problem", badge: "2", badgeColor: "bg-[#eef3f9] text-[#0A1B2E] border-[#0A1B2E]" },
     { name: "Metrics", href: "/metrics", pathKey: "metrics", icon: "monitoring" },
+  ];
+
+  const resilienceNav = [
     { name: "Scenarios & Proof", href: "/proof", pathKey: "scenarios-proof", icon: "verified" },
-    { name: "Reconciler", href: "/reconciler", pathKey: "reconciler", icon: "sync_alt" },
     { name: "Systems & Chaos", href: "/chaos", pathKey: "systems-chaos", icon: "hub" },
+    { name: "Reconciler", href: "/reconciler", pathKey: "reconciler", icon: "sync_alt" },
     { name: "Catalog", href: "/catalog", pathKey: "catalog", icon: "menu_book" },
     { name: "Design System", href: "/design-system", pathKey: "design-system", icon: "palette" },
   ];
 
-  const isActive = (itemHref: string) => {
-    if (itemHref === "/") return pathname === "/";
-    return pathname.startsWith(itemHref);
+  const isActive = (itemHref: string, exact: boolean = false) => {
+    if (exact || itemHref === "/") return pathname === itemHref;
+    return pathname === itemHref || pathname.startsWith(itemHref + "/");
   };
 
   return (
@@ -156,36 +168,107 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1 scrollbar-none bg-white">
-            {navItems.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
-                    active
-                      ? "bg-[#F1F5F9] text-[#000000] font-bold border-l-4 border-[#000000] shadow-2xs"
-                      : "text-body-md font-body-md text-[#000000] hover:bg-[#F8FAFC] font-medium"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="material-symbols-outlined text-[19px] text-[#000000]">
-                      {item.icon}
-                    </span>
-                    <span>{item.name}</span>
-                  </div>
-                  {item.badge && (
-                    <span
-                      className="font-label-sm text-label-sm font-bold px-1.5 py-0.5 rounded-full border border-[#000000] bg-neutral-100 text-[#000000]"
+          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4 scrollbar-none bg-white">
+            {/* Live Operations Section */}
+            <div>
+              <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
+                Operations
+              </div>
+              <div className="space-y-1">
+                {operationsNav.map((item) => {
+                  const active = isActive(item.href);
+                  const isOrdersFamily = item.name === "Orders" && (pathname === "/orders" || pathname.startsWith("/orders/"));
+
+                  return (
+                    <div key={item.href} className="space-y-0.5">
+                      <Link
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
+                          active && (!item.subItems || pathname === item.href)
+                            ? "bg-[#F1F5F9] text-[#000000] font-bold border-l-4 border-[#000000] shadow-2xs"
+                            : isOrdersFamily
+                            ? "bg-[#F8FAFC] text-[#000000] font-bold"
+                            : "text-body-md font-body-md text-[#000000] hover:bg-[#F8FAFC] font-medium"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="material-symbols-outlined text-[19px] text-[#000000]">
+                            {item.icon}
+                          </span>
+                          <span>{item.name}</span>
+                        </div>
+                        {item.badge && (
+                          <span
+                            className="font-label-sm text-label-sm font-bold px-1.5 py-0.5 rounded-full border border-[#000000] bg-neutral-100 text-[#000000]"
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+
+                      {/* Sub-items for Orders */}
+                      {item.subItems && (
+                        <div className="pl-6 pr-1 py-0.5 space-y-0.5">
+                          {item.subItems.map((sub) => {
+                            const subActive = pathname === sub.href;
+                            return (
+                              <Link
+                                key={sub.href}
+                                href={sub.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                                  subActive
+                                    ? "bg-[#E2E8F0] font-bold text-[#000000]"
+                                    : "text-slate-600 hover:text-black hover:bg-[#F1F5F9] font-medium"
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[15px]">
+                                  {sub.icon}
+                                </span>
+                                <span>{sub.name}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Resilience & Engine Tools Section */}
+            <div>
+              <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#64748B] flex items-center justify-between">
+                <span>Engine & Resilience</span>
+                <span className="text-[9px] px-1 py-0.2 bg-slate-100 border border-slate-200 text-slate-600 rounded font-mono font-medium">ADMIN</span>
+              </div>
+              <div className="space-y-1">
+                {resilienceNav.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
+                        active
+                          ? "bg-[#F1F5F9] text-[#000000] font-bold border-l-4 border-[#000000] shadow-2xs"
+                          : "text-body-md font-body-md text-[#000000] hover:bg-[#F8FAFC] font-medium"
+                      }`}
                     >
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+                      <div className="flex items-center gap-2.5">
+                        <span className="material-symbols-outlined text-[19px] text-[#000000]">
+                          {item.icon}
+                        </span>
+                        <span>{item.name}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
         </div>
 

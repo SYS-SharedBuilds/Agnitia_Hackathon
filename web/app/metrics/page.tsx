@@ -75,37 +75,42 @@ export default function MetricsPage() {
           <div className="relative">
             <button
               onClick={() => setExportOpen(!exportOpen)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-on-primary font-label-sm text-label-sm shadow-sm hover:bg-primary-container transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0A1B2E] text-white font-label-sm text-label-sm shadow-sm hover:bg-[#14263b] transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">file_download</span>
               <span>Export Metrics</span>
-              <span className="material-symbols-outlined text-[14px]">expand_more</span>
+              <span className={`material-symbols-outlined text-[14px] transition-transform ${exportOpen ? "rotate-180" : ""}`}>expand_more</span>
             </button>
             {exportOpen && (
-              <div className="absolute right-0 mt-1 w-48 rounded-xl bg-surface-container-lowest shadow-lg border border-outline-variant/40 py-1 z-30">
+              <div className="absolute right-0 mt-1 w-52 rounded-xl bg-white shadow-xl border border-[#CBD5E1] py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100">
                 <a
-                  className="flex items-center gap-2 px-3 py-1.5 font-label-sm text-label-sm text-on-surface hover:bg-surface-container-low transition-colors"
+                  className="flex items-center gap-2.5 px-3.5 py-2 font-label-sm text-label-sm text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors font-medium"
                   href="/api/metrics/prometheus"
                   target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setExportOpen(false)}
                 >
-                  <span className="material-symbols-outlined text-[16px] text-secondary">terminal</span>
-                  Prometheus Metrics
+                  <span className="material-symbols-outlined text-[18px] text-sky-600">terminal</span>
+                  <span>Prometheus Metrics</span>
                 </a>
                 <a
-                  className="flex items-center gap-2 px-3 py-1.5 font-label-sm text-label-sm text-on-surface hover:bg-surface-container-low transition-colors"
+                  className="flex items-center gap-2.5 px-3.5 py-2 font-label-sm text-label-sm text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors font-medium"
                   href="/api/metrics/export?format=csv"
-                  download
+                  download="switchon-metrics-aggregated.csv"
+                  onClick={() => setExportOpen(false)}
                 >
-                  <span className="material-symbols-outlined text-[16px] text-tertiary">table_view</span>
-                  Aggregated CSV
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600">table_view</span>
+                  <span>Aggregated CSV</span>
                 </a>
                 <a
-                  className="flex items-center gap-2 px-3 py-1.5 font-label-sm text-label-sm text-on-surface hover:bg-surface-container-low transition-colors"
+                  className="flex items-center gap-2.5 px-3.5 py-2 font-label-sm text-label-sm text-[#0A1B2E] hover:bg-[#F8FAFC] transition-colors font-medium"
                   href="/api/metrics/slo-audit.pdf"
                   target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setExportOpen(false)}
                 >
-                  <span className="material-symbols-outlined text-[16px] text-error">picture_as_pdf</span>
-                  SLO Audit PDF
+                  <span className="material-symbols-outlined text-[18px] text-red-600">picture_as_pdf</span>
+                  <span>SLO Audit PDF</span>
                 </a>
               </div>
             )}
